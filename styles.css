@@ -37,279 +37,203 @@ a{ text-decoration:none; color:inherit; }
 ::-webkit-scrollbar-thumb:hover{ background:#b4c0d4; }
 ::-webkit-scrollbar-track{ background:transparent; }
 
-/* ===== 登录页（沉浸式水疗风格 · 澜庭水汇 V2） ===== */
-.login-view{ position:fixed; inset:0; display:flex; overflow:hidden; background:#0c1e30; }
-
-/* ---- 动态背景层（提亮版） ---- */
-.login-bg-layer{ position:absolute; inset:0; overflow:hidden; z-index:0; }
-.login-gradient-base{
-  position:absolute; inset:0;
+/* ===== 登录页（高端 SPA · 暖中性奢华） ===== */
+.login-view{
+  position:fixed; inset:0; display:flex; overflow:hidden;
   background:
-    radial-gradient(ellipse 85% 65% at 15% 8%, rgba(22,180,175,.38) 0%, transparent 55%),
-    radial-gradient(ellipse 75% 55% at 82% 88%, rgba(59,130,246,.32) 0%, transparent 50%),
-    radial-gradient(ellipse 100% 80% at 52% 48%, rgba(20,120,110,.18) 0%, transparent 62%),
-    linear-gradient(158deg, #0a3d42 0%, #113a6e 28%, #143d7a 56%, #0d2545 100%);
-  animation:bgShift 14s ease-in-out infinite alternate;
+    radial-gradient(62% 56% at 10% 8%, rgba(255,251,244,.92), transparent 60%),
+    radial-gradient(56% 52% at 90% 94%, rgba(214,196,170,.55), transparent 64%),
+    linear-gradient(150deg, #F7F2EA 0%, #EFE7D8 48%, #E7DCC9 100%);
+  --lc-wood:#B79B7C;        /* 暖木 */
+  --lc-wood-d:#9C8264;      /* 深暖木 */
+  --lc-wood-l:#D2BFA3;      /* 浅暖木 */
+  --lc-gold:#C9A86A;        /* 香槟金 */
+  --lc-ink:#3A322A;         /* 暖墨 */
+  --lc-ink-2:#6B6258;       /* 次级文字 */
+  --lc-ink-3:#9A8F7E;       /* 弱化文字 */
+  --lc-line:#E7DECF;        /* 分隔线 */
+  --lc-bg-soft:#FBF7F0;     /* 输入框底色 */
+  --lc-card:rgba(255,255,255,.52); /* 毛玻璃卡 */
 }
-@keyframes bgShift{
-  0%{ filter:hue-rotate(0deg) brightness(1); }
-  100%{ filter:hue-rotate(6deg) brightness(1.06); }
-}
-
-/* 水波纹（更柔和） */
-.login-ripples{ position:absolute; inset:0; }
-.ripple{
-  position:absolute; border-radius:50%; border:1px solid rgba(120,230,225,.12);
-  animation:rippleExpand 9s ease-in-out infinite;
-}
-.r1{ width:320px; height:320px; top:-90px; left:-70px; animation-delay:0s; }
-.r2{ width:520px; height:520px; top:26%; right:-160px; animation-delay:2.3s; border-color:rgba(90,170,255,.10); }
-.r3{ width:420px; height:420px; bottom:-110px; left:18%; animation-delay:4.6s; border-color:rgba(18,210,195,.11); }
-.r4{ width:280px; height:280px; top:48%; left:44%; animation-delay:6.9s; border-color:rgba(130,210,255,.09); }
-.r5{ width:600px; height:600px; bottom:-220px; right:-110px; animation-delay:3.4s; border-color:rgba(90,200,235,.08); }
-@keyframes rippleExpand{
-  0%,100%{ transform:scale(.72); opacity:.35; }
-  50%{ transform:scale(1.12); opacity:.16; }
+/* 大理石纹理 / 细腻颗粒（feTurbulence 噪点，极低存在感） */
+.login-view::after{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:.05; mix-blend-mode:multiply;
 }
 
-/* 浮动粒子/气泡（更细腻） */
-.login-particles{ position:absolute; inset:0; pointer-events:none; }
-.particle{
-  position:absolute; border-radius:50%;
-  background:radial-gradient(circle at 35% 35%, rgba(160,240,236,.6), rgba(100,215,208,0));
-  animation:particleFloat linear infinite;
-  box-shadow:0 0 8px rgba(100,225,218,.2);
+/* ---------- 左：品牌展示区（暖石 / 大理石） ---------- */
+.login-aside{
+  position:relative; flex:1.04; overflow:hidden; color:#4A4038; z-index:1;
+  display:flex; align-items:center; padding:0 64px;
+  background:
+    radial-gradient(60% 50% at 20% 18%, rgba(255,253,248,.85), transparent 60%),
+    radial-gradient(50% 46% at 86% 88%, rgba(201,168,106,.16), transparent 62%),
+    linear-gradient(158deg, #EFE6D6 0%, #E6D8C2 50%, #DCCBB0 100%);
 }
-@keyframes particleFloat{
-  0%{ transform:translateY(108vh) scale(.25); opacity:0; }
-  12%{ opacity:.6; }
-  88%{ opacity:.4; }
-  100%{ transform:translateY(-12vh) scale(1.15); opacity:0; }
+/* 大理石纹理（柔和斜向脉络） */
+.login-aside::before{
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:.7;
+  background:
+    linear-gradient(115deg, transparent 0 38%, rgba(255,255,255,.20) 39% 40%, transparent 41% 70%, rgba(160,130,95,.07) 71% 72%, transparent 73%),
+    linear-gradient(60deg, transparent 0 55%, rgba(255,255,255,.10) 56% 57%, transparent 58%);
 }
+/* 柔和渐变光影 */
+.aside-aurora{
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(52% 48% at 16% 14%, rgba(255,247,232,.55), transparent 60%),
+    radial-gradient(48% 44% at 86% 88%, rgba(201,168,106,.14), transparent 62%);
+}
+.aside-blob{ position:absolute; border-radius:50%; filter:blur(70px); opacity:.5; pointer-events:none; }
+.blob-a{ width:340px; height:340px; left:-90px; top:-60px; background:radial-gradient(circle, rgba(255,240,214,.85), transparent 70%); animation:blobDrift 19s ease-in-out infinite alternate; }
+.blob-b{ width:300px; height:300px; right:-80px; bottom:-70px; background:radial-gradient(circle, rgba(201,168,106,.30), transparent 70%); animation:blobDrift 23s ease-in-out infinite alternate-reverse; }
+@keyframes blobDrift{ 0%{ transform:translate(0,0) scale(1); } 100%{ transform:translate(30px,22px) scale(1.12); } }
 
-/* 光晕装饰球（降低强度，更自然） */
-.login-orb{ position:absolute; border-radius:50%; filter:blur(70px); opacity:.28; animation:orbDrift 12s ease-in-out infinite alternate; }
-.orb1{ width:380px; height:380px; background:radial-gradient(circle, rgba(18,205,195,.45), transparent 70%); top:-140px; left:-95px; animation-duration:13s; }
-.orb2{ width:300px; height:300px; background:radial-gradient(circle, rgba(55,140,255,.40), transparent 70%); bottom:-95px; right:-75px; animation-delay:3.5s; animation-duration:10s; }
-.orb3{ width:220px; height:220px; background:radial-gradient(circle, rgba(90,230,212,.36), transparent 70%); top:38%; left:33%; animation-delay:6s; animation-duration:14s; }
-@keyframes orbDrift{
-  0%{ transform:translate(0,0) scale(1); }
-  100%{ transform:translate(26px,-18px) scale(1.12); }
+.aside-inner{ position:relative; z-index:1; width:100%; max-width:440px; }
+.brand-mark{ display:flex; align-items:center; gap:12px; }
+.brand-drop{ width:32px; height:32px; fill:var(--lc-wood-d); filter:drop-shadow(0 4px 12px rgba(156,130,100,.4)); }
+.brand-name{ font-size:20px; font-weight:300; letter-spacing:6px; color:var(--lc-ink); }
+.aside-hero{ margin-top:54px; }
+.aside-title{ font-size:42px; font-weight:200; line-height:1.34; letter-spacing:3px; color:var(--lc-ink); font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+.aside-accent{
+  background:linear-gradient(120deg, var(--lc-gold), var(--lc-wood));
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  font-weight:300;
 }
+.aside-desc{ margin-top:18px; max-width:400px; font-size:14.5px; line-height:2; color:var(--lc-ink-2); letter-spacing:1px; font-weight:300; }
 
-/* 左：品牌展示区（提亮渐变 + 更好层次） */
-.login-left{
-  flex:1.15; position:relative; color:#fff; display:flex; flex-direction:column; justify-content:center;
-  padding:0 64px; overflow:hidden; z-index:1;
-  background:linear-gradient(138deg,
-    rgba(10,68,66,.80) 0%,
-    rgba(14,54,92,.70) 38%,
-    rgba(18,50,94,.60) 68%,
-    rgba(12,38,72,.55) 100%);
-  backdrop-filter:saturate(1.5) blur(3px);
+.aside-feats{ list-style:none; margin:42px 0 0; padding:0; }
+.feat{ display:flex; gap:16px; align-items:flex-start; padding:15px 0; border-top:1px solid rgba(120,95,60,.12); }
+.feat:last-child{ border-bottom:1px solid rgba(120,95,60,.12); }
+.feat-ic{
+  flex:0 0 auto; width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.5); border:1px solid rgba(183,155,124,.3);
+  transition:background .25s, border-color .25s, transform .25s;
 }
-.login-left::before{
-  content:""; position:absolute; width:540px; height:540px; border-radius:50%;
-  background:radial-gradient(circle, rgba(18,210,198,.14), transparent 62%);
-  top:-190px; right:-130px; animation:orbPulse 7.5s ease-in-out infinite alternate;
-}
-.login-left::after{
-  content:""; position:absolute; width:380px; height:380px; border-radius:50%;
-  background:radial-gradient(circle, rgba(55,135,255,.11), transparent 62%);
-  bottom:-150px; left:18px; animation:orbPulse 9.5s ease-in-out infinite alternate-reverse;
-}
-@keyframes orbPulse{ 0%{ transform:scale(.88); opacity:.45;} 100%{ transform:scale(1.22); opacity:.82;} }
+.feat-ic svg{ width:21px; height:21px; stroke:var(--lc-wood-d); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; transition:stroke .25s; }
+.feat:hover .feat-ic{ background:rgba(201,168,106,.16); border-color:rgba(201,168,106,.5); transform:translateY(-2px); }
+.feat:hover .feat-ic svg{ stroke:var(--lc-gold); }
+.feat-tx{ padding-top:2px; }
+.feat-t{ font-size:15px; font-weight:400; color:var(--lc-ink); letter-spacing:.5px; }
+.feat-s{ font-size:12.5px; color:var(--lc-ink-2); margin-top:3px; letter-spacing:.3px; font-weight:300; }
+.aside-foot{ position:absolute; bottom:30px; left:64px; font-size:12px; color:var(--lc-ink-3); letter-spacing:1px; z-index:1; font-weight:300; }
 
-.login-brand{ display:flex; align-items:center; gap:13px; font-size:22px; font-weight:800; position:relative; z-index:1; letter-spacing:1.2px; }
-.login-logo{
-  width:50px; height:50px; border-radius:15px;
-  background:linear-gradient(145deg, rgba(18,210,198,.32), rgba(55,140,255,.28));
-  backdrop-filter:blur(10px); border:1px solid rgba(150,238,232,.28);
-  display:flex; align-items:center; justify-content:center; font-size:25px;
-  box-shadow:0 5px 22px rgba(18,210,198,.22), inset 0 1px 0 rgba(255,255,255,.12);
-  animation:logoGlow 4.5s ease-in-out infinite alternate;
+/* ---------- 右：登录表单区 ---------- */
+.login-main{
+  flex:1; display:flex; align-items:center; justify-content:center; position:relative; z-index:1; padding:32px;
+  background:linear-gradient(135deg, #FAF5EC 0%, #F1E8D9 100%);
 }
-@keyframes logoGlow{
-  0%{ box-shadow:0 5px 22px rgba(18,210,198,.22), inset 0 1px 0 rgba(255,255,255,.12); }
-  100%{ box-shadow:0 5px 30px rgba(18,210,195,.38), 0 0 46px rgba(18,210,195,.14), inset 0 1px 0 rgba(255,255,255,.17); }
-}
+.login-main::before{ content:""; position:absolute; inset:0; pointer-events:none; background:radial-gradient(70% 60% at 82% 12%, rgba(201,168,106,.10), transparent 60%); }
 
-.login-hero{ font-size:43px; font-weight:800; line-height:1.22; margin:46px 0 18px; position:relative; z-index:1; letter-spacing:1.8px; }
-.hero-accent{
-  background:linear-gradient(135deg, #42e8de, #78c6ff, #42e8de);
-  background-size:200% auto;
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-  animation:textShimmer 4.5s linear infinite;
+/* 细腻毛玻璃卡片 */
+.login-card{
+  position:relative; width:100%; max-width:400px;
+  background:var(--lc-card);
+  backdrop-filter:blur(22px) saturate(1.5); -webkit-backdrop-filter:blur(22px) saturate(1.5);
+  border:1px solid rgba(255,255,255,.6); border-radius:24px; padding:44px 40px 30px;
+  box-shadow:0 30px 70px rgba(120,95,60,.18), 0 8px 24px rgba(120,95,60,.10), inset 0 1px 0 rgba(255,255,255,.5);
+  animation:cardIn .7s cubic-bezier(.2,.8,.2,1) both;
 }
-@keyframes textShimmer{ to{ background-position:200% center;} }
+@keyframes cardIn{ from{ opacity:0; transform:translateY(20px) scale(.985); } to{ opacity:1; transform:none; } }
 
-.login-desc{ font-size:15px; line-height:2; color:rgba(255,255,255,.83); max-width:420px; position:relative; z-index:1; letter-spacing:.3px; }
-.login-feats{ list-style:none; margin:34px 0 0; padding:0; position:relative; z-index:1; }
-.login-feats li{
-  display:flex; align-items:center; gap:14px; padding:12px 0; font-size:15px; color:rgba(255,255,255,.90);
-  transition:transform .22s cubic-bezier(.2,.8,.2,1); cursor:default;
-  border-left:2px solid transparent; padding-left:14px;
+.card-head{ text-align:center; margin-bottom:30px; }
+.card-logo{
+  width:56px; height:56px; margin:0 auto 16px; border-radius:16px; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(140deg, var(--lc-wood-l), var(--lc-wood-d));
+  box-shadow:0 10px 26px rgba(156,130,100,.32);
 }
-.login-feats li:hover{ transform:translateX(8px); border-left-color:rgba(78,232,224,.5); }
-.feat-icon{ font-size:19px; flex-shrink:0; filter:drop-shadow(0 2px 5px rgba(0,0,0,.18)); }
-.login-foot{ position:absolute; bottom:28px; left:64px; font-size:12px; color:rgba(255,255,255,.40); z-index:1; letter-spacing:.8px; }
+.card-logo svg{ width:28px; height:28px; fill:#fff; }
+.card-title{ font-size:23px; font-weight:300; letter-spacing:4px; color:var(--lc-ink); }
+.card-sub{ margin-top:6px; font-size:13px; color:var(--lc-ink-2); letter-spacing:1.5px; font-weight:300; }
 
-/* 右：毛玻璃登录卡片区 */
-.login-right{
-  flex:1; display:flex; align-items:center; justify-content:center; position:relative; z-index:1;
-  padding:28px;
-}
-.login-right::before{
-  content:""; position:absolute; inset:0;
-  background:radial-gradient(circle at 50% -8%, rgba(110,215,210,.09), transparent 58%);
-}
-
-/* 毛玻璃卡片（V2：提亮+精致边框+层次阴影） */
-.glass-card{
-  position:relative; width:400px;
-  background:linear-gradient(165deg, rgba(255,255,255,.115), rgba(255,255,255,.065));
-  backdrop-filter:blur(28px) saturate(1.8); -webkit-backdrop-filter:blur(28px) saturate(1.8);
-  border-radius:24px; padding:42px 38px 28px;
-  border:1px solid rgba(255,255,255,.185);
-  box-shadow:
-    0 28px 90px rgba(0,0,0,.22),
-    0 10px 38px rgba(0,0,0,.13),
-    0 2px 10px rgba(0,0,0,.08),
-    inset 0 1px 0 rgba(255,255,255,.16),
-    inset 0 -1px 0 rgba(0,0,0,.03);
-  animation:cardEntrance .75s cubic-bezier(.2,.8,.2,1) both;
-  overflow:hidden;
-}
-@keyframes cardEntrance{
-  from{ opacity:0; transform:scale(.96) translateY(18px); }
-  to{ opacity:1; transform:scale(1) translateY(0); }
-}
-
-/* 卡片顶部光带（更柔和） */
-.card-glow-bar{
-  position:absolute; top:0; left:18%; right:18%; height:2.5px;
-  background:linear-gradient(90deg, transparent, rgba(66,232,222,.55), rgba(120,198,255,.72), rgba(66,232,222,.55), transparent);
-  border-radius:3px;
-  animation:glowBarSlide 3.5s ease-in-out infinite;
-}
-@keyframes glowBarSlide{
-  0%,100%{ opacity:.45; left:28%; right:28%; }
-  50%{ opacity:1; left:12%; right:12%; }
-}
-
-/* 品牌标识（带光环·V2） */
-.login-badge-wrap{ text-align:center; margin-bottom:18px; }
-.login-badge{
-  width:66px; height:66px; margin:0 auto; border-radius:20px;
-  background:linear-gradient(148deg, rgba(18,210,198,.28), rgba(55,140,255,.22));
-  backdrop-filter:blur(10px); border:1px solid rgba(150,238,232,.28);
-  display:flex; align-items:center; justify-content:center; font-size:31px; color:#fff;
-  position:relative;
-  box-shadow:0 10px 36px rgba(18,210,198,.26), 0 3px 10px rgba(0,0,0,.08);
-}
-.badge-icon{ position:relative; z-index:1; filter:drop-shadow(0 2px 5px rgba(0,0,0,.18)); }
-.badge-ring{
-  position:absolute; inset:-5px; border-radius:24px;
-  border:1.5px solid rgba(66,232,222,.28);
-  animation:ringRotate 7s linear infinite;
-}
-@keyframes ringRotate{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
-
-.login-title{ text-align:center; font-size:25px; font-weight:800; letter-spacing:2.5px; color:#fff; margin-bottom:5px; }
-.login-sub{ text-align:center; color:rgba(255,255,255,.48); margin:0 0 30px; font-size:13px; letter-spacing:1.2px; }
-
-/* 表单组 */
-.field-group{ margin-bottom:22px; }
-.field-label{ display:block; margin-bottom:9px; color:rgba(255,255,255,.68); font-weight:600; font-size:13px; letter-spacing:.8px; }
-.field{ position:relative; margin-bottom:0; }
-.field-glass{ position:relative; }
+/* 表单 */
+.field{ margin-bottom:20px; }
+.field-label{ display:block; margin-bottom:8px; font-size:13px; font-weight:500; color:var(--lc-ink-2); letter-spacing:1px; }
+.field-control{ position:relative; }
 .field-ic{
-  position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:17px;
-  opacity:.48; pointer-events:none; transition:opacity .28s, transform .28s; z-index:2;
+  position:absolute; left:15px; top:50%; transform:translateY(-50%);
+  width:19px; height:19px; stroke:var(--lc-ink-3); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round;
+  pointer-events:none; transition:stroke .25s; z-index:2;
 }
-.field-line{
-  position:absolute; bottom:0; left:50%; width:0; height:2px;
-  background:linear-gradient(90deg, #42e8de, #78c6ff);
-  transition:width .38s cubic-bezier(.4,0,.2,1), left .38s cubic-bezier(.4,0,.2,1);
-  border-radius:1px;
+.input{
+  width:100%; height:50px; padding:0 44px; border:1.5px solid #E0D5C2; border-radius:14px;
+  background:rgba(255,255,255,.6); color:var(--lc-ink); font-size:14.5px; letter-spacing:.5px; outline:none;
+  transition:border-color .22s, box-shadow .22s, background .22s;
 }
+.input::placeholder{ color:#A99F8E; }
+.input:hover{ border-color:#CDB89C; background:rgba(255,255,255,.78); }
+.input:focus{ border-color:var(--lc-wood); background:#fff; box-shadow:0 0 0 4px rgba(183,155,124,.16); }
+.input:focus ~ .field-ic{ stroke:var(--lc-gold); }
+.field--pw .input{ padding-right:48px; }
 
-/* 毛玻璃输入框 V2（更高对比度 + 更清晰聚焦效果） */
-.input-glass{
-  width:100%; height:50px; padding:0 17px 0 46px; border:1.5px solid rgba(255,255,255,.16);
-  border-radius:14px; outline:none; transition:all .32s cubic-bezier(.4,0,.2,1);
-  background:rgba(255,255,255,.08); color:#fff; font-size:14.5px; letter-spacing:.6px;
-  box-shadow:inset 0 1px 4px rgba(0,0,0,.08);
+.pw-toggle{
+  position:absolute; right:9px; top:50%; transform:translateY(-50%);
+  width:30px; height:30px; border:none; background:transparent; cursor:pointer; border-radius:8px;
+  display:flex; align-items:center; justify-content:center; transition:background .2s; z-index:2;
 }
-.input-glass::placeholder{ color:rgba(255,255,255,.30); }
-.input-glass:hover{
-  border-color:rgba(150,238,232,.34); background:rgba(255,255,255,.11);
-  box-shadow:0 0 0 5px rgba(66,232,222,.07), inset 0 1px 4px rgba(0,0,0,.05);
-}
-.input-glass:focus{
-  border-color:rgba(66,232,222,.60); background:rgba(255,255,255,.125);
-  box-shadow:0 0 0 6px rgba(66,232,222,.12), 0 6px 24px rgba(18,210,198,.15);
-}
-.input-glass:focus ~ .field-line{ width:calc(100% - 3px); left:1.5px; }
-.input-glass:focus + .field-ic,
-.input-glass:focus ~ .field-ic{ opacity:.88; transform:translateY(-50%) scale(1.12); }
+.pw-toggle:hover{ background:rgba(183,155,124,.12); }
+.pw-toggle svg{ width:18px; height:18px; stroke:var(--lc-ink-3); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; transition:stroke .2s; }
+.pw-toggle:hover svg{ stroke:var(--lc-wood-d); }
+.pw-toggle .ic-eye-off{ display:none; }
+.pw-toggle.show .ic-eye{ display:none; }
+.pw-toggle.show .ic-eye-off{ display:block; }
 
-/* 安全标签 & 忘记密码 */
-.login-remember{
-  display:flex; justify-content:space-between; align-items:center; margin:6px 0 26px;
-  font-size:13px; color:rgba(255,255,255,.48);
-}
-.secure-tag{ display:inline-flex; align-items:center; gap:4px; }
-.login-remember .text-link{ font-weight:600; color:rgba(66,232,222,.70); transition:color .22s; }
-.login-remember .text-link:hover{ color:#42e8de; }
+.login-row{ display:flex; justify-content:space-between; align-items:center; margin:4px 0 26px; }
+.remember{ display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--lc-ink-2); cursor:pointer; user-select:none; font-weight:300; }
+.remember input{ width:16px; height:16px; accent-color:var(--lc-wood); cursor:pointer; }
+.login-card .text-link{ color:var(--lc-wood-d); font-size:13px; font-weight:500; transition:color .2s; }
+.login-card .text-link:hover{ color:var(--lc-gold); }
 
-/* 登录按钮 V2（更饱满的渐变 + 更强光效） */
+/* 登录按钮（暖木 → 香槟金渐变） */
 .btn-login{
-  position:relative; height:52px; font-size:16px; letter-spacing:5px; font-weight:700;
-  background:linear-gradient(135deg, #0eb8b2 0%, #2f86ff 48%, #0eb8b2 100%);
-  background-size:200% auto; border:none; border-radius:14px; color:#fff;
-  box-shadow:0 10px 32px rgba(14,184,178,.38), 0 3px 10px rgba(0,0,0,.08);
-  overflow:hidden; transition:all .32s cubic-bezier(.4,0,.2,1);
-  animation:btnGradient 4.5s linear infinite;
+  position:relative; width:100%; height:52px; border:none; border-radius:14px; cursor:pointer; overflow:hidden;
+  font-size:15px; font-weight:500; letter-spacing:8px; color:#fff;
+  background:linear-gradient(135deg, #8A6F52 0%, #9C8264 100%);
+  background-size:180% auto;
+  box-shadow:0 12px 28px rgba(138,111,82,.34), 0 4px 12px rgba(201,168,106,.16), inset 0 1px 0 rgba(201,168,106,.5);
+  transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, filter .25s;
+  animation:btnShift 7s ease-in-out infinite;
 }
-@keyframes btnGradient{ to{ background-position:200% center;} }
-.btn-login:hover{
-  transform:translateY(-2.5px); box-shadow:0 14px 42px rgba(14,184,178,.48), 0 5px 16px rgba(0,0,0,.08);
-  filter:brightness(1.06);
-}
-.btn-login:active{ transform:translateY(0) scale(.97); box-shadow:0 5px 20px rgba(14,184,178,.32); }
+@keyframes btnShift{ 0%,100%{ background-position:0% center; } 50%{ background-position:100% center; } }
+.btn-login:hover{ transform:translateY(-2px); filter:brightness(1.04); box-shadow:0 16px 38px rgba(156,130,100,.42), 0 6px 16px rgba(201,168,106,.22); }
+.btn-login:active{ transform:translateY(0) scale(.985); }
+.btn-login .btn-text{ position:relative; z-index:2; }
 .btn-shimmer{
-  position:absolute; top:0; left:-100%; width:55%; height:100%;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
-  animation:shimmerMove 3.2s ease-in-out infinite;
+  position:absolute; top:0; left:-60%; width:50%; height:100%; transform:skewX(-20deg);
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
+  animation:shimmerMove 3.4s ease-in-out infinite; z-index:1;
 }
-@keyframes shimmerMove{ to{ left:150%;} }
-.btn-login:hover .btn-shimmer{ animation-duration:1.4s; }
+@keyframes shimmerMove{ to{ left:140%; } }
+.btn-login:hover .btn-shimmer{ animation-duration:1.5s; }
 
-/* 按钮点击涟漪 */
+/* 按钮点击涟漪（暖白光） */
 .btn-ripple{
-  position:absolute; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.38), rgba(255,255,255,0));
+  position:absolute; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.42), rgba(255,255,255,0));
   transform:scale(0); animation:rippleOut .7s cubic-bezier(.4,0,.2,1) forwards; pointer-events:none; z-index:1;
 }
 @keyframes rippleOut{ to{ transform:scale(2.8); opacity:0; } }
 
-/* 卡片底部版权（替代廉价圆点） */
-.login-card-footer{
-  display:flex; align-items:center; justify-content:center; gap:14px;
-  margin-top:24px; padding-top:18px;
-  border-top:1px solid rgba(255,255,255,.07);
-}
-.footer-line{ flex:1; max-width:50px; height:1px; background:linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent); }
-.footer-text{ font-size:11px; color:rgba(255,255,255,.28); letter-spacing:1px; white-space:nowrap; }
+/* 卡片底部版权 */
+.card-foot{ display:flex; align-items:center; justify-content:center; gap:12px; margin-top:26px; padding-top:20px; border-top:1px solid rgba(120,95,60,.12); }
+.foot-line{ flex:1; max-width:60px; height:1px; background:linear-gradient(90deg, transparent, rgba(156,130,100,.32), transparent); }
+.foot-text{ font-size:11.5px; color:var(--lc-ink-3); letter-spacing:1.5px; white-space:nowrap; font-weight:300; }
 
-/* 窄屏适配 */
-@media(max-width:760px){
-  .login-left{ display:none; }
-  .login-right{ flex:1; padding:18px; }
-  .glass-card{ width:100%; max-width:380px; padding:34px 26px 24px; border-radius:20px; }
-  .login-hero{ font-size:34px; }
-  .login-orb{ display:none; }
-  .ripple{ display:none; }
+/* ---------- 响应式 ---------- */
+@media(max-width:920px){
+  .login-aside{ display:none; }
+  .login-main{ flex:1; padding:22px; }
+  .login-card{ max-width:380px; }
+}
+@media(max-width:480px){
+  .login-card{ padding:36px 24px 26px; border-radius:18px; }
+  .card-title{ font-size:21px; }
+  .aside-title{ font-size:34px; }
+}
+
+/* 尊重减少动效偏好 */
+@media(prefers-reduced-motion: reduce){
+  .login-view *{ animation:none !important; }
 }
 
 /* ===== 按钮 ===== */
