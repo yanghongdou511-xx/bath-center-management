@@ -1326,7 +1326,7 @@ function simulateQRPayment(method, total, member) {
   const btn = document.getElementById('modal-save');
   if (!btn) return;
 
-  // 步骤1: 扫��中
+  // 步骤1: 扫描中
   btn.disabled = true;
   btn.textContent = '扫码中...';
   if (lineEl) lineEl.style.display = 'none';
@@ -1754,11 +1754,13 @@ function renderEmployee(c) {
     <div class="page-head"><button class="btn btn-primary" onclick="addEmployee()">+ 新增员工</button></div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>工号</th><th>姓名</th><th>岗位</th><th>技师等级</th><th>提成</th><th>联系电话</th><th>状态</th></tr></thead>
+        <thead><tr><th>工号</th><th>姓名</th><th>岗位</th><th>部门</th><th>技师等级</th><th>提成</th><th>联系电话</th><th>入职日期</th><th>状态</th></tr></thead>
         <tbody>
           ${DB.employees.map(e => `
             <tr><td>${e.id}</td><td><b>${e.name}</b></td><td><span class="tag tag-purple">${e.role}</span></td>
+            <td><span class="tag" style="font-size:11px;background:#e8f4fd;color:#1565c0">${e.department || '—'}</span></td>
             <td>${e.techLevel === '-' ? '—' : e.techLevel}</td><td>${e.commission}</td><td>${e.phone}</td>
+            <td style="font-size:12px;color:#666">${e.hireDate || '—'}</td>
             <td><select class="emp-status-select" onchange="empStatusChange('${e.id}',this.value)">
               ${Object.entries(EMP_STATUS).map(([k,v]) => `<option value="${k}" ${e.status===k?'selected':''}>${v[1]}</option>`).join('')}
             </select></td></tr>`).join('')}
@@ -1787,13 +1789,34 @@ function addEmployee() {
           <option value="高级技师">高级技师</option>
           <option value="按摩技师">按摩技师</option>
           <option value="足疗技师">足疗技师</option>
+          <option value="美容美体师">美容美体师</option>
           <option value="前台主管">前台主管</option>
           <option value="收银员">收银员</option>
+          <option value="前台接待">前台接待</option>
           <option value="保洁员">保洁员</option>
-          <option value="保安">保安</option>
-          <option value="店长">店长</option>
+          <option value="保安/安保员">保安/安保员</option>
+          <option value="会计">会计</option>
+          <option value="人事专员">人事专员</option>
+          <option value="餐饮厨师">餐饮厨师</option>
+          <option value="餐厅服务员">餐厅服务员</option>
+          <option value="设备维修">设备维修</option>
+          <option value="门店经理">门店经理</option>
         </select>
       </div>
+      <div class="form-item" style="flex:1"><label>部门</label>
+        <select class="select" id="emp-dept">
+          <option value="技师部">技师部</option>
+          <option value="前厅部">前厅部</option>
+          <option value="后勤部">后勤部</option>
+          <option value="财务部">财务部</option>
+          <option value="人事部">人事部</option>
+          <option value="安保部">安保部</option>
+          <option value="餐饮部">餐饮部</option>
+          <option value="管理层">管理层</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px">
       <div class="form-item" style="flex:1"><label>技师等级</label>
         <select class="select" id="emp-level">
           <option value="—">—（非技师）</option>
@@ -1836,11 +1859,12 @@ function addEmployee() {
       id: code,
       name: name,
       role: $('emp-role').value,
+      department: $('emp-dept').value,
       techLevel: $('emp-level').value,
       commission: $('emp-commission').value || '10%',
       phone: phone || '—',
       status: $('emp-status').value,
-      joinDate: $('emp-joindate').value,
+      hireDate: $('emp-joindate').value,
       note: $('emp-note').value.trim()
     });
     toast('员工添加成功：' + name + '（工号：' + code + '）');
@@ -2500,7 +2524,7 @@ function renderTechnician(c) {
               '<div class="tech-name">' + t.name + '</div>' +
               '<div class="tech-tag-inline">' +
                 genderTag(t.gender) +
-                '<span class="tag ' + (t.busy ? 'tag-orange' : 'tag-green') + '" style="font-size:11px">' + (t.busy ? '服务中' : '��闲') + '</span>' +
+                '<span class="tag ' + (t.busy ? 'tag-orange' : 'tag-green') + '" style="font-size:11px">' + (t.busy ? '服务中' : '空闲') + '</span>' +
               '</div>' +
             '</div>' +
             '<div class="tech-emp-no">工号：' + t.empNo + (t.store ? ' · ' + t.store : '') + '</div>' +
@@ -2877,7 +2901,7 @@ function renderTask(c) {
 
   c.innerHTML =
     '<div class="page-head">' +
-    '<button class="btn btn-primary" onclick="toast(\'演示环境：新增任务功能已预留\')">+ 新增任���</button></div>' +
+    '<button class="btn btn-primary" onclick="toast(\'演示环境：新增任务功能已预留\')">+ 新增任务</button></div>' +
 
     '<div class="att-stats">' +
       '<div class="att-stat-card"><div class="att-stat-num">' + total + '</div><div class="att-stat-label">全部任务</div></div>' +

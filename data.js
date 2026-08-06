@@ -89,12 +89,21 @@ const DB = {
   inventoryLog: [],
 
   employees: [
-    { id: 'E4001', name: '李师傅', role: '高级技师', techLevel: '特级', phone: '151****2233', commission: '15%', status: 'on' },
-    { id: 'E4002', name: '王师傅', role: '按摩技师', techLevel: '高级', phone: '152****8899', commission: '12%', status: 'on' },
-    { id: 'E4003', name: '赵主管', role: '前台主管', techLevel: '-', phone: '153****1100', commission: '固定', status: 'on' },
-    { id: 'E4004', name: '钱收银', role: '收银员', techLevel: '-', phone: '154****4455', commission: '固定', status: 'on' },
-    { id: 'E4005', name: '孙技师', role: '足疗技师', techLevel: '中级', phone: '155****6677', commission: '10%', status: 'off' },
-    { id: 'E4006', name: '周保洁', role: '保洁员', techLevel: '-', phone: '156****7788', commission: '固定', status: 'on' },
+    { id: 'E4001', name: '李师傅', role: '高级技师', techLevel: '特级', phone: '151****2233', commission: '15%', status: 'on', department: '技师部', hireDate: '2024-03-15' },
+    { id: 'E4002', name: '王师傅', role: '按摩技师', techLevel: '高级', phone: '152****8899', commission: '12%', status: 'on', department: '技师部', hireDate: '2024-06-20' },
+    { id: 'E4003', name: '赵主管', role: '前台主管', techLevel: '-', phone: '153****1100', commission: '固定', status: 'on', department: '前厅部', hireDate: '2023-11-08' },
+    { id: 'E4004', name: '钱收银', role: '收银员', techLevel: '-', phone: '154****4455', commission: '固定', status: 'on', department: '前厅部', hireDate: '2025-01-10' },
+    { id: 'E4005', name: '孙技师', role: '足疗技师', techLevel: '中级', phone: '155****6677', commission: '10%', status: 'off', department: '技师部', hireDate: '2025-04-22' },
+    { id: 'E4006', name: '周保洁', role: '保洁员', techLevel: '-', phone: '156****7788', commission: '固定', status: 'on', department: '后勤部', hireDate: '2025-02-14' },
+    { id: 'E4007', name: '吴财务', role: '会计', techLevel: '-', phone: '157****3321', commission: '固定', status: 'on', department: '财务部', hireDate: '2023-08-01' },
+    { id: 'E4008', name: '郑人事', role: '人事专员', techLevel: '-', phone: '158****5567', commission: '固定', status: 'on', department: '人事部', hireDate: '2024-09-18' },
+    { id: 'E4009', name: '冯保安', role: '安保员', techLevel: '-', phone: '159****8890', commission: '固定', status: 'on', department: '安保部', hireDate: '2025-03-05' },
+    { id: 'E4010', name: '陈厨师', role: '餐饮厨师', techLevel: '-', phone: '136****1234', commission: '固定', status: 'on', department: '餐饮部', hireDate: '2024-12-01' },
+    { id: 'E4011', name: '褚服务员', role: '餐厅服务员', techLevel: '-', phone: '137****5678', commission: '固定', status: 'off', department: '餐饮部', hireDate: '2025-05-20' },
+    { id: 'E4012', name: '韩维修', role: '设备维修', techLevel: '-', phone: '138****9012', commission: '固定', status: 'on', department: '后勤部', hireDate: '2024-07-11' },
+    { id: 'E4013', name: '杨店长', role: '门店经理', techLevel: '-', phone: '139****3456', commission: '固定', status: 'on', department: '管理层', hireDate: '2023-03-01' },
+    { id: 'E4014', name: '朱美容师', role: '美容美体师', techLevel: '高级', phone: '135****7890', commission: '14%', status: 'on', department: '技师部', hireDate: '2024-10-08' },
+    { id: 'E4015', name: '许前台', role: '前台接待', techLevel: '-', phone: '134****2345', commission: '固定', status: 'on', department: '前厅部', hireDate: '2025-06-15' },
   ],
 
   // 今日营收趋势（小时）
@@ -241,7 +250,7 @@ const DB = {
       avatar: '👩‍🦰', category: '足疗技师', specialties: ['中药足疗', '肩颈深度放松', '头部舒缓', '淋巴排毒'],
       experience: 6, rating: 4.8, reviewCount: 256, serviceCount: 3520,
       status: 'on', busy: false,
-      bio: '专业足疗技师，持有高级康复理疗师资格证。精通���底反射区理论与按摩手法，擅长通过中药足浴配合肩颈头部放松调理亚健康状态。中药足浴配方独家调配，对手脚冰凉、湿气重、疲劳乏力效果显著。服务耐心细致，深受女性顾客喜爱。',
+      bio: '专业足疗技师，持有高级康复理疗师资格证。精通足底反射区理论与按摩手法，擅长通过中药足浴配合肩颈头部放松调理亚健康状态。中药足浴配方独家调配，对手脚冰凉、湿气重、疲劳乏力效果显著。服务耐心细致，深受女性顾客喜爱。',
       tags: ['足疗专家', '养生调理'],
       schedule: '早班 09:00-17:00', phone: '159****4456', cert: '国家高级足部按摩师资格证', store: '旗舰店', today: 4
     },
