@@ -500,7 +500,11 @@ function renderCashier(c) {
             <label>指定技师</label>
             <select class="select select-sm" id="cash-tech" onchange="assignedTech=this.value">
               <option value="">不限/自选</option>
-              ${DB.employees.filter(e => e.status === 'on' && e.role.includes('技师')).map(e => `<option value="${e.name}" ${assignedTech === e.name ? 'selected' : ''}>${e.name}（${e.techLevel}/${e.commission}提成）</option>`).join('')}
+              ${(DB.technicians || []).filter(t => t.status === 'on').map(t => {
+                var starIcon = t.rating >= 4.8 ? '⭐' : t.rating >= 4.5 ? '🌟' : '✨';
+                var busyTag = t.busy ? ' [服务中]' : '';
+                return `<option value="${t.name}" ${assignedTech === t.name ? 'selected' : ''}>${t.name}（${t.category}/${starIcon}${t.rating}${busyTag}）</option>`;
+              }).join('')}
             </select>
           </div>
           <div class="assign-row">
@@ -1860,7 +1864,7 @@ function renderTechnician(c) {
   c.innerHTML =
     // 页头
     '<div class="page-head"><h2>💆 技师专区</h2>' +
-    '<button class="btn btn-primary" onclick="toast(\'演示环境：新增技师已预留\')">+ 新增技师</button></div>' +
+    '<button class="btn btn-primary" onclick="addTechnician()">+ 新增技师</button></div>' +
 
     // 统计卡片
     '<div class="att-stats">' +
@@ -2024,6 +2028,118 @@ function showTechnicianDetail(tid) {
       '</div>' +
     '</div>';
   document.body.appendChild(mask);
+}
+
+// ===== 新增技师 =====
+function addTechnician() {
+  var newId = 'T' + String(1000 + DB.technicians.length + 1).padStart(4, '0');
+  var newEmpNo = 'E' + String(4000 + DB.technicians.length + 13).padStart(4, '0');
+  openModal('新增技师', `
+    <div style="display:flex;gap:12px">
+      <div class="form-item" style="flex:1"><label>姓名 <span class="required">*</span></label><input class="input" id="nt-name" placeholder="技师姓名" /></div>
+      <div class="form-item" style="flex:1"><label>性别</label>
+        <select class="select" id="nt-gender">
+          <option value="女">女</option>
+          <option value="男">男</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <div class="form-item" style="flex:1"><label>工号</label><input class="input" id="nt-empno" value="${newEmpNo}" readonly style="background:#f5f7fa;color:#999" /></div>
+      <div class="form-item" style="flex:1"><label>分类</label>
+        <select class="select" id="nt-category">
+          <option value="SPA技师">SPA技师</option>
+          <option value="足疗技师">足疗技师</option>
+          <option value="按摩技师">按摩技师</option>
+          <option value="中医推拿师">中医推拿师</option>
+          <option value="美容美体师">美容美体师</option>
+          <option value="全能技师">全能技师</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <div class="form-item" style="flex:1"><label>从业年限</label><input class="input" id="nt-exp" type="number" placeholder="如 5" value="3" min="1" max="30" /></div>
+      <div class="form-item" style="flex:1"><label>初始评分</label>
+        <select class="select" id="nt-rating">
+          <option value="4.9">4.9 ⭐⭐⭐⭐⭐</option>
+          <option value="4.8">4.8 ⭐⭐⭐⭐☆</option>
+          <option value="4.7" selected>4.7 ⭐⭐⭐⭐☆</option>
+          <option value="4.6">4.6 ⭐⭐⭐☆☆</option>
+          <option value="4.5">4.5 ⭐⭐⭐☆☆</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-item"><label>擅长项目（多选，按住Ctrl）</label>
+      <select class="select" id="nt-specs" multiple size="4" style="height:auto;min-height:80px">
+        <option value="精油SPA">精油SPA</option>
+        <option value="泰式按摩">泰式按摩</option>
+        <option value="中药足疗">中药足疗</option>
+        <option value="中式推拿">中式推拿</option>
+        <option value="面部护理">面部护理</option>
+        <option value="淋巴排毒">淋巴排毒</option>
+        <option value="刮痧拔罐">刮痧拔罐</option>
+        <option value="艾灸养生">艾灸养生</option>
+        <option value="热石疗法">热石疗法</option>
+        <option value="产后修复">产后修复</option>
+        <option value="身体塑形">身体塑形</option>
+        <option value="全身经络疏通">全身经络疏通</option>
+      </select>
+    </div>
+    <div class="form-item"><label>联系电话</label><input class="input" id="nt-phone" placeholder="11位手机号" /></div>
+    <div class="form-item"><label>个人简介</label><textarea class="input" id="nt-bio" rows="3" placeholder="简要介绍技师的从业背景、擅长领域、服务特色等..."></textarea></div>
+    <div style="display:flex;gap:12px">
+      <div class="form-item" style="flex:1"><label>状态</label>
+        <select class="select" id="nt-status">
+          <option value="on" selected>在岗</option>
+          <option value="off">离岗/休假</option>
+        </select>
+      </div>
+      <div class="form-item" style="flex:1"><label>头像图标</label>
+        <select class="select" id="nt-avatar">
+          <option value="👩‍💼">👩‍💼 女职业</option>
+          <option value="👩‍🦰">👩‍🦰 女红发</option>
+          <option value="👩‍🦱">👩‍🦱 女金发</option>
+          <option value="👩">👩 女</option>
+          <option value="👩‍🦳">👩‍🦳 女银发</option>
+          <option value="👨‍💼">👨‍💼 男职业</option>
+          <option value="👨">👨 男</option>
+          <option value="👨‍🦱">👨‍🦱 男金发</option>
+          <option value="👨‍🦰">👨‍🦰 男红发</option>
+        </select>
+      </div>
+    </div>
+  `, function() {
+    var name = $('nt-name').value.trim();
+    if (!name) return toast('请输入技师姓名');
+    // 收集多选擅长项目
+    var sel = $('nt-specs');
+    var specs = [];
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].selected) specs.push(sel.options[i].value);
+    }
+    if (specs.length === 0) specs = ['待定'];
+
+    DB.technicians.push({
+      id: newId,
+      name: name,
+      gender: $('nt-gender').value,
+      empNo: $('nt-empno').value || newEmpNo,
+      avatar: $('nt-avatar').value,
+      category: $('nt-category').value,
+      specialties: specs,
+      experience: parseInt($('nt-exp').value) || 3,
+      rating: parseFloat($('nt-rating').value) || 4.5,
+      reviewCount: 0,
+      serviceCount: 0,
+      status: $('nt-status').value,
+      busy: false,
+      phone: $('nt-phone').value.trim() || '—',
+      bio: $('nt-bio').value.trim() || name + '，' + $('nt-category').value + '，从业' + ($('nt-exp').value || 3) + '年，欢迎到店体验。',
+      tags: ['新入职']
+    });
+    toast('技师添加成功：' + name + '（工号：' + newEmpNo + '）');
+    renderTechnician($('content'));
+  }, '确认添加');
 }
 
 // ===== 任务管理 =====
