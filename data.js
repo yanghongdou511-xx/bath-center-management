@@ -158,6 +158,118 @@ const DB = {
     { id: 'R05', member: '孙丽', rating: 5, content: '汗蒸区很舒服，服务态度也好。', time: '2026-08-01 18:50', type: '好评', status: '' },
   ],
 
+  // 技师专区（详尽资料）
+  technicians: [
+    {
+      id: 'T1001', name: '林婉清', gender: '女', empNo: 'E4001',
+      avatar: '👩‍💼', category: 'SPA技师', specialties: ['精油SPA', '泰式按摩', '面部护理', '淋巴排毒'],
+      experience: 8, rating: 4.9, reviewCount: 328, serviceCount: 4860,
+      status: 'on', busy: false,
+      bio: '国家高级美容师认证，曾赴泰国清迈进修泰式古法按摩。擅长精油开背与面部深层护理，手法细腻力度适中，尤其对肩颈酸痛和失眠调理有独到心得。累计服务超过4800位顾客，零投诉记录。性格温和，善于倾听顾客需求，是店内的金牌技师之一。',
+      tags: ['金牌技师', '五星好评', '人气TOP3'],
+      schedule: '早班 09:00-17:00', phone: '158****3321'
+    },
+    {
+      id: 'T1002', name: '苏雨晴', gender: '女', empNo: 'E4002',
+      avatar: '👩‍🦰', category: '足疗技师', specialties: ['中药足疗', '经络疏通', '艾灸养生', '刮痧拔罐'],
+      experience: 6, rating: 4.8, reviewCount: 256, serviceCount: 3520,
+      status: 'on', busy: false,
+      bio: '中医推拿专业毕业，持有中医康复理疗师资格证。精通十二经络走向，擅长通过足底反射区调理亚健康状态。中药足浴配方独家调配，对手脚冰凉、湿气重、疲劳乏力效果显著。服务耐心细致，深受女性顾客喜爱。',
+      tags: ['中医理疗', '养生专家'],
+      schedule: '早班 09:00-17:00', phone: '159****4456'
+    },
+    {
+      id: 'T1003', name: '陈思琪', gender: '女', empNo: 'E4003',
+      avatar: '👩‍🦱', category: '按摩技师', specialties: ['泰式按摩', '中式推拿', '热石疗法', '头部舒缓'],
+      experience: 5, rating: 4.7, reviewCount: 198, serviceCount: 2890,
+      status: 'on', busy: true,
+      bio: '毕业于成都中医药大学针灸推拿系，曾在五星级酒店SPA任职三年。手法刚柔并济，力道渗透力强。特别擅长泰式拉伸和热石能量疗法，对运动后肌肉恢复和办公室综合症（颈椎病、腰肌劳损）有丰富经验。',
+      tags: ['新锐技师', '运动恢复'],
+      schedule: '中班 12:00-20:00', phone: '137****7788'
+    },
+    {
+      id: 'T1004', name: '王雅婷', gender: '女', empNo: 'E4004',
+      avatar: '👩‍🦳', category: 'SPA技师', specialties: ['精油SPA', '玫瑰花瓣浴', '海藻面膜护理', '全身磨砂'],
+      experience: 7, rating: 4.9, reviewCount: 412, serviceCount: 5230,
+      status: 'on', busy: false,
+      bio: '资深芳疗师，国际芳香治疗师协会(IFA)会员。精研植物精油配伍，根据每位顾客的体质和情绪定制专属精油方案。玫瑰花瓣浴和海藻护理是其招牌项目，多次获得店内"月度服务之星"。注重服务细节，从音乐到香氛都精心搭配。',
+      tags: ['芳疗师', '月度之星', 'VIP专属'],
+      schedule: '晚班 16:00-24:00', phone: '136****9900'
+    },
+    {
+      id: 'T1005', name: '李明轩', gender: '男', empNo: 'E4005',
+      avatar: '👨‍💼', category: '按摩技师', specialties: ['中式推拿', '正骨复位', '运动损伤修复', '深度指压'],
+      experience: 12, rating: 4.8, reviewCount: 386, serviceCount: 6800,
+      status: 'on', busy: false,
+      bio: '中医世家第三代传人，自幼习武练功，后系统学习中医正骨。手法沉稳有力，尤其擅长腰椎间盘突出、颈椎病的保守治疗调理。许多老顾客专程预约其正骨服务。为人稳重可靠，是店内从业年限最长的技师之一。',
+      tags: ['中医世家', '正骨专家', '元老技师'],
+      schedule: '早班 09:00-17:00', phone: '151****2233'
+    },
+    {
+      id: 'T1006', name: '赵晓雯', gender: '女', empNo: 'E4006',
+      avatar: '👩', category: '足疗技师', specialties: ['中药足疗', '足底反射疗法', '腿部塑形按摩', '泡脚药膳'],
+      experience: 4, rating: 4.6, reviewCount: 145, serviceCount: 2100,
+      status: 'on', busy: false,
+      bio: '毕业于河北中医学院康复治疗专业，年轻有活力。擅长结合现代解剖学与中医反射理论进行足疗服务。自创腿部塑形按摩手法，对水肿腿、静脉曲张预防效果良好。态度热情开朗，与年轻顾客沟通融洽。',
+      tags: ['新生代', '活力满满'],
+      schedule: '中班 12:00-20:00', phone: '152****8899'
+    },
+    {
+      id: 'T1007', name: '张浩然', gender: '男', empNo: 'E4007',
+      avatar: '👨', category: '按摩技师', specialties: ['泰式按摩', '武术点穴', '拔罐刮痧', '背部整脊'],
+      experience: 9, rating: 4.7, reviewCount: 267, serviceCount: 4100,
+      status: 'on', busy: true,
+      bio: '河南少林寺俗家弟子出身，习武15年。将传统武术点穴融入按摩技法中，形成独特的"功夫按摩"风格。力道强劲但收放自如，适合喜欢大力按压的男性顾客。性格豪爽幽默，服务过程中常与顾客畅聊解压。',
+      tags: ['功夫按摩', '大力士'],
+      schedule: '晚班 16:00-24:00', phone: '153****1100'
+    },
+    {
+      id: 'T1008', name: '刘诗涵', gender: '女', empNo: 'E4008',
+      avatar: '👩‍🦰', category: '中医推拿师', specialties: ['脏腑推拿', '��儿推拿', '产后修复', '腹部调理'],
+      experience: 10, rating: 4.9, reviewCount: 502, serviceCount: 7200,
+      status: 'on', busy: false,
+      bio: '北京中医药大学硕士，主修针灸推拿学专业。专注内科杂症的推拿调理，尤其擅长脾胃调理、痛经缓解和产后骨盆修复。小儿推拿方面经验丰富，是很多宝妈顾客的首选。治学严谨，每次服务前都会详细问诊辨证施术。',
+      tags: ['医学硕士', '产后修复', '小儿推拿'],
+      schedule: '早班 09:00-17:00', phone: '154****4455'
+    },
+    {
+      id: 'T1009', name: '周子墨', gender: '男', empNo: 'E4009',
+      avatar: '👨‍🦱', category: 'SPA技师', specialties: ['男士专属SPA', '商务减压套餐', '头皮养护', '眼部舒缓'],
+      experience: 3, rating: 4.5, reviewCount: 89, serviceCount: 1380,
+      status: 'off', busy: false,
+      bio: '新晋技师，曾在知名连锁SPA品牌接受系统培训。专注于男士护肤与减压领域，商务减压套餐融合了头皮养护、眼部热敷和肩颈放松，专为职场精英设计。学习能力强，正在进修高级芳疗课程。',
+      tags: ['新晋技师', '男士专属'],
+      schedule: '休假中', phone: '155****6677'
+    },
+    {
+      id: 'T1010', name: '吴佳倪', gender: '女', empNo: 'E4010',
+      avatar: '👩‍🦱', category: '美容美体师', specialties: ['面部抗衰', '身体塑形', '乳腺疏通', '卵巢保养'],
+      experience: 6, rating: 4.8, reviewCount: 301, serviceCount: 3950,
+      status: 'on', busy: false,
+      bio: '韩国首尔美容大学交换生经历，将韩式皮肤管理与中式养生理念相结合。面部抗衰采用进口仪器配合手工按摩，效果显著。身体塑形项目帮助众多产后妈妈恢复身材曲线。温柔细致的服务风格备受女性顾客推崇。',
+      tags: ['韩式美学', '产后恢复'],
+      schedule: '中班 12:00-20:00', phone: '156****7788'
+    },
+    {
+      id: 'T1011', name: '郑凯文', gender: '男', empNo: 'E4011',
+      avatar: '👨‍🦰', category: '按摩技师', specialties: ['日式指压', '禅意头疗', '肩颈深度放松', '睡眠调理'],
+      experience: 5, rating: 4.6, reviewCount: 178, serviceCount: 2680,
+      status: 'on', busy: false,
+      bio: '曾赴日本东京进修日式指压（Shiatsu）两年，取得日本指压师资格认证。手法以指尖按压为主，节奏缓慢而有韵律感，特别适合压力大的都市人群。禅意头疗项目结合了穴位刺激与冥想引导，对改善失眠焦虑效果显著。',
+      tags: ['日式指压', '海归背景'],
+      schedule: '晚班 16:00-24:00', phone: '157****8899'
+    },
+    {
+      id: 'T1012', name: '孙悦心', gender: '女', empNo: 'E4012',
+      avatar: '👩‍🦳', category: '全能技师', specialties: ['精油SPA', '泰式按摩', '中药足疗', '全身经络疏通'],
+      experience: 11, rating: 4.9, reviewCount: 567, serviceCount: 8100,
+      status: 'on', busy: true,
+      bio: '店内从业年限最长的女技师，全能型选手。精通所有门店服务项目，尤其擅长为首次到店的顾客提供个性化推荐方案。多次被评为年度优秀员工，带教过8名新人技师。服务全面周到，从进门接待到离店关怀都让人倍感舒适。是很多老顾客的指定首选。',
+      tags: ['全能技师', '年度优秀', '带教导师'],
+      schedule: '早班 09:00-17:00', phone: '158****0012'
+    }
+  ],
+
   // 会员卡套餐
   packages: [
     { id: 'PK1', name: '储值1000送200', type: '储值卡', price: 1000, gift: 200, points: 1200, tag: '热销', desc: '等价1200元，享会员专属折扣' },

@@ -40,7 +40,7 @@ $('logout-btn').addEventListener('click', () => {
 });
 
 // ===== 菜单切换 =====
-const TITLES = { dashboard: '数据概览', member: '会员管理', service: '服务项目', cashier: '前台收银', room: '房间管理', inventory: '库存管理', employee: '员工管理', reservation: '预约管理', marketing: '营销活动', locker: '寄存管理', attendance: '考勤排班', review: '客诉评价', package: '会员卡套餐', report: '数据报表', store: '门店设置' };
+const TITLES = { dashboard: '数据概览', member: '会员管理', service: '服务项目', cashier: '前台收银', room: '房间管理', inventory: '库存管理', employee: '员工管理', technician: '技师区', reservation: '预约管理', marketing: '营销活动', locker: '寄存管理', attendance: '考勤排班', review: '客诉评价', package: '会员卡套餐', report: '数据报表', store: '门店设置' };
 $('menu').addEventListener('click', (e) => {
   const item = e.target.closest('.menu-item');
   if (!item) return;
@@ -53,7 +53,7 @@ $('menu').addEventListener('click', (e) => {
 function render(page) {
   $('page-title').textContent = TITLES[page] || '';
   const c = $('content');
-  const fns = { dashboard: renderDashboard, member: renderMember, service: renderService, cashier: renderCashier, room: renderRoom, inventory: renderInventory, employee: renderEmployee, reservation: renderReservation, marketing: renderMarketing, locker: renderLocker, attendance: renderAttendance, review: renderReview, package: renderPackage, report: renderReport, store: renderStore };
+  const fns = { dashboard: renderDashboard, member: renderMember, service: renderService, cashier: renderCashier, room: renderRoom, inventory: renderInventory, employee: renderEmployee, technician: renderTechnician, reservation: renderReservation, marketing: renderMarketing, locker: renderLocker, attendance: renderAttendance, review: renderReview, package: renderPackage, report: renderReport, store: renderStore };
   (fns[page] || renderDashboard)(c);
 }
 
@@ -1537,4 +1537,223 @@ function sellPackage(id) {
     toast('套餐售卖成功：' + m.name + ' 到账 ' + fmtMoney(p.price + p.gift));
     renderPackage($('content'));
   });
+}
+
+// ===== 技师区 =====
+let techCategory = '';
+let techKeyword = '';
+let techStatusFilter = '';
+
+const TECH_CATEGORIES = ['全部', 'SPA技师', '足疗技师', '按摩技师', '中医推拿师', '美容美体师', '全能技师'];
+
+function starRating(score) {
+  const full = Math.floor(score);
+  const half = score % 1 >= 0.5;
+  const empty = 5 - full - (half ? 1 : 0);
+  return '<span class="tech-stars">' +
+    '★'.repeat(full) + (half ? '☆' : '') + '☆'.repeat(empty) +
+    '</span> <span class="tech-score">' + score.toFixed(1) + '</span>';
+}
+
+function genderTag(gender) {
+  return gender === '女'
+    ? '<span class="tag tag-blue" style="font-size:11px">♀ 女</span>'
+    : '<span class="tag tag-teal" style="font-size:11px">♂ 男</span>';
+}
+
+function renderTechnician(c) {
+  // 筛选逻辑
+  let list = DB.technicians.filter(t => t.status !== 'off');
+  if (techCategory && techCategory !== '全部') {
+    list = list.filter(t => t.category === techCategory);
+  }
+  if (techKeyword) {
+    const kw = techKeyword.toLowerCase();
+    list = list.filter(t =>
+      t.name.toLowerCase().includes(kw) ||
+      t.empNo.toLowerCase().includes(kw) ||
+      t.category.includes(kw) ||
+      t.specialties.some(s => s.includes(kw))
+    );
+  }
+  if (techStatusFilter === 'busy') {
+    list = list.filter(t => t.busy);
+  } else if (techStatusFilter === 'free') {
+    list = list.filter(t => !t.busy);
+  }
+
+  // 统计
+  const totalCount = DB.technicians.length;
+  const onCount = DB.technicians.filter(t => t.status === 'on').length;
+  const femaleCount = DB.technicians.filter(t => t.gender === '女' && t.status === 'on').length;
+  const busyCount = DB.technicians.filter(t => t.busy).length;
+  const avgRating = (DB.technicians.reduce((s, t) => s + t.rating, 0) / DB.technicians.length).toFixed(1);
+
+  c.innerHTML =
+    // 页头
+    '<div class="page-head"><h2>💆 技师专区</h2>' +
+    '<button class="btn btn-primary" onclick="toast(\'演示环境：新增技师已预留\')">+ 新增技师</button></div>' +
+
+    // 统计卡片
+    '<div class="att-stats">' +
+      '<div class="att-stat-card"><div class="att-stat-num">' + totalCount + '</div><div class="att-stat-label">总人数</div></div>' +
+      '<div class="att-stat-num att-stat-green">' + onCount + '</div><div class="att-stat-label">在岗</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-num att-stat-blue">' + femaleCount + '</div><div class="att-stat-label">女技师</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-num' + (busyCount > 0 ? ' att-stat-orange' : '') + '">' + busyCount + '</div><div class="att-stat-label">服务中</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-num">⭐ ' + avgRating + '</div><div class="att-stat-label">平均评分</div></div>' +
+    '</div>' +
+
+    // 筛选栏
+    '<div class="filter-bar" style="align-items:center">' +
+      '<input class="search-input" placeholder="🔍 搜索技师姓名/工号/擅长项目..." value="' + esc(techKeyword) + '" oninput="techKeyword=this.value;renderTechnician($(\'content\'))" />' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto">' +
+        TECH_CATEGORIES.map(cat =>
+          '<button class="btn btn-sm ' + (techCategory === cat || (!techCategory && cat === '全部') ? 'btn-primary' : '') + '" onclick="techCategory=\'' + cat + '\';renderTechnician($(\'content\'))">' + cat + '</button>'
+        ).join('') +
+      '</div>' +
+    '</div>' +
+    '<div class="filter-bar" style="margin-top:-10px;padding-top:4px">' +
+      '<label class="muted" style="font-size:13px;white-space:nowrap">状态：</label>' +
+      '<button class="btn btn-sm ' + (!techStatusFilter ? 'btn-primary' : '') + '" onclick="techStatusFilter=\'\';renderTechnician($(\'content\'))">全部</button>' +
+      '<button class="btn btn-sm ' + (techStatusFilter === 'free' ? 'btn-primary' : '') + '" onclick="techStatusFilter=\'free\';renderTechnician($(\'content\'))">空闲</button>' +
+      '<button class="btn btn-sm ' + (techStatusFilter === 'busy' ? 'btn-primary' : '') + '" onclick="techStatusFilter=\'busy\';renderTechnician($(\'content\'))">服务中</button>' +
+      '<span class="muted" style="margin-left:auto">共 <b>' + list.length + '</b> 位技师</span>' +
+    '</div>' +
+
+    // 技师卡片网格
+    '<div class="tech-grid">' +
+      list.map(function(t) {
+        return '<div class="tech-card" onclick="showTechnicianDetail(\'' + t.id + '\')">' +
+          // 头部：头像+姓名+状态
+          '<div class="tech-card-head">' +
+            '<div class="tech-avatar">' + t.avatar + '</div>' +
+            '<div class="tech-name-row">' +
+              '<div class="tech-name">' + t.name + '</div>' +
+              genderTag(t.gender) +
+              '<span class="tag ' + (t.busy ? 'tag-orange' : 'tag-green') + '" style="font-size:11px;margin-left:4px">' + (t.busy ? '服务中' : '空闲') + '</span>' +
+            '</div>' +
+            '<div class="tech-emp-no">工号：' + t.empNo + '</div>' +
+          '</div>' +
+
+          // 分类与评分
+          '<div class="tech-meta-row">' +
+            '<span class="tag tag-purple" style="font-size:11px">' + t.category + '</span>' +
+            '<span class="tech-rating-inline">' + starRating(t.rating) + '</span>' +
+          '</div>' +
+
+          // 擅长项目标签
+          '<div class="tech-specialties">' +
+            t.specialties.slice(0, 3).map(function(s) {
+              return '<span class="tech-skill-tag">' + s + '</span>';
+            }).join('') +
+            (t.specialties.length > 3 ? '<span class="tech-skill-tag tech-more">+' + (t.specialties.length - 3) + '</span>' : '') +
+          '</div>' +
+
+          // 从业年限与服务次数
+          '<div class="tech-stats-row">' +
+            '<div class="tech-stat-item"><span class="tech-stat-val">' + t.experience + '年</span><span class="tech-stat-lbl">从业</span></div>' +
+            '<div class="tech-stat-item"><span class="tech-stat-val">' + t.serviceCount.toLocaleString() + '</span><span class="tech-stat-lbl">服务</span></div>' +
+            '<div class="tech-stat-item"><span class="tech-stat-val">' + t.reviewCount + '</span><span class="tech-stat-lbl">评价</span></div>' +
+          '</div>' +
+
+          // 荣誉标签
+          '<div class="tech-tags-row">' +
+            t.tags.map(function(tag) {
+              return '<span class="tech-honor-tag">' + tag + '</span>';
+            }).join('') +
+          '</div>' +
+
+          // 班次信息
+          '<div class="tech-schedule-row">🕐 ' + t.schedule + '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>' +
+
+    (list.length === 0 ?
+      '<div class="empty" style="grid-column:1/-1"><div style="font-size:40px;margin-bottom:10px">💆</div>没有匹配的技师<br><span class="muted">请尝试调整筛选条件</span></div>'
+      : '');
+}
+
+// ---- 技师详情弹窗 ----
+function showTechnicianDetail(tid) {
+  var t = DB.technicians.find(function(x) { return x.id === tid; });
+  if (!t) return;
+
+  var mask = document.createElement('div');
+  mask.className = 'modal-mask';
+  mask.innerHTML =
+    '<div class="modal tech-detail-modal">' +
+      '<div class="modal-head">' +
+        '<span>💆 技师详情 - ' + t.name + '</span>' +
+        '<span class="close-x" onclick="this.closest(\'.modal-mask\').remove()">×</span>' +
+      '</div>' +
+      '<div class="modal-body tech-detail-body">' +
+        // 顶部基本信息
+        '<div class="tech-detail-header">' +
+          '<div class="tech-detail-avatar">' + t.avatar + '</div>' +
+          '<div class="tech-detail-info">' +
+            '<div class="tech-detail-name-row">' +
+              '<h3 style="font-size:20px;font-weight:800;margin:0">' + t.name + '</h3>' +
+              genderTag(t.gender) +
+              '<span class="tag ' + (t.busy ? 'tag-orange' : 'tag-green') + '">' + (t.busy ? '服务中' : '空闲') + '</span>' +
+            '</div>' +
+            '<div class="tech-detail-meta">' +
+              '<span>工号：<b>' + t.empNo + '</b></span>' +
+              '<span style="margin-left:16px">分类：<b>' + t.category + '</b></span>' +
+              '<span style="margin-left:16px">从业：<b>' + t.experience + ' 年</b></span>' +
+            '</div>' +
+            '<div class="tech-detail-rating">' + starRating(t.rating) + ' <span class="muted">（' + t.reviewCount + ' 条评价）</span></div>' +
+          '</div>' +
+        '</div>' +
+
+        // 联系方式与班次
+        '<div class="tech-detail-contact">' +
+          '<div class="tech-contact-item">📱 ' + t.phone + '</div>' +
+          '<div class="tech-contact-item">🕐 ' + t.schedule + '</div>' +
+        '</div>' +
+
+        // 服务统计
+        '<div class="tech-detail-stats">' +
+          '<div class="tech-dstat"><div class="tech-dstat-val">' + t.serviceCount.toLocaleString() + '</div><div class="tech-dstat-lbl">累计服务</div></div>' +
+          '<div class="tech-dstat"><div class="tech-dstat-val">' + t.reviewCount + '</div><div class="tech-dstat-lbl">顾客评价</div></div>' +
+          '<div class="tech-dstat"><div class="tech-dstat-val">' + t.experience + '年</div><div class="tech-dstat-lbl">从业年限</div></div>' +
+          '<div class="tech-dstat"><div class="tech-dstat-val">' + t.specialties.length + '项</div><div class="tech-dstat-lbl">擅长项目</div></div>' +
+        '</div>' +
+
+        // 擅长项目
+        '<div class="tech-detail-section">' +
+          '<h4 style="font-size:15px;font-weight:700;margin-bottom:10px">🎯 擅长项目</h4>' +
+          '<div class="tech-specialty-list">' +
+            t.specialties.map(function(s) {
+              return '<span class="tech-specialty-item">' + s + '</span>';
+            }).join('') +
+          '</div>' +
+        '</div>' +
+
+        // 荣誉标签
+        '<div class="tech-detail-section">' +
+          '<h4 style="font-size:15px;font-weight:700;margin-bottom:10px">🏆 荣誉资质</h4>' +
+          '<div class="tech-honor-list">' +
+            t.tags.map(function(tag) {
+              return '<span class="tech-honor-item">' + tag + '</span>';
+            }).join('') +
+          '</div>' +
+        '</div>' +
+
+        // 详细简介
+        '<div class="tech-detail-section">' +
+          '<h4 style="font-size:15px;font-weight:700;margin-bottom:10px">📝 个人简介</h4>' +
+          '<div class="tech-bio-text">' + t.bio + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="modal-foot">' +
+        '<button class="btn" onclick="this.closest(\'.modal-mask\')">关闭</button>' +
+        (t.status === 'on' && !t.busy ?
+          '<button class="btn btn-primary" onclick="toast(\'已将 ' + t.name + ' 加入收银台指定技师\');$(\'.modal-mask\').remove()">预约此技师</button>'
+          : (t.busy ?
+            '<button class="btn btn-primary" disabled title="该技师正在服务中">当前服务中</button>'
+            : '<button class="btn" disabled title="该技师暂未在岗">暂未在岗</button>')) +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(mask);
 }
