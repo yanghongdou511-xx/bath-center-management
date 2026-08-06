@@ -73,7 +73,7 @@ function initLoginEffects() {
 initLoginEffects();
 
 // ===== 菜单切换 =====
-const TITLES = { dashboard: '数据概览', member: '会员管理', service: '服务项目', cashier: '前台收银', room: '房间管理', inventory: '库存管理', employee: '员工管理', technician: '技师区', task: '任务管理', reservation: '预约管理', marketing: '营销活动', locker: '寄存管理', attendance: '考勤排班', review: '客诉评价', package: '会员卡套餐', report: '数据报表', store: '门店设置' };
+const TITLES = { dashboard: '数据概览', member: '会员管理', walkin: '散客区', service: '服务项目', cashier: '前台收银', room: '房间管理', inventory: '库存管理', employee: '员工管理', technician: '技师区', task: '任务管理', reservation: '预约管理', marketing: '营销活动', locker: '寄存管理', attendance: '考勤排班', review: '客诉评价', package: '会员卡套餐', report: '数据报表', store: '门店设置' };
 $('menu').addEventListener('click', (e) => {
   const item = e.target.closest('.menu-item');
   if (!item) return;
@@ -86,7 +86,7 @@ $('menu').addEventListener('click', (e) => {
 function render(page) {
   $('page-title').textContent = TITLES[page] || '';
   const c = $('content');
-  const fns = { dashboard: renderDashboard, member: renderMember, service: renderService, cashier: renderCashier, room: renderRoom, inventory: renderInventory, employee: renderEmployee, technician: renderTechnician, task: renderTask, reservation: renderReservation, marketing: renderMarketing, locker: renderLocker, attendance: renderAttendance, review: renderReview, package: renderPackage, report: renderReport, store: renderStore };
+  const fns = { dashboard: renderDashboard, member: renderMember, walkin: renderWalkin, service: renderService, cashier: renderCashier, room: renderRoom, inventory: renderInventory, employee: renderEmployee, technician: renderTechnician, task: renderTask, reservation: renderReservation, marketing: renderMarketing, locker: renderLocker, attendance: renderAttendance, review: renderReview, package: renderPackage, report: renderReport, store: renderStore };
   (fns[page] || renderDashboard)(c);
 }
 
@@ -134,6 +134,7 @@ function renderDashboard(c) {
 
 // ===== 会员管理 =====
 let memberKeyword = '';
+let walkinKeyword = '';
 function renderMember(c) {
   const list = DB.members.filter(m => !memberKeyword || m.name.includes(memberKeyword) || m.phone.includes(memberKeyword) || m.id.includes(memberKeyword));
   c.innerHTML = `
@@ -284,6 +285,144 @@ function openMemberModal() {
     toast('会员添加成功：' + name);
     renderMember($('content'));
   });
+}
+
+// ===== 散客区 =====
+const WALKIN_SOURCES = ['路过', '朋友推荐', '网络平台', '团购', '其他'];
+const WALKIN_STATUSES = { active: '在场', checkedout: '已离店', blacklist: '黑名单' };
+const WALKIN_SOURCE_TAGS = { '路过': 'tag-gray', '朋友推荐': 'tag-blue', '网络平台': 'tag-green', '团购': 'tag-orange', '其他': 'tag-gray' };
+
+function walkinSourceTag(src) {
+  return '<span class="tag ' + (WALKIN_SOURCE_TAGS[src] || 'tag-gray') + '">' + src + '</span>';
+}
+
+function walkinStatusSelect(id, status) {
+  return '<select class="mem-status-select" onchange="changeWalkinStatus(\'' + id + '\', this.value)">' +
+    Object.keys(WALKIN_STATUSES).map(function(k) {
+      return '<option value="' + k + '"' + (k === status ? ' selected' : '') + '>' + WALKIN_STATUSES[k] + '</option>';
+    }).join('') + '</select>';
+}
+
+function changeWalkinStatus(wid, newStatus) {
+  var g = DB.walkinGuests.find(function(x) { return x.id === wid; });
+  if (g) {
+    var old = WALKIN_STATUSES[g.status] || g.status;
+    g.status = newStatus;
+    var nw = WALKIN_STATUSES[newStatus] || newStatus;
+    toast('散客「' + g.name + '」状态：' + old + ' → ' + nw);
+    renderWalkin($('content'));
+  }
+}
+
+function renderWalkin(c) {
+  var kw = walkinKeyword || '';
+  var list = DB.walkinGuests.filter(function(g) {
+    if (!kw) return true;
+    return g.name.indexOf(kw) !== -1 || g.phone.indexOf(kw) !== -1 || g.id.indexOf(kw) !== -1;
+  });
+  c.innerHTML =
+    '<div class="page-head"><h2>散客区</h2><button class="btn btn-primary" onclick="addWalkinGuest()">+ 新增散客</button></div>' +
+    '<div class="filter-bar">' +
+      '<input class="search-input" placeholder="搜索姓名/手机号/散客号" value="' + esc(kw) + '" oninput="walkinKeyword=this.value;renderWalkin($(\'content\'))" />' +
+      '<span class="muted">共 ' + list.length + ' 位散客</span>' +
+    '</div>' +
+    '<div class="table-wrap"><table>' +
+      '<thead><tr><th>散客号</th><th>姓名</th><th>手机号</th><th>来源</th><th>到访次数</th><th>累计消费</th><th>最近到访</th><th>状态</th><th>操作</th></tr></thead>' +
+      '<tbody>' + list.map(function(g) {
+        return '<tr>' +
+          '<td>' + g.id + '</td>' +
+          '<td>' + esc(g.name) + '</td>' +
+          '<td>' + esc(g.phone) + '</td>' +
+          '<td>' + walkinSourceTag(g.source) + '</td>' +
+          '<td>' + g.visitCount + ' 次</td>' +
+          '<td><b>' + fmtMoney(g.totalSpent) + '</b></td>' +
+          '<td>' + g.lastVisit + '</td>' +
+          '<td>' + walkinStatusSelect(g.id, g.status) + '</td>' +
+          '<td class="row-actions">' +
+            '<span class="text-link" onclick="editWalkinGuest(\'' + g.id + '\')">编辑</span>' +
+            '<span class="text-link" style="color:#e74c3c" onclick="deleteWalkinGuest(\'' + g.id + '\')">删除</span>' +
+          '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+}
+
+// 新增散客弹窗
+function addWalkinGuest() {
+  openModal('新增散客',
+    '<div class="form-item"><label>姓名 <span style="color:#e74c3c">*</span></label><input class="input" id="wg-name" placeholder="请输入姓名" /></div>' +
+    '<div class="form-item"><label>手机号</label><input class="input" id="wg-phone" placeholder="11位手机号" /></div>' +
+    '<div class="form-item"><label>来源渠道</label>' +
+      '<select class="select" id="wg-source">' +
+        WALKIN_SOURCES.map(function(s) { return '<option>' + s + '</option>'; }).join('') +
+      '</select></div>' +
+    '<div class="form-item"><label>本次消费金额</label><input class="input" id="wg-amount" type="number" placeholder="如 88" value="0" /></div>',
+    function() {
+      var name = $('wg-name').value.trim();
+      if (!name) return toast('请输入姓名');
+      var id = 'W' + String(10009 + DB.walkinGuests.length);
+      DB.walkinGuests.unshift({
+        id: id,
+        name: name,
+        phone: $('wg-phone').value || '—',
+        source: $('wg-source').value,
+        visitCount: 1,
+        totalSpent: parseFloat($('wg-amount').value || 0),
+        lastVisit: new Date().toISOString().slice(0, 10),
+        status: 'active'
+      });
+      toast('散客添加成功：' + name);
+      renderWalkin($('content'));
+    }, '确认新增');
+}
+
+// 编辑散客弹窗
+function editWalkinGuest(id) {
+  var g = DB.walkinGuests.find(function(x) { return x.id === id; });
+  if (!g) return;
+  openModal('编辑散客 - ' + g.name,
+    '<div class="form-item"><label>散客号</label><div class="input" style="background:#fafafa">' + g.id + '</div></div>' +
+    '<div class="form-item"><label>姓名 <span style="color:#e74c3c">*</span></label><input class="input" id="eg-name" value="' + esc(g.name) + '" /></div>' +
+    '<div class="form-item"><label>手机号</label><input class="input" id="eg-phone" value="' + esc(g.phone) + '" /></div>' +
+    '<div class="form-item"><label>来源渠道</label>' +
+      '<select class="select" id="eg-source">' +
+        WALKIN_SOURCES.map(function(s) { return '<option' + (s === g.source ? ' selected' : '') + '>' + s + '</option>'; }).join('') +
+      '</select></div>' +
+    '<div class="form-item"><label>到访状态</label>' +
+      '<select class="select" id="eg-status">' +
+        Object.keys(WALKIN_STATUSES).map(function(k) { return '<option value="' + k + '"' + (k === g.status ? ' selected' : '') + '>' + WALKIN_STATUSES[k] + '</option>'; }).join('') +
+      '</select></div>' +
+    '<div style="display:flex;gap:12px">' +
+      '<div class="form-item" style="flex:1"><label>调整到访次数（±）</label><input class="input" id="eg-visit-adj" type="number" placeholder="如 1" /></div>' +
+      '<div class="form-item" style="flex:1"><label>调整累计消费（±元）</label><input class="input" id="eg-spend-adj" type="number" placeholder="如 -50" /></div>' +
+    '</div>',
+    function() {
+      var name = $('eg-name').value.trim();
+      if (!name) return toast('请输入姓名');
+      g.name = name;
+      g.phone = $('eg-phone').value || g.phone;
+      g.source = $('eg-source').value;
+      g.status = $('eg-status').value;
+      var vAdj = parseInt($('eg-visit-adj').value || 0);
+      var sAdj = parseFloat($('eg-spend-adj').value || 0);
+      if (vAdj) g.visitCount = Math.max(1, g.visitCount + vAdj);
+      if (sAdj) g.totalSpent = Math.max(0, g.totalSpent + sAdj);
+      toast('散客信息已更新：' + name);
+      renderWalkin($('content'));
+    }, '保存修改');
+}
+
+// 删除散客（带确认）
+function deleteWalkinGuest(id) {
+  var g = DB.walkinGuests.find(function(x) { return x.id === id; });
+  if (!g) return;
+  openModal('⚠️ 确认删除',
+    '<p style="font-size:14px;color:#5a6a7e;margin:8px 0">确定要删除散客 <b>' + esc(g.name) + '</b>(' + g.id + ') 吗？</p>' +
+    '<p style="font-size:12px;color:#999">此操作不可撤销。</p>',
+    function() {
+      var idx = DB.walkinGuests.findIndex(function(x) { return x.id === id; });
+      if (idx !== -1) { DB.walkinGuests.splice(idx, 1); }
+      toast('已删除散客：' + g.name);
+      renderWalkin($('content'));
+    }, '确认删除');
 }
 
 // ===== 服务项目 =====

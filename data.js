@@ -13,6 +13,18 @@ const DB = {
     { id: 'M10008', name: '周强', phone: '133****2210', level: '普通会员', balance: 60, points: 150, regDate: '2025-06-10', status: 'active' },
   ],
 
+  // ===== 散客（非会员） =====
+  walkinGuests: [
+    { id: 'W10001', name: '吴明', phone: '150****3321', source: '路过', visitCount: 3, totalSpent: 456, lastVisit: '2026-08-04', status: 'active' },
+    { id: 'W10002', name: '郑华', phone: '157****7788', source: '朋友推荐', visitCount: 5, totalSpent: 1280, lastVisit: '2026-08-03', status: 'active' },
+    { id: 'W10003', name: '何晓', phone: '131****9900', source: '网络平台', visitCount: 1, totalSpent: 88, lastVisit: '2026-08-04', status: 'active' },
+    { id: 'W10004', name: '冯强', phone: '186****1122', source: '团购', visitCount: 2, totalSpent: 356, lastVisit: '2026-08-02', status: 'blacklist' },
+    { id: 'W10005', name: '曹丽', phone: '139****5544', source: '路过', visitCount: 1, totalSpent: 298, lastVisit: '2026-08-04', status: 'active' },
+    { id: 'W10006', name: '蒋伟', phone: '158****6677', source: '朋友推荐', visitCount: 4, totalSpent: 920, lastVisit: '2026-08-01', status: 'checkedout' },
+    { id: 'W10007', name: '韩梅', phone: '133****8899', source: '网络平台', visitCount: 1, totalSpent: 168, lastVisit: '2026-08-03', status: 'active' },
+    { id: 'W10008', name: '杨帆', phone: '199****0011', source: '路过', visitCount: 2, totalSpent: 226, lastVisit: '2026-07-28', status: 'active' },
+  ],
+
   services: [
     { id: 'S2001', name: '经典沐浴', category: '基础洗浴', price: 88, duration: 60, technician: '不限', status: 'on' },
     { id: 'S2002', name: '中药足疗', category: '足疗按摩', price: 168, duration: 90, technician: '需指定', status: 'on' },
