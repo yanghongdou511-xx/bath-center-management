@@ -179,67 +179,426 @@ function renderService(c) {
     </div>`;
 }
 
-// ===== 前台收银 =====
-let cart = [];
+// ===== 前台收银（增强版） =====
+let cart = [];          // { id, name, price, qty, categoryId }
+let cashierFilter = '全部';
+let selectedCoupon = null;
+let orderNote = '';
+let assignedRoom = '';
+let assignedTech = '';
+
 function renderCashier(c) {
-  const max = Math.max(...DB.hourly.map(x => x.v));
+  const cats = ['全部', ...new Set(DB.services.map(s => s.category))];
+  const svcList = cashierFilter === '全部' ? DB.services.filter(s => s.status === 'on') : DB.services.filter(s => s.status === 'on' && s.category === cashierFilter);
+  const memberId = $('cash-member') ? $('cash-member').value : '';
+  const member = memberId ? DB.members.find(m => m.id === memberId) : null;
+
+  // 计算金额
+  const originalTotal = cart.reduce((s, x) => s + x.price * x.qty, 0);
+  let discountAmount = 0;
+  let discountLabel = '';
+  if (selectedCoupon && originalTotal > 0) {
+    if (selectedCoupon.type === '满减') {
+      const match = selectedCoupon.rule.match(/满(\d+)减(\d+)/);
+      if (match && originalTotal >= parseInt(match[1])) {
+        discountAmount = parseInt(match[2]);
+        discountLabel = `满减 -${fmtMoney(discountAmount)}`;
+      }
+    } else if (selectedCoupon.type === '折扣') {
+      const match = selectedCoupon.rule.match(/(\d+\.?\d*)折/);
+      if (match) {
+        const rate = parseFloat(match[1]) / 10;
+        discountAmount = Math.round(originalTotal * (1 - rate));
+        discountLabel = `${match[1]}折 -${fmtMoney(discountAmount)}`;
+      }
+    } else if (selectedCoupon.type === '赠品') {
+      discountLabel = '赠品券（已享受）';
+    }
+  }
+  // 会员折扣（非赠品券时额外8.8折）
+  let memberDiscount = 0;
+  let memberDiscountLabel = '';
+  if (member && selectedCoupon?.type !== '赠品' && selectedCoupon?.type !== '折扣') {
+    memberDiscount = Math.round(originalTotal * 0.12); // 8.8折 = 减12%
+    memberDiscountLabel = '会员8.8折';
+  }
+  const finalTotal = Math.max(0, originalTotal - discountAmount - memberDiscount);
+
   c.innerHTML = `
     <div class="page-head"><h2>前台收银</h2><span class="muted">当前门店：${DB.store.current}</span></div>
     <div class="cashier-grid">
+      <!-- 左侧：服务项目 -->
       <div class="order-panel">
         <div class="chart-title">可选项目</div>
-        <div style="max-height:340px;overflow:auto">
-          ${DB.services.filter(s => s.status === 'on').map(s => `
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0">
-              <div><b>${s.name}</b> <span class="muted">${s.duration}分钟</span><br><span style="color:#fa541c;font-weight:600">${fmtMoney(s.price)}</span></div>
-              <button class="btn btn-sm btn-primary" onclick="addCart('${s.id}')">加入</button>
-            </div>`).join('')}
+        <input class="search-input" placeholder="🔍 搜索服务项目..." value="" oninput="cashierSearch=this.value;renderCashier($('content'))" style="margin-bottom:10px" />
+        <div class="svc-cat-tabs">${cats.map(cat => `<button class="btn btn-sm ${cashierFilter === cat ? 'btn-primary' : ''}" onclick="cashierFilter='${cat}';renderCashier($('content'))">${cat}</button>`).join('')}</div>
+        <div style="max-height:380px;overflow:auto;padding-right:4px">
+          ${svcList.filter(s => !cashierSearch || s.name.includes(cashierSearch) || s.category.includes(cashierSearch)).map(s => {
+            const inCart = cart.find(x => x.id === s.id);
+            return `
+            <div class="svc-card ${inCart ? 'svc-in-cart' : ''}">
+              <div class="svc-info">
+                <div class="svc-name"><b>${s.name}</b> ${s.technician === '需指定' ? '<span class="tag tag-orange" style="font-size:11px;margin-left:4px">需技师</span>' : ''}</div>
+                <div class="svc-meta"><span class="muted">${s.category}</span> · <span class="muted">${s.duration}分钟</span></div>
+                <div class="svc-price">${fmtMoney(s.price)}</div>
+              </div>
+              <div class="svc-action">
+                ${inCart ? `
+                  <div class="qty-control">
+                    <button class="qty-btn" onclick="cartQty('${s.id}',-1)">−</button>
+                    <span class="qty-val">${inCart.qty}</span>
+                    <button class="qty-btn" onclick="cartQty('${s.id}',1)">+</button>
+                  </div>` : `
+                  <button class="btn btn-sm btn-primary" onclick="addCart('${s.id}')">加入</button>`}
+              </div>
+            </div>`;
+          }).join('')}
+          ${svcList.filter(s => !cashierSearch || s.name.includes(cashierSearch) || s.category.includes(cashierSearch)).length === 0 ? '<div class="empty" style="padding:30px">无匹配项目</div>' : ''}
         </div>
       </div>
-      <div class="order-panel">
+
+      <!-- 右侧：订单区域 -->
+      <div class="order-panel order-right">
+        <!-- 会员信息卡 -->
         <div class="chart-title">当前订单</div>
         <div class="form-item" style="margin-bottom:12px"><label>选择会员</label>
-          <select class="select" id="cash-member"><option value="">散客</option>${DB.members.map(m => `<option value="${m.id}">${m.name}（${m.level}·余${fmtMoney(m.balance)}）</option>`).join('')}</select>
+          <select class="select" id="cash-member" onchange="renderCashier($('content'))"><option value="">散客（不选会员）</option>${DB.members.filter(m => m.status === 'active').map(m => `<option value="${m.id}" ${memberId === m.id ? 'selected' : ''}>${m.name}（${m.level}·余${fmtMoney(m.balance)}）</option>`).join('')}</select>
         </div>
+
+        ${member ? `
+        <div class="member-card-mini">
+          <div class="member-mini-left"><div class="member-avatar-sm">${member.name.slice(0,1)}</div><div><b>${member.name}</b>${levelTag(member.level)}<br><span class="muted" style="font-size:12px">${member.phone}</span></div></div>
+          <div class="member-mini-right"><div>余额 <b style="color:#1677ff;font-size:16px">${fmtMoney(member.balance)}</b></div><div class="muted">积分 ${member.points.toLocaleString()}</div></div>
+        </div>` : '<div class="muted" style="padding:8px 0;font-size:13px">💡 选择会员可使用会员卡支付、享受会员折扣、累积积分</div>'}
+
+        <!-- 购物车 -->
         <div class="selected-list" id="cart-list">
-          ${cart.length === 0 ? '<div class="empty">请从左面选择服务项目</div>' : cart.map((it, i) => `<div class="sel-item"><span>${it.name}</span><span>${fmtMoney(it.price)} <span class="text-link" onclick="removeCart(${i})">✕</span></span></div>`).join('')}
+          ${cart.length === 0 ? '<div class="empty-cart"><div class="empty-icon">🛒</div><div>请从左面选择服务项目</div><div class="muted" style="font-size:12px">点击「加入」或使用数量调节快速添加</div></div>' : `
+            <div class="cart-table-header"><span>项目</span><span>单价</span><span>数量</span><span>小计</span><span></span></div>
+            ${cart.map((it, i) => `
+              <div class="cart-row">
+                <span class="cart-item-name"><b>${it.name}</b></span>
+                <span class="cart-item-price">${fmtMoney(it.price)}</span>
+                <span class="cart-item-qty">
+                  <button class="qty-btn-xs" onclick="cartQty('${it.id}',-1)">−</button>
+                  <span>${it.qty}</span>
+                  <button class="qty-btn-xs" onclick="cartQty('${it.id}',1)">+</button>
+                </span>
+                <span class="cart-item-subtotal">${fmtMoney(it.price * it.qty)}</span>
+                <span class="text-link" onclick="removeCart(${i})" style="color:#ff4d4f">✕</span>
+              </div>`).join('')}
+          `}
         </div>
-        <div class="total-box">合计：${fmtMoney(cart.reduce((s, x) => s + x.price, 0))}</div>
-        <div class="pay-row">
-          <button class="btn btn-success" onclick="payOrder('会员卡')">会员卡</button>
-          <button class="btn btn-primary" onclick="payOrder('微信')">微信</button>
-          <button class="btn btn-primary" onclick="payOrder('支付宝')">支付宝</button>
-          <button class="btn" onclick="payOrder('现金')">现金</button>
-          <button class="btn btn-text" onclick="cart=[];renderCashier($('content'))">清空</button>
+
+        <!-- 优惠 -->
+        ${cart.length > 0 ? `
+        <div class="discount-section">
+          <div class="discount-row">
+            <label>优惠券</label>
+            <select class="select select-sm" id="cash-coupon" onchange="applyCoupon(this.value)">
+              <option value="">不使用优惠券</option>
+              ${DB.coupons.filter(cp => cp.status === 'on').map(cp => `<option value="${cp.id}" ${selectedCoupon?.id === cp.id ? 'selected' : ''}>${cp.name}（${cp.rule}）</option>`).join('')}
+            </select>
+          </div>
+          ${member ? `<div class="discount-row"><label></label><span class="muted" style="font-size:12px">✅ 会员自动享${memberDiscountLabel || '8.8折'}优惠</span></div>` : ''}
         </div>
-        <div style="margin-top:14px">
-          <div class="chart-title">最近订单</div>
-          ${DB.orders.slice(0, 4).map(o => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #eee;font-size:13px"><span>${o.time} ${o.id}</span><span>${o.member}·${o.pay}</span><b style="color:#fa541c">${fmtMoney(o.amount)}</b></div>`).join('')}
+
+        <!-- 分配 -->
+        <div class="assign-section">
+          <div class="assign-row">
+            <label>分配房间</label>
+            <select class="select select-sm" id="cash-room" onchange="assignedRoom=this.value">
+              <option value="">不分配</option>
+              ${DB.rooms.filter(r => r.status === 'free').map(r => `<option value="${r.no}" ${assignedRoom === r.no ? 'selected' : ''}>${r.no}（${r.type}）</option>`).join('')}
+            </select>
+          </div>
+          <div class="assign-row">
+            <label>指定技师</label>
+            <select class="select select-sm" id="cash-tech" onchange="assignedTech=this.value">
+              <option value="">不限/自选</option>
+              ${DB.employees.filter(e => e.status === 'on' && e.role.includes('技师')).map(e => `<option value="${e.name}" ${assignedTech === e.name ? 'selected' : ''}>${e.name}（${e.techLevel}/${e.commission}提成）</option>`).join('')}
+            </select>
+          </div>
+          <div class="assign-row">
+            <label>订单备注</label>
+            <input class="input input-sm" id="cash-note" value="${esc(orderNote)}" placeholder="可选，如 特殊要求..." oninput="orderNote=this.value" />
+          </div>
+        </div>
+
+        <!-- 合计 -->
+        <div class="total-section">
+          ${originalTotal > 0 ? `<div class="total-line"><span>原价合计</span><span>${fmtMoney(originalTotal)}</span></div>` : ''}
+          ${discountAmount > 0 ? `<div class="total-line discount-line"><span>优惠券 ${discountLabel.split('-')[0]}</span><span>-${fmtMoney(discountAmount)}</span></div>` : ''}
+          ${memberDiscount > 0 ? `<div class="total-line discount-line"><span>会员${memberDiscountLabel}</span><span>-${fmtMoney(memberDiscount)}</span></div>` : ''}
+          <div class="total-line total-final"><span>应付金额</span><span class="final-amount">${fmtMoney(finalTotal)}</span></div>
+        </div>
+
+        <!-- 支付按钮 -->
+        <div class="pay-row-enhanced">
+          <button class="btn btn-success pay-btn-large" onclick="confirmPay('会员卡',${finalTotal})" ${!member ? 'disabled title="请先选择会员"' : ''} ${member && member.balance < finalTotal ? 'disabled title="余额不足"' : ''}>
+            💳 会员卡${member ? `<small style="opacity:.7">（余${fmtMoney(member.balance)}）</small>` : ''}
+          </button>
+          <button class="btn btn-primary pay-btn" onclick="confirmPay('微信',${finalTotal})">微信支付</button>
+          <button class="btn btn-primary pay-btn" onclick="confirmPay('支付宝',${finalTotal})">支付宝</button>
+          <button class="btn pay-btn" onclick="confirmPay('现金',${finalTotal})">现金</button>
+          <button class="btn btn-text" onclick="clearCart()">清空</button>
+        </div>` : ''}
+
+        <!-- 最近订单 -->
+        <div style="margin-top:16px">
+          <div class="chart-title">最近订单 <span class="muted" style="font-size:12px;font-weight:normal">（共 ${DB.orders.length} 单）</span></div>
+          <div class="recent-orders">
+            ${DB.orders.slice(0, 6).map(o => `
+              <div class="recent-order-row" onclick="showOrderDetail('${o.id}')">
+                <div class="ro-time">${o.time}</div>
+                <div class="ro-id">${o.id}</div>
+                <div class="ro-member">${o.member}</div>
+                <div class="ro-items">${o.items.length > 15 ? o.items.slice(0,15)+'...' : o.items}</div>
+                <div class="ro-pay"><span class="tag tag-${o.pay==='会员卡'?'green':o.pay==='微信'?'blue':o.pay==='支付宝'?'cyan':'gray'}" style="font-size:11px">${o.pay}</span></div>
+                <b class="ro-amount">${fmtMoney(o.amount)}</b>
+              </div>`).join('')}
+            ${DB.orders.length === 0 ? '<div class="muted" style="padding:12px;text-align:center">暂无订单记录</div>' : ''}
+          </div>
         </div>
       </div>
     </div>`;
 }
+
+// ---- 搜索关键词 ----
+let cashierSearch = '';
+
+// ---- 加入购物车 ----
 function addCart(id) {
   const s = DB.services.find(x => x.id === id);
-  cart.push({ name: s.name, price: s.price });
+  const existing = cart.find(x => x.id === id);
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ id: s.id, name: s.name, price: s.price, qty: 1 });
+  }
+  toast('已添加：' + s.name);
   renderCashier($('content'));
 }
-function removeCart(i) { cart.splice(i, 1); renderCashier($('content')); }
-function payOrder(method) {
-  if (cart.length === 0) return toast('请先选择服务项目');
-  const total = cart.reduce((s, x) => s + x.price, 0);
-  const memberId = $('cash-member').value;
-  if (method === '会员卡' && memberId) {
-    const m = DB.members.find(x => x.id === memberId);
-    if (m.balance < total) return toast('会员卡余额不足');
-    m.balance -= total;
+
+// ---- 数量调整 ----
+function cartQty(id, delta) {
+  const it = cart.find(x => x.id === id);
+  if (!it) return;
+  it.qty += delta;
+  if (it.qty <= 0) {
+    cart = cart.filter(x => x.id !== id);
+    toast('已移除：' + it.name);
   }
-  const oid = 'O' + (8004 + DB.orders.length);
-  const member = memberId ? DB.members.find(x => x.id === memberId).name : '散客';
-  DB.orders.unshift({ id: oid, member, items: cart.map(x => x.name).join('+'), amount: total, pay: method, time: new Date().toTimeString().slice(0, 5), cashier: '钱收银' });
-  cart = [];
-  toast('收银成功：' + fmtMoney(total) + ' · ' + method);
   renderCashier($('content'));
+}
+
+// ---- 移除购物车项 ----
+function removeCart(i) {
+  const removed = cart.splice(i, 1)[0];
+  toast('已移除：' + removed.name);
+  renderCashier($('content'));
+}
+
+// ---- 应用优惠券 ----
+function applyCoupon(couponId) {
+  if (!couponId) { selectedCoupon = null; renderCashier($('content')); return; }
+  selectedCoupon = DB.coupons.find(c => c.id === couponId);
+  renderCashier($('content'));
+  if (selectedCoupon) toast('已应用：' + selectedCoupon.name);
+}
+
+// ---- 清空购物车 ----
+function clearCart() {
+  if (cart.length === 0) return;
+  cart = [];
+  selectedCoupon = null;
+  orderNote = '';
+  assignedRoom = '';
+  assignedTech = '';
+  renderCashier($('content'));
+  toast('购物车已清空');
+}
+
+// ---- 支付确认弹窗 ----
+function confirmPay(method, total) {
+  if (cart.length === 0) return toast('请先选择服务项目');
+  const memberId = $('cash-member').value;
+  const member = memberId ? DB.members.find(m => m.id === memberId) : null;
+
+  if (method === '会员卡' && !member) return toast('会员卡支付需要选择会员');
+  if (method === '会员卡' && member.balance < total) return toast(`余额不足！当前${fmtMoney(member.balance)}，需${fmtMoney(total)}`);
+
+  if (method === '现金') {
+    openModal('现金收款 - ' + fmtMoney(total), `
+      <div class="cash-pay-box">
+        <div class="cash-total-label">应收金额</div>
+        <div class="cash-total-amount">${fmtMoney(total)}</div>
+        <div class="form-row"><label>实收金额</label><input id="cash-received" class="input cash-input" type="number" value="${Math.ceil(total / 10) * 10}" min="${total}" oninput="updateChange(${total})" /></div>
+        <div class="change-display" id="cash-change"></div>
+      </div>
+      <script>updateChange(${total});</script>
+    `, () => {
+      completePayment(method, total, member, parseFloat($('cash-received').value));
+    });
+    // 触发一次找零计算
+    setTimeout(() => updateChange(total), 50);
+  } else if (method === '会员卡') {
+    openModal('会员卡支付确认', `
+      <div class="card-pay-box">
+        <div class="card-member-info"><b>${member.name}</b> ${levelTag(member.level)}</div>
+        <div class="card-balance-row"><span>当前余额</span><span class="card-bal-before">${fmtMoney(member.balance)}</span></div>
+        <div class="card-balance-row"><span>消费金额</span><span class="card-amt">-${fmtMoney(total)}</span></div>
+        <div class="card-balance-row card-balance-after"><span>剩余余额</span><span>${fmtMoney(member.balance - total)}</span></div>
+        <div class="muted" style="margin-top:12px;font-size:12px">本次消费可获得 <b style="color:#1677ff">${Math.round(total)}</b> 积分</div>
+      </div>
+    `, () => {
+      completePayment(method, total, member);
+    });
+  } else {
+    // 微信/支付宝
+    openModal(method + '支付 - ' + fmtMoney(total), `
+      <div class="qr-pay-box">
+        <div class="qr-placeholder">
+          <div class="qr-icon">${method === '微信' ? '💬' : '📱'}</div>
+          <div>请用户扫码支付</div>
+          <div class="qr-amount">${fmtMoney(total)}</div>
+        </div>
+        <div class="muted" style="text-align:center;margin-top:12px;font-size:12px">演示环境：点击「确认收款」模拟支付成功</div>
+      </div>
+    `, () => {
+      completePayment(method, total, member);
+    });
+  }
+}
+
+// ---- 现金找零计算 ----
+function updateChange(total) {
+  const el = $('cash-change');
+  if (!el) return;
+  const received = parseFloat($('cash-received').value) || 0;
+  const change = received - total;
+  if (received >= total) {
+    el.innerHTML = `<div class="change-ok">找零：<b style="color:#52c41a;font-size:24px">${fmtMoney(change)}</b></div>`;
+  } else {
+    el.innerHTML = `<div class="change-error">还差 <b style="color:#ff4d4f">${fmtMoney(-change)}</b></div>`;
+  }
+}
+
+// ---- 完成支付 ----
+function completePayment(method, total, member, received) {
+  // 扣减会员余额
+  if (method === '会员卡' && member) {
+    member.balance -= total;
+    member.points += Math.round(total); // 积分奖励
+  }
+
+  // 生成订单号
+  const oid = 'O' + (8004 + DB.orders.length);
+  const memberId = $('cash-member').value;
+  const memberName = memberId ? (DB.members.find(m => m.id === memberId)?.name || '散客') : '散客';
+
+  // 构建订单项描述
+  const itemDesc = cart.map(x => (x.qty > 1 ? x.name + '×' + x.qty : x.name)).join('+');
+
+  // 记录订单
+  DB.orders.unshift({
+    id: oid,
+    member: memberName,
+    items: itemDesc,
+    amount: total,
+    pay: method,
+    time: new Date().toTimeString().slice(0, 5),
+    cashier: '钱收银',
+    room: assignedRoom || '',
+    tech: assignedTech || '',
+    note: orderNote || '',
+    coupon: selectedCoupon?.name || '',
+    detail: cart.map(x => ({ name: x.name, price: x.price, qty: x.qty, subtotal: x.price * x.qty }))
+  });
+
+  // 如果分配了房间，更新房间状态
+  if (assignedRoom) {
+    const r = DB.rooms.find(x => x.no === assignedRoom);
+    if (r && r.status === 'free') r.status = 'busy';
+  }
+
+  // 显示小票
+  showReceipt({
+    id: oid, member: memberName, items: cart, total, method,
+    payTime: new Date().toLocaleString('zh-CN'),
+    room: assignedRoom, tech: assignedTech, note: orderNote,
+    coupon: selectedCoupon?.name || '',
+    balanceAfter: member ? member.balance : 0,
+    pointsEarned: member ? Math.round(total) : 0,
+    change: method === '现金' ? (received - total) : 0
+  });
+
+  // 重置状态
+  cart = [];
+  selectedCoupon = null;
+  orderNote = '';
+  assignedRoom = '';
+  assignedTech = '';
+
+  toast('✅ 收银成功：' + fmtMoney(total) + ' · ' + method);
+  renderCashier($('content'));
+}
+
+// ---- 小票弹窗 ----
+function showReceipt(order) {
+  const mask = document.createElement('div');
+  mask.className = 'modal-mask';
+  mask.innerHTML = `
+    <div class="modal receipt-modal">
+      <div class="modal-head"><span>🧾 收银小票</span><span class="close-x" onclick="this.closest('.modal-mask').remove()">×</span></div>
+      <div class="receipt-body">
+        <div class="receipt-store">${DB.store.current}</div>
+        <div class="receipt-divider"></div>
+        <div class="receipt-row"><span>订单号</span><span>${order.id}</span></div>
+        <div class="receipt-row"><span>时间</span><span>${order.payTime}</span></div>
+        <div class="receipt-row"><span>会员</span><span>${order.member}</span></div>
+        ${order.room ? `<div class="receipt-row"><span>房间</span><span>${order.room}</span></div>` : ''}
+        ${order.tech ? `<div class="receipt-row"><span>技师</span><span>${order.tech}</span></div>` : ''}
+        <div class="receipt-divider"></div>
+        ${order.items.map(it => `
+          <div class="receipt-item"><span>${it.name}${it.qty > 1 ? ' ×' + it.qty : ''}</span><span>${fmtMoney(it.price * it.qty)}</span></div>
+        `).join('')}
+        <div class="receipt-divider"></div>
+        ${order.coupon ? `<div class="receipt-row receipt-discount"><span>优惠</span><span>${order.coupon}</span></div>` : ''}
+        <div class="receipt-row receipt-total"><span>合计</span><span>${fmtMoney(order.total)}</span></div>
+        <div class="receipt-row"><span>支付方式</span><span>${order.method}</span></div>
+        ${order.method === '现金' && order.change > 0 ? `<div class="receipt-row"><span>实收</span><span>${fmtMoney(order.total + order.change)}</span></div>
+          <div class="receipt-row receipt-change"><span>找零</span><span>${fmtMoney(order.change)}</span></div>` : ''}
+        ${order.method === '会员卡' ? `<div class="receipt-row"><span>余额</span><span>${fmtMoney(order.balanceAfter)}</span></div>
+          <div class="receipt-row"><span>获积分</span><span>+${order.pointsEarned}</span></div>` : ''}
+        ${order.note ? `<div class="receipt-divider"></div><div class="receipt-row receipt-note"><span>备注</span><span>${order.note}</span></div>` : ''}
+        <div class="receipt-divider"></div>
+        <div class="receipt-footer">谢谢惠顾，欢迎下次光临！</div>
+      </div>
+      <div class="modal-foot"><button class="btn" onclick="this.closest('.modal-mask').remove()">关闭</button><button class="btn btn-primary" onclick="this.closest('.modal-mask').remove();toast('小票已打印')">🖨️ 打印小票</button></div>
+    </div>`;
+  document.body.appendChild(mask);
+}
+
+// ---- 查看订单详情 ----
+function showOrderDetail(oid) {
+  const o = DB.orders.find(x => x.id === oid);
+  if (!o) return;
+  openModal('订单详情 - ' + o.id, `
+    <div class="detail-grid">
+      <div class="detail-row"><label>订单号</label><b>${o.id}</b></div>
+      <div class="detail-row"><label>会员</label>${o.member}</div>
+      <div class="detail-row"><label>消费项目</label><b>${o.items}</b></div>
+      <div class="detail-row"><label>金额</label><b style="color:#fa541c;font-size:18px">${fmtMoney(o.amount)}</b></div>
+      <div class="detail-row"><label>支付方式</label><span class="tag tag-${o.pay==='会员卡'?'green':o.pay==='微信'?'blue':'gray'}">${o.pay}</span></div>
+      <div class="detail-row"><label>时间</label>${o.time}</div>
+      <div class="detail-row"><label>收银员</label>${o.cashier}</div>
+      ${o.room ? `<div class="detail-row"><label>房间</label>${o.room}</div>` : ''}
+      ${o.tech ? `<div class="detail-row"><label>技师</label>${o.tech}</div>` : ''}
+      ${o.note ? `<div class="detail-row"><label>备注</label>${o.note}</div>` : ''}
+      ${o.coupon ? `<div class="detail-row"><label>优惠券</label>${o.coupon}</div>` : ''}
+    </div>
+  `, () => {});
 }
 
 // ===== 房间管理 =====
