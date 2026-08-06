@@ -1228,41 +1228,235 @@ function fixLocker(no) { const l = DB.lockers.find(x => x.no === no); l.status =
 
 // ===== 考勤排班 =====
 const DAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-const SHIFT_CLS = { '早': 'shift-早', '晚': 'shift-晚', '中': 'shift-中', '休': 'shift-休' };
-function renderAttendance(c) {
-  c.innerHTML = `
-    <div class="page-head"><h2>考勤排班</h2><button class="btn btn-primary" onclick="clockIn()">员工签到</button></div>
-    <div class="chart-title">本周排班表</div>
-    <div class="table-wrap" style="overflow:auto">
-      <table class="sched-table">
-        <thead><tr><th>员工</th>${DAYS.map(d => `<th>${d}</th>`).join('')}</tr></thead>
-        <tbody>
-          ${DB.attendance.schedule.map(r => `<tr><td><b>${r.name}</b></td>${DAYS.map(d => `<td><span class="${SHIFT_CLS[r[d]] || ''}">${r[d]}</span></td>`).join('')}</tr>`).join('')}
-        </tbody>
-      </table>
-    </div>
-    <div class="chart-title" style="margin-top:22px">今日考勤记录（2026-08-04 周二）</div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>员工</th><th>日期</th><th>上班</th><th>下班</th><th>状态</th></tr></thead>
-        <tbody>
-          ${DB.attendance.records.map(r => `<tr><td><b>${r.name}</b></td><td>${r.date}</td><td>${r.clockIn}</td><td>${r.clockOut}</td><td>${r.status === 'late' ? '<span class="tag tag-orange">迟到</span>' : '<span class="tag tag-green">正常</span>'}</td></tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
+const SHIFT_OPTIONS = [
+  { value: '早', label: '早班', cls: 'shift-morning', time: '08:00-16:00' },
+  { value: '中', label: '中班', cls: 'shift-afternoon', time: '12:00-20:00' },
+  { value: '晚', label: '晚班', cls: 'shift-evening', time: '16:00-24:00' },
+  { value: '休', label: '休息', cls: 'shift-rest', time: '' }
+];
+const STATUS_MAP = {
+  normal: { text: '正常', cls: 'tag-green' },
+  late: { text: '迟到', cls: 'tag-orange' },
+  early: { text: '早退', cls: 'tag-orange' },
+  absent: { text: '缺勤', cls: 'tag-red' },
+  leave: { text: '请假', cls: 'tag-blue' },
+  overtime: { text: '加班', cls: 'tag-purple' }
+};
+let attDate = '2026-08-04';
+
+function getShiftInfo(val) {
+  return SHIFT_OPTIONS.find(s => s.value === val) || { label: val || '\u2014', cls: '', time: '' };
 }
-function clockIn() {
-  const memOpts = DB.employees.filter(e => e.status === 'on').map(e => `<option value="${e.name}">${e.name}（${e.role}）</option>`).join('');
-  openModal('员工签到', `
-    <div class="form-item"><label>选择员工</label><select class="select" id="at-emp">${memOpts}</select></div>
-    <p class="muted">签到时间将记录为当前时间。</p>
-  `, () => {
-    const name = $('at-emp').value;
-    const now = new Date().toTimeString().slice(0, 5);
-    DB.attendance.records.unshift({ name, date: '2026-08-04', clockIn: now, clockOut: '—', status: 'normal' });
-    toast(name + ' 签到成功：' + now);
+
+function shiftBadge(val) {
+  const s = getShiftInfo(val);
+  if (!val || val === '') return '<span class="shift-empty">\u2014</span>';
+  return '<span class="shift-badge ' + s.cls + '" title="' + s.time + '">' + s.label + '</span>';
+}
+
+function statusBadge(st) {
+  var s = STATUS_MAP[st] || STATUS_MAP.normal;
+  return '<span class="tag ' + s.cls + '">' + s.text + '</span>';
+}
+function renderAttendance(c) {
+  var todayRecs = DB.attendance.records;
+  var totalEmp = DB.employees.filter(function(e) { return e.status === 'on'; }).length;
+  var clockedIn = todayRecs.filter(function(r) { return r.clockIn !== '\u2014'; }).length;
+  var clockedOut = todayRecs.filter(function(r) { return r.clockOut !== '\u2014'; }).length;
+  var lateCount = todayRecs.filter(function(r) { return r.status === 'late'; }).length;
+  var totalHours = todayRecs.reduce(function(sum, r) { return sum + (r.hours || 0); }, 0);
+  var attendRate = totalEmp > 0 ? Math.round(clockedIn / totalEmp * 100) : 0;
+
+  var d = new Date(attDate.replace(/-/g, '/'));
+  var dayNames = ['\u5468\u65e5','\u5468\u4e00','\u5468\u4e8c','\u5468\u4e09','\u5468\u56db','\u5468\u4e94','\u5468\u516d'];
+  var todayDayName = dayNames[d.getDay()];
+
+  c.innerHTML =
+    '<div class="page-head"><h2>\u8003\u52e4\u6392\u73ed</h2>' +
+    '<div style="display:flex;gap:8px;align-items:center">' +
+      '<button class="btn btn-primary" onclick="clockIn()">\ud83d\udccb \u5458\u5de5\u7b7e\u5230</button>' +
+      '<button class="btn" onclick="clockOut()">\ud83d\udeaa \u5458\u5de5\u7b7e\u9000</button>' +
+      '<button class="btn" onclick="editSchedule()">\u270f\ufe0f \u7f16\u8f91\u6392\u73ed</button>' +
+    '</div></div>' +
+
+    // 统计卡片
+    '<div class="att-stats">' +
+      '<div class="att-stat-card"><div class="att-stat-num">' + totalEmp + '</div><div class="att-stat-label">\u5728\u5c97\u4eba\u6570</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-num att-stat-green">' + clockedIn + '</div><div class="att-stat-label">\u5df2\u7b7e\u5230</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-num att-stat-blue">' + clockedOut + '</div><div class="att-stat-label">\u5df2\u7b7e\u9000</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-num' + (lateCount > 0 ? ' att-stat-orange' : '') + '">' + lateCount + '</div><div class="att-stat-label">\u8fdf\u5230</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-num">' + totalHours.toFixed(1) + 'h</div><div class="att-stat-label">\u603b\u5de5\u65f6</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-num ' + (attendRate >= 90 ? 'att-stat-green' : attendRate >= 70 ? 'att-stat-orange' : 'att-stat-red') + '">' + attendRate + '%</div><div class="att-stat-label">\u51fa\u52e4\u7387</div></div>' +
+    '</div>' +
+
+    // 排班表
+    '<div class="chart-title">\u672c\u5468\u6392\u73ed\u8868<span class="muted" style="font-size:12px;font-weight:400;float:right">\u70b9\u51fb\u5355\u5143\u683c\u53ef\u4fee\u6539\u73ed\u6b21 \u00b7 \u4eca\u65e5\uff1a' + todayDayName + '</span></div>' +
+    '<div class="table-wrap" style="overflow:auto"><table class="sched-table">' +
+      '<thead><tr><th>\u5458\u5de5<span class="muted" style="font-size:11px;font-weight:400;display:block">\u5c97\u4f4d</span></th>' +
+        DAYS.map(function(d) { var isToday = d === todayDayName; return '<th' + (isToday ? ' class="today-col"' : '') + '>' + d + (isToday ? '<span class="today-dot"></span>' : '') + '</th>'; }).join('') +
+      '</tr></thead>' +
+      '<tbody>' +
+        DB.attendance.schedule.map(function(r) {
+          return '<tr><td><b>' + r.name + '</b><span class="muted" style="font-size:11px;display:block">' + (r.role||'') + '</span></td>' +
+            DAYS.map(function(d) {
+              var val = r[d] || '';
+              var isToday = d === todayDayName;
+              var s = getShiftInfo(val);
+              if (!val) return '<td class="' + (isToday ? 'today-cell' : '') + '" onclick="editShiftCell(\'' + r.name + '\',\'' + d + '\')"><span class="shift-empty editable-shift" title="\u70b9\u51fb\u8bbe\u7f6e\u73ed\u6b21">+</span></td>';
+              return '<td class="' + (isToday ? 'today-cell' : '') + '" onclick="editShiftCell(\'' + r.name + '\',\'' + d + '\')"><span class="shift-badge ' + s.cls + '" title="' + s.time + ' &#10;\u70b9\u51fb\u4fee\u6539">' + s.label + '</span></td>';
+            }).join('') +
+          '</tr>';
+        }).join('') +
+      '</tbody></table></div>' +
+
+    // 考勤记录
+    '<div class="chart-title" style="margin-top:22px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
+      '<span>\u8003\u52e4\u8bb0\u5f55</span>' +
+      '<select id="att-date-sel" class="select" style="width:150px;padding:4px 8px;font-size:13px;border-radius:6px" onchange="switchAttDate(this.value)">' +
+        '<option value="2026-08-04"' + (attDate==='2026-08-04'?' selected':'') + '>\u4eca\u5929 (08-04 \u5468\u4e8c)</option>' +
+        '<option value="2026-08-03"' + (attDate==='2026-08-03'?' selected':'') + '>\u6628\u5929 (08-03 \u5468\u4e00)</option>' +
+        '<option value="2026-08-02"' + (attDate==='2026-08-02'?' selected':'') + '>\u524d\u5929 (08-02 \u5468\u65e5)</option>' +
+      '</select>' +
+      '<span class="muted" style="font-size:12px;font-weight:400">' + clockedIn + '/' + totalEmp + ' \u4eba\u5df2\u7b7e\u5230</span>' +
+    '</div>' +
+    '<div class="table-wrap"><table>' +
+      '<thead><tr><th>\u5458\u5de5</th><th>\u5c97\u4f4d</th><th>\u4e0a\u73ed</th><th>\u4e0b\u73ed</th><th>\u5de5\u65f6</th><th>\u72b6\u6001</th><th>\u64cd\u4f5c</th></tr></thead>' +
+      '<tbody>' + (function() {
+        var recs = getAttRecords();
+        if (recs.length === 0) return '<tr><td colspan="7" class="muted" style="text-align:center;padding:20px">\u6682\u65e0\u8003\u52e4\u8bb0\u5f55</td></tr>';
+        return recs.map(function(r) {
+          return '<tr>' +
+            '<td><b>' + r.name + '</b></td>' +
+            '<td><span class="muted" style="font-size:12px">' + (r.role||'\u2014') + '</span></td>' +
+            '<td style="' + (r.status==='late'?'color:#d48806;font-weight:600':'') + '">' + r.clockIn + '</td>' +
+            '<td>' + r.clockOut + '</td>' +
+            '<td>' + (r.hours > 0 ? r.hours.toFixed(1) + 'h' : '\u2014') + '</td>' +
+            '<td>' + statusBadge(r.status) + '</td>' +
+            '<td>' + (r.clockOut === '\u2014' ? '<button class="btn btn-sm btn-primary" onclick="doClockOut(\'' + r.name + '\')">\u7b7e\u9000</button>' : '<span class="muted" style="font-size:12px">\u5df2\u5b8c\u6210</span>') + '</td>' +
+          '</tr>';
+        }).join('');
+      })() + '</tbody></table></div>';
+}
+function getAttRecords() {
+  if (attDate === '2026-08-04') return DB.attendance.records;
+  return DB.attendance.history[attDate] || [];
+}
+
+function switchAttDate(dateStr) {
+  attDate = dateStr;
+  renderAttendance($('content'));
+}
+
+function editShiftCell(name, day) {
+  var row = DB.attendance.schedule.find(function(r) { return r.name === name; });
+  if (!row) return;
+  var currentVal = row[day] || '';
+  openModal('\u4fee\u6539\u6392\u73ed - ' + name + ' (' + day + ')',
+    '<div class="form-row"><label>\u5f53\u524d\u73ed\u6b21</label><b>' + (currentVal || '\u672a\u8bbe\u7f6e') + '</b></div>' +
+    '<div class="form-row"><label>\u9009\u62e9\u73ed\u6b21</label><select id="shift-sel" class="input">' +
+      SHIFT_OPTIONS.map(function(s) { return '<option value="' + s.value + '"' + (s.value === currentVal ? ' selected' : '') + '>' + s.label + ' (' + (s.time || '\u4f11\u606f') + ')</option>'; }).join('') +
+    '</select></div>',
+  function() {
+    var newVal = $('shift-sel').value;
+    row[day] = newVal;
+    var s = getShiftInfo(newVal);
+    toast(name + ' ' + day + ' \u2192 ' + s.label);
     renderAttendance($('content'));
   });
+}
+
+function editSchedule() {
+  var empOpts = DB.attendance.schedule.map(function(r) {
+    return '<option value="' + r.name + '">' + r.name + ' (' + r.role + ')</option>';
+  }).join('');
+  var daysHtml = DAYS.map(function(d) {
+    return '<div class="form-row"><label>' + d + '</label><select id="sched-' + d + '" class="input">' +
+      SHIFT_OPTIONS.map(function(s) { return '<option value="' + s.value + '">' + s.label + '</option>'; }).join('') +
+    '</select></div>';
+  }).join('');
+
+  openModal('\u7f16\u8f91\u6392\u73ed',
+    '<div class="form-row"><label>\u9009\u62e9\u5458\u5de5</label><select id="sched-emp" class="input">' + empOpts + '</select></div>' +
+    daysHtml +
+    '<p class="muted" style="font-size:12px">\u4fdd\u5b58\u540e\u5c06\u66f4\u65b0\u8be5\u5458\u5de5\u672c\u5468\u5168\u90e8\u6392\u73ed</p>',
+  function() {
+    var name = $('sched-emp').value;
+    var row = DB.attendance.schedule.find(function(r) { return r.name === name; });
+    if (!row) return;
+    DAYS.forEach(function(d) { row[d] = $('sched-' + d).value; });
+    toast(name + ' \u6392\u73ed\u5df2\u66f4\u65b0');
+    renderAttendance($('content'));
+  });
+  setTimeout(function() {
+    var name = $('sched-emp').value;
+    var row = DB.attendance.schedule.find(function(r) { return r.name === name; });
+    if (row) DAYS.forEach(function(d) {
+      var sel = $('sched-' + d);
+      if (sel && row[d]) sel.value = row[d];
+    });
+  }, 50);
+}
+
+function clockIn() {
+  var memOpts = DB.employees.filter(function(e) { return e.status === 'on'; })
+    .map(function(e) { return '<option value="' + e.name + '">' + e.name + '\uff08' + e.role + '\uff09</option>'; }).join('');
+  openModal('\u5458\u5de5\u7b7e\u5230',
+    '<div class="form-item"><label>\u9009\u62e9\u5458\u5de5</label><select class="select" id="at-emp">' + memOpts + '</select></div>' +
+    '<div class="form-item"><label>\u5907\u6ce8</label><input id="at-note" class="input" placeholder="\u53ef\u9009\uff0c\u5982\uff1a\u8fdf\u5230\u539f\u56e0" /></div>' +
+    '<p class="muted">\u7b7e\u5230\u65f6\u95f4\u5c06\u81ea\u52a8\u8bb0\u5f55\u4e3a\u5f53\u524d\u65f6\u95f4</p>',
+  function() {
+    var name = $('at-emp').value;
+    var now = new Date();
+    var timeStr = now.toTimeString().slice(0, 5);
+    var hour = now.getHours();
+    var minute = now.getMinutes();
+    var status = 'normal';
+    if (hour >= 9 && minute > 10) status = 'late';
+
+    var existing = DB.attendance.records.find(function(r) { return r.name === name && r.date === attDate; });
+    if (existing) { toast(name + ' \u4eca\u5929\u5df2\u7b7e\u5230\uff08' + existing.clockIn + '\uff09'); return; }
+
+    var emp = DB.employees.find(function(e) { return e.name === name; });
+    DB.attendance.records.unshift({
+      name: name, date: attDate,
+      clockIn: timeStr, clockOut: '\u2014',
+      status: status, hours: 0,
+      role: emp ? emp.role : ''
+    });
+    toast(name + ' \u7b7e\u5230\u6210\u529f\uff1a' + timeStr + (status === 'late' ? ' \u26a0\ufe0f \u8fdf\u5230' : ''));
+    renderAttendance($('content'));
+  });
+}
+
+function clockOut() {
+  var activeRecs = DB.attendance.records.filter(function(r) { return r.clockOut === '\u2014'; });
+  if (activeRecs.length === 0) { toast('\u6ca1\u6709\u5f85\u7b7e\u9000\u7684\u5458\u5de5'); return; }
+  var opts = activeRecs.map(function(r) {
+    return '<option value="' + r.name + '">' + r.name + ' (\u7b7e\u5230 ' + r.clockIn + ')</option>';
+  }).join('');
+  openModal('\u5458\u5de5\u7b7e\u9000',
+    '<div class="form-item"><label>\u9009\u62e9\u5458\u5de5</label><select class="select" id="out-emp">' + opts + '</select></div>' +
+    '<p class="muted">\u7b7e\u9000\u65f6\u95f4\u5c06\u81ea\u52a8\u8bb0\u5f55\u4e3a\u5f53\u524d\u65f6\u95f4</p>',
+  function() { doClockOut($('out-emp').value); });
+}
+
+function doClockOut(name) {
+  var rec = DB.attendance.records.find(function(r) { return r.name === name && r.date === attDate && r.clockOut === '\u2014'; });
+  if (!rec) { toast('\u672a\u627e\u5230\u8be5\u5458\u5de5\u7684\u7b7e\u5230\u8bb0\u5f55'); return; }
+  var now = new Date().toTimeString().slice(0, 5);
+  rec.clockOut = now;
+
+  var inParts = rec.clockIn.split(':').map(Number);
+  var outParts = rec.clockOut.split(':').map(Number);
+  var hours = (outParts[0] + outParts[1] / 60) - (inParts[0] + inParts[1] / 60);
+  if (hours < 0) hours += 24;
+  rec.hours = Math.round(hours * 10) / 10;
+
+  if (hours > 10) rec.status = 'overtime';
+  else if (hours < 6 && rec.status !== 'late') rec.status = 'early';
+
+  toast(name + ' \u7b7e\u9000\u6210\u529f\uff1a' + now + ' \u00b7 \u5de5\u65f6 ' + rec.hours.toFixed(1) + 'h');
+  renderAttendance($('content'));
 }
 
 // ===== 客诉评价 =====

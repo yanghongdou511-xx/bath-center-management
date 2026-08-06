@@ -297,11 +297,33 @@ tbody tr:last-child td{ border-bottom:none; }
 
 .sched-table{ width:100%; border-collapse:collapse; background:#fff; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); border:1px solid #f1f4f9; }
 .sched-table th,.sched-table td{ text-align:center; padding:11px 8px; border:1px solid #eef2f7; font-size:13px; }
-.sched-table th{ background:#f8fafc; font-weight:700; color:var(--text-2); }
-.shift-早{ background:#eaf1ff; color:#1f5cff; border-radius:6px; padding:3px 10px; font-weight:600; }
-.shift-晚{ background:var(--warning-bg); color:#d97706; border-radius:6px; padding:3px 10px; font-weight:600; }
-.shift-中{ background:var(--purple-bg); color:#6d28d9; border-radius:6px; padding:3px 10px; font-weight:600; }
-.shift-休{ background:#f1f5f9; color:#64748b; border-radius:6px; padding:3px 10px; font-weight:600; }
+.sched-table th{ background:#f8fafc; font-weight:700; color:var(--text-2); position:relative; }
+.today-col{ background:#eef6ff !important; color:var(--primary) !important; font-weight:800; }
+.today-col::after{ content:'\u4eca'; position:absolute; top:-1px; right:-1px; background:var(--primary); color:#fff; font-size:10px; padding:1px 5px; border-radius:0 0 4px 0; }
+.today-dot{ display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--primary);vertical-align:middle;margin-left:3px; }
+.today-cell{ background:#f0f7ff !important; }
+
+/* 班次徽章 */
+.shift-badge{ display:inline-block; padding:4px 14px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; transition:all .15s; white-space:nowrap; line-height:1.6; }
+.shift-badge:hover{ transform:scale(1.08); box-shadow:0 2px 8px rgba(0,0,0,.12); }
+.shift-morning{ background:linear-gradient(135deg,#e0f2fe,#bae6fd); color:#0369a1; }
+.shift-afternoon{ background:linear-gradient(135deg,#f3e8ff,#ddd6fe); color:#7c3aed; }
+.shift-evening{ background:linear-gradient(135deg,#fef3c7,#fde68a); color:#b45309; }
+.shift-rest{ background:#f1f5f9; color:#94a3b8; font-weight:500; }
+.shift-empty{ color:#d0d5dd; }
+.editable-shift{ display:inline-block;width:24px;height:24px;line-height:22px;border:1px dashed #c4cdd5;border-radius:50%;color:#98a2b3;font-size:16px;cursor:pointer;transition:all .15s; }
+.editable-shift:hover{ border-color:var(--primary); color:var(--primary); background:#f0f7ff; }
+
+/* 考勤统计卡片 */
+.att-stats{ display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+.att-stat-card{ flex:1; min-width:90px; background:#fff; border-radius:var(--radius); padding:14px 10px; text-align:center; box-shadow:var(--shadow-sm); border:1px solid #f1f4f9; transition:transform .2s; }
+.att-stat-card:hover{ transform:translateY(-2px); box-shadow:var(--shadow); }
+.att-stat-num{ font-size:22px; font-weight:800; color:var(--text-1); line-height:1.2; }
+.att-stat-label{ font-size:11px; color:var(--text-3); margin-top:4px; }
+.att-stat-green{ color:#16a34a !important; }
+.att-stat-blue{ color:#2563eb !important; }
+.att-stat-orange{ color:#ea580c !important; }
+.att-stat-red{ color:#dc2626 !important; }
 
 .review-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:16px; }
 .review-card{ background:#fff; border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); border:1px solid #f1f4f9; transition:transform .2s, box-shadow .2s; }

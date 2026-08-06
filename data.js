@@ -120,18 +120,33 @@ const DB = {
   // 考勤排班
   attendance: {
     schedule: [
-      { name: '李师傅', mon: '早', tue: '早', wed: '休', thu: '早', fri: '晚', sat: '晚', sun: '休' },
-      { name: '王师傅', mon: '晚', tue: '晚', wed: '晚', thu: '休', fri: '早', sat: '早', sun: '早' },
-      { name: '赵主管', mon: '早', tue: '早', wed: '早', thu: '早', fri: '早', sat: '休', sun: '休' },
-      { name: '钱收银', mon: '中', tue: '中', wed: '中', thu: '中', fri: '中', sat: '中', sun: '中' },
-      { name: '周保洁', mon: '早', tue: '休', wed: '早', thu: '早', fri: '休', sat: '早', sun: '早' },
+      { name: '李师傅', '周一':'早', '周二':'早', '周三':'休', '周四':'早', '周五':'晚', '周六':'晚', '周日':'休', role:'技师' },
+      { name: '王师傅', '周一':'晚', '周二':'晚', '周三':'晚', '周四':'休', '周五':'早', '周六':'早', '周日':'早', role:'技师' },
+      { name: '赵主管', '周一':'早', '周二':'早', '周三':'早', '周四':'早', '周五':'早', '周六':'休', '周日':'休', role:'管理' },
+      { name: '钱收银', '周一':'中', '周二':'中', '周三':'中', '周四':'中', '周五':'中', '周六':'中', '周日':'中', role:'收银' },
+      { name: '周保洁', '周一':'早', '周二':'休', '周三':'早', '周四':'早', '周五':'休', '周六':'早', '周日':'早', role:'保洁' },
     ],
     records: [
-      { name: '赵主管', date: '2026-08-04', clockIn: '09:02', clockOut: '18:10', status: 'normal' },
-      { name: '李师傅', date: '2026-08-04', clockIn: '13:50', clockOut: '—', status: 'late' },
-      { name: '钱收银', date: '2026-08-04', clockIn: '12:00', clockOut: '—', status: 'normal' },
-      { name: '王师傅', date: '2026-08-04', clockIn: '16:30', clockOut: '—', status: 'normal' },
+      { name: '赵主管', date: '2026-08-04', clockIn: '09:02', clockOut: '18:10', status: 'normal', hours: 9.1, role:'管理' },
+      { name: '李师傅', date: '2026-08-04', clockIn: '13:50', clockOut: '—', status: 'late', hours: 0, role:'技师' },
+      { name: '钱收银', date: '2026-08-04', clockIn: '12:00', clockOut: '—', status: 'normal', hours: 0, role:'收银' },
+      { name: '王师傅', date: '2026-08-04', clockIn: '16:30', clockOut: '—', status: 'normal', hours: 0, role:'技师' },
+      { name: '周保洁', date: '2026-08-04', clockIn: '07:00', clockOut: '15:00', status: 'normal', hours: 8.0, role:'保洁' },
     ],
+    // 历史记录（用于日期切换）
+    history: {
+      '2026-08-03': [
+        { name: '赵主管', date: '2026-08-03', clockIn: '08:55', clockOut: '18:20', status: 'normal', hours: 9.4, role:'管理' },
+        { name: '李师傅', date: '2026-08-03', clockIn: '14:00', clockOut: '22:00', status: 'normal', hours: 8.0, role:'技师' },
+        { name: '钱收银', date: '2026-08-03', clockIn: '11:58', clockOut: '20:05', status: 'normal', hours: 8.1, role:'收银' },
+        { name: '王师傅', date: '2026-08-03', clockIn: '15:10', clockOut: '23:30', status: 'late', hours: 8.3, role:'技师' },
+      ],
+      '2026-08-02': [
+        { name: '赵主管', date: '2026-08-02', clockIn: '09:00', clockOut: '18:00', status: 'normal', hours: 9.0, role:'管理' },
+        { name: '李师傅', date: '2026-08-02', clockIn: '13:45', clockOut: '21:30', status: 'normal', hours: 7.75, role:'技师' },
+        { name: '钱收银', date: '2026-08-02', clockIn: '12:05', clockOut: '—', status: 'absent', hours: 0, role:'收银' },
+      ]
+    }
   },
 
   // 客诉评价
