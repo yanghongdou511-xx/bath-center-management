@@ -168,7 +168,32 @@
   <!-- Toast -->
   <div id="toast" class="toast hidden"></div>
 
-  <script src="data.js"></script>
-  <script src="app.js"></script>
+  <!-- 脚本加载失败时的可见错误浮层（用于诊断“点登录无反应”等问题） -->
+  <div id="boot-error" class="boot-error hidden"></div>
+
+  <!-- 缓存破坏：每次部署改动 ?v= 后的版本号，强制浏览器拉取最新 JS，避免旧缓存导致登录失效 -->
+  <script src="data.js?v=20260806b"></script>
+  <script src="app.js?v=20260806b"></script>
+  <script>
+    // 启动自检：若 app.js 因缓存/语法错误未能执行，则显示明确提示
+    window.addEventListener('error', function (e) {
+      var box = document.getElementById('boot-error');
+      if (box) {
+        box.classList.remove('hidden');
+        box.innerHTML = '⚠️ 页面脚本加载/执行出错：' + (e.message || '未知错误') +
+          '<br><span style="font-size:12px;opacity:.8">多半是浏览器缓存了旧版本，请按 Ctrl+Shift+R 强制刷新；仍不行请清除站点缓存。</span>';
+      }
+    });
+    setTimeout(function () {
+      if (!window.__appBooted) {
+        var box = document.getElementById('boot-error');
+        if (box) {
+          box.classList.remove('hidden');
+          box.innerHTML = '⚠️ 后台脚本未能启动（app.js 未执行）。' +
+            '<br><span style="font-size:12px;opacity:.8">通常是浏览器缓存了旧版本，请按 Ctrl+Shift+R 强制刷新，或清除该站点缓存后重试。</span>';
+        }
+      }
+    }, 2500);
+  </script>
 </body>
 </html>

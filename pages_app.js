@@ -28,12 +28,7 @@ $('login-form').addEventListener('submit', (e) => {
   if (u === '24031532' && p === '123456') {
     $('login-view').classList.add('hidden');
     $('app-view').classList.remove('hidden');
-    try {
-      render('dashboard');
-    } catch (err) {
-      var box = document.getElementById('boot-error');
-      if (box) { box.classList.remove('hidden'); box.innerHTML = '⚠️ 首页渲染出错：' + (err && err.message || err); }
-    }
+    render('dashboard');
     toast('登录成功，欢迎回来！');
   } else {
     toast('账号或密码错误');
@@ -2941,6 +2936,3 @@ function renderTask(c) {
       '<div class="empty" style="grid-column:1/-1"><div style="font-size:40px;margin-bottom:10px">📋</div>没有匹配的任务<br><span class="muted">请尝试调整筛选条件</span></div>'
       : '');
 }
-
-// 启动完成标记：供 index.html 自检脚本判断是否成功加载（用于诊断“点登录无反应”）
-if (typeof window !== 'undefined') window.__appBooted = true;

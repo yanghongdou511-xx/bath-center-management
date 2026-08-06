@@ -504,6 +504,7 @@ tbody tr:last-child td{ border-bottom:none; }
 
 /* ===== 提示 ===== */
 .toast{ position:fixed; top:24px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,.9); color:#fff; padding:11px 22px; border-radius:10px; z-index:200; font-size:14px; box-shadow:var(--shadow-lg); animation:popIn .25s ease; }
+.boot-error{ position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); max-width:440px; width:calc(100% - 40px); background:#fff4f4; border:1px solid #ffb4b4; color:#b42318; padding:18px 20px; border-radius:12px; z-index:999; font-size:14px; line-height:1.7; box-shadow:var(--shadow-lg); }
 .empty{ text-align:center; color:var(--text-3); padding:48px 20px; }
 .empty::before{ content:"🗂"; display:block; font-size:40px; opacity:.4; margin-bottom:10px; }
 .muted{ color:var(--text-3); }
