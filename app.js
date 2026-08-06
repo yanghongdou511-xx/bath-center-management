@@ -419,7 +419,7 @@ function clearCart() {
   toast('购物车已清空');
 }
 
-// ---- 支付确认弹窗 ----
+// ---- 支付确认弹窗（增强版） ----
 function confirmPay(method, total) {
   if (cart.length === 0) return toast('请先选择服务项目');
   const memberId = $('cash-member').value;
@@ -429,46 +429,168 @@ function confirmPay(method, total) {
   if (method === '会员卡' && member.balance < total) return toast(`余额不足！当前${fmtMoney(member.balance)}，需${fmtMoney(total)}`);
 
   if (method === '现金') {
-    openModal('现金收款 - ' + fmtMoney(total), `
+    openModal('💵 现金收款', `
       <div class="cash-pay-box">
         <div class="cash-total-label">应收金额</div>
         <div class="cash-total-amount">${fmtMoney(total)}</div>
-        <div class="form-row"><label>实收金额</label><input id="cash-received" class="input cash-input" type="number" value="${Math.ceil(total / 10) * 10}" min="${total}" oninput="updateChange(${total})" /></div>
+        <div class="quick-amounts">
+          ${[20,50,100,200,500].map(v => `<button class="btn btn-sm ${v >= total ? 'btn-outline' : ''}" onclick="$('cash-received').value=${v};updateChange(${total})">${v}</button>`).join('')}
+        </div>
+        <div class="form-row" style="margin-top:12px"><label>实收金额</label><input id="cash-received" class="input cash-input" type="number" value="${Math.ceil(total / 10) * 10}" min="${total}" oninput="updateChange(${total})" /></div>
         <div class="change-display" id="cash-change"></div>
       </div>
-      <script>updateChange(${total});</script>
     `, () => {
       completePayment(method, total, member, parseFloat($('cash-received').value));
-    });
-    // 触发一次找零计算
+    }, '确认收款');
     setTimeout(() => updateChange(total), 50);
   } else if (method === '会员卡') {
-    openModal('会员卡支付确认', `
+    openModal('💳 会员卡支付确认', `
       <div class="card-pay-box">
         <div class="card-member-info"><b>${member.name}</b> ${levelTag(member.level)}</div>
         <div class="card-balance-row"><span>当前余额</span><span class="card-bal-before">${fmtMoney(member.balance)}</span></div>
         <div class="card-balance-row"><span>消费金额</span><span class="card-amt">-${fmtMoney(total)}</span></div>
         <div class="card-balance-row card-balance-after"><span>剩余余额</span><span>${fmtMoney(member.balance - total)}</span></div>
         <div class="muted" style="margin-top:12px;font-size:12px">本次消费可获得 <b style="color:#1677ff">${Math.round(total)}</b> 积分</div>
+        <div class="form-item" style="margin-top:14px"><label>验证密码</label><input id="card-pwd" class="input" type="password" placeholder="请输入6位支付密码" maxlength="6" /></div>
       </div>
     `, () => {
-      completePayment(method, total, member);
-    });
+      const pwd = $('card-pwd').value;
+      if (!pwd || pwd.length < 4) return toast('请输入支付密码（演示：任意4位以上）');
+      // 模拟密码验证延迟
+      const btn = document.getElementById('modal-save');
+      btn.disabled = true; btn.textContent = '验证中...';
+      setTimeout(() => { completePayment(method, total, member); }, 600);
+    }, '确认支付');
   } else {
-    // 微信/支付宝
-    openModal(method + '支付 - ' + fmtMoney(total), `
-      <div class="qr-pay-box">
-        <div class="qr-placeholder">
-          <div class="qr-icon">${method === '微信' ? '💬' : '📱'}</div>
-          <div>请用户扫码支付</div>
-          <div class="qr-amount">${fmtMoney(total)}</div>
+    // 微信/支付宝 — 品牌化扫码支付
+    const isWechat = method === '微信';
+    const brandColor = isWechat ? '#07C160' : '#1677FF';
+    const brandBg = isWechat ? 'linear-gradient(135deg,#07C160,#06AD56)' : 'linear-gradient(135deg,#1677FF,#4096FF)';
+    const logoIcon = isWechat ? '<svg viewBox="0 0 24 24" width="28" height="28" fill="#07C160"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 01.213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.295.295a.326.326 0 00.167-.054l1.903-1.114a.864.864 0 01.717-.098 10.16 10.16 0 002.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178A1.17 1.17 0 014.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178 1.17 1.17 0 01-1.162-1.178c0-.651.52-1.18 1.162-1.18zm3.97 3.258c-1.918-.018-3.954.537-5.442 1.776-1.655 1.38-2.54 3.66-1.704 6.174.98 2.281 3.274 3.836 5.91 3.836.826 0 1.622-.12 2.361-.343a.67.67 0 01.553.076l1.468.858a.252.252 0 00.129.041.227.227 0 00.228-.227c0-.055-.023-.11-.037-.164l-.3-1.138a.452.452 0 01.163-.512C20.537 18.175 21.5 16.496 21.5 14.61c0-3.08-2.79-5.337-5.932-5.36zm-2.564 2.094c.526 0 .953.433.953.967a.96.96 0 01-.953.965.96.96 0 01-.953-.965c0-.534.427-.967.953-.967zm5.128 0c.526 0 .953.433.953.967a.96.96 0 01-.953.965.96.96 0 01-.953-.965c0-.534.427-.967.953-.967z"/></svg>' : '<svg viewBox="0 0 24 24" width="28" height="28" fill="#1677FF"><path d="M21.422 15.358c-.945-.502-1.953-.89-3.006-1.148a11.8 11.8 0 00-.574-1.392c1.72-.73 2.947-1.87 3.68-3.418A7.61 7.61 0 0022.5 6.07C22.5 2.72 19.58 0 16 0S9.5 2.72 9.5 6.07c0 1.207.33 2.34.904 3.33a11.84 11.84 0 00-2.658-.31c-4.142 0-7.5 3.134-7.5 7s3.358 7 7.5 7c1.93 0 3.69-.68 5.05-1.805.76.475 1.59.86 2.474 1.137.63.196 1.283.338 1.952.422v-7.486zM16 2c2.485 0 4.5 1.82 4.5 4.07 0 .99-.365 1.9-.97 2.62-.81-.29-1.66-.51-2.53-.65V2.82c-.33-.06-.66-.1-1-.1zm-8.254 9.09c3.038 0 5.5 2.297 5.5 5.13s-2.462 5.13-5.5 5.13-5.5-2.298-5.5-5.13 2.462-5.13 5.5-5.13z"/></svg>';
+    const payAppName = isWechat ? '微信' : '支付宝';
+
+    openModal('', `
+      <div class="qr-pay-enhanced" style="--brand:${brandColor};--brand-bg:${brandBg}">
+        <div class="qr-header" style="background:${brandBg}">
+          <div class="qr-logo">${logoIcon}</div>
+          <div class="qr-title">${payAppName}支付</div>
+          <div class="qr-amount-big">¥${total.toLocaleString('zh-CN')}</div>
         </div>
-        <div class="muted" style="text-align:center;margin-top:12px;font-size:12px">演示环境：点击「确认收款」模拟支付成功</div>
+        <div class="qr-body">
+          <div class="qr-code-wrapper">
+            <div class="qr-code-pattern" id="qr-pattern"></div>
+            <div class="qr-scan-line"></div>
+            <div class="qr-status-overlay" id="qr-status" style="display:none">
+              <div class="qr-success-icon">✓</div>
+              <div>支付成功</div>
+            </div>
+          </div>
+          <div class="qr-hint">
+            <div class="qr-hint-main">请使用${payAppName}扫一扫</div>
+            <div class="qr-countdown" id="qr-timer">二维码有效期 <span id="qr-time-left">5:00</span></div>
+          </div>
+        </div>
+        <div class="qr-footer-note">
+          <span class="qr-demo-tag">演示模式</span> 点击「确认收款」模拟用户扫码付款
+        </div>
       </div>
     `, () => {
-      completePayment(method, total, member);
-    });
+      simulateQRPayment(method, total, member);
+    }, '确认收款');
+
+    // 生成CSS二维码图案
+    generateQRPattern();
+    // 启动倒计时
+    startQRTimer(300);
   }
+}
+
+// ---- 生成CSS二维码图案 ----
+function generateQRPattern() {
+  const el = document.getElementById('qr-pattern');
+  if (!el) return;
+  let cells = '';
+  for (let i = 0; i < 21; i++) {
+    for (let j = 0; j < 21; j++) {
+      // 定位图案（左上、右上、左下角）
+      const isFinder = (i < 7 && j < 7) || (i < 7 && j > 13) || (i > 13 && j < 7);
+      // 随机模拟数据区域
+      const isData = !isFinder && Math.random() > 0.45;
+      // 定位图案内部空心
+      const isHole = isFinder && i > 1 && i < 5 && j > 1 && j < 5;
+      // 定位图案内圈
+      const isInner = isFinder && i > 0 && i < 6 && j > 0 && j < 6 && !(i > 1 && i < 5 && j > 1 && j < 5);
+      if (isInner || isData) cells += '<div class="qr-cell qr-cell-on"></div>';
+      else if (isHole) cells += '<div class="qr-cell qr-cell-off"></div>';
+      else cells += '<div class="qr-cell"></div>';
+    }
+  }
+  el.innerHTML = cells;
+}
+
+// ---- 二维码倒计时 ----
+let qrTimerInterval = null;
+function startQRTimer(seconds) {
+  const timeEl = document.getElementById('qr-time-left');
+  if (!timeEl) return;
+  let remaining = seconds;
+  clearInterval(qrTimerInterval);
+  qrTimerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(qrTimerInterval);
+      timeEl.textContent = '已过期';
+      timeEl.parentElement.classList.add('expired');
+      return;
+    }
+    const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+    const s = String(remaining % 60).padStart(2, '0');
+    timeEl.textContent = m + ':' + s;
+  }, 1000);
+}
+
+// ---- 模拟扫码支付流程 ----
+function simulateQRPayment(method, total, member) {
+  const statusEl = document.getElementById('qr-status');
+  const lineEl = document.querySelector('.qr-scan-line');
+  const btn = document.getElementById('modal-save');
+  if (!btn) return;
+
+  // 步骤1: 扫��中
+  btn.disabled = true;
+  btn.textContent = '扫码中...';
+  if (lineEl) lineEl.style.display = 'none';
+
+  setTimeout(() => {
+    // 步骤2: 支付中
+    btn.textContent = '支付处理中...';
+    if (statusEl) {
+      statusEl.style.display = 'flex';
+      statusEl.className = 'qr-status-overlay qr-status-processing';
+      statusEl.innerHTML = '<div class="qr-spinner"></div><div>正在处理支付...</div>';
+    }
+
+    setTimeout(() => {
+      // 步骤3: 成功
+      if (statusEl) {
+        statusEl.className = 'qr-status-overlay qr-status-success';
+        statusEl.innerHTML = '<div class="qr-success-icon">✓</div><div>支付成功</div>';
+      }
+      btn.textContent = '完成';
+
+      // 播放成功音效提示
+      toast('✅ ' + method + '收款成功！');
+
+      // 延迟关闭并完成订单
+      setTimeout(() => {
+        completePayment(method, total, member);
+        // 关闭弹窗
+        const mask = document.querySelector('.modal-mask');
+        if (mask) mask.remove();
+        clearInterval(qrTimerInterval);
+      }, 800);
+    }, 1200);
+  }, 800);
 }
 
 // ---- 现金找零计算 ----
@@ -896,14 +1018,14 @@ function renderStore(c) {
 function switchStore(s) { DB.store.current = s; $('current-store').textContent = '🏬 ' + s; toast('已切换至 ' + s); renderStore($('content')); }
 
 // ===== 通用弹窗 =====
-function openModal(title, bodyHtml, onSave) {
+function openModal(title, bodyHtml, onSave, confirmText) {
   const mask = document.createElement('div');
   mask.className = 'modal-mask';
   mask.innerHTML = `
     <div class="modal">
       <div class="modal-head"><span>${title}</span><span class="close-x" onclick="this.closest('.modal-mask').remove()">×</span></div>
       <div class="modal-body">${bodyHtml}</div>
-      <div class="modal-foot"><button class="btn" onclick="this.closest('.modal-mask').remove()">取消</button><button class="btn btn-primary" id="modal-save">保存</button></div>
+      <div class="modal-foot"><button class="btn" onclick="this.closest('.modal-mask').remove()">取消</button><button class="btn btn-primary" id="modal-save">${confirmText || '保存'}</button></div>
     </div>`;
   document.body.appendChild(mask);
   mask.querySelector('#modal-save').addEventListener('click', () => { onSave(); mask.remove(); });

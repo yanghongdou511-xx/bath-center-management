@@ -262,6 +262,10 @@ tbody tr:last-child td{ border-bottom:none; }
 /* ===== 弹出层 ===== */
 .modal-mask{ position:fixed; inset:0; background:rgba(15,23,42,.5); backdrop-filter:blur(2px); display:flex; align-items:center; justify-content:center; z-index:100; animation:fadeIn .2s ease; }
 .modal{ background:#fff; border-radius:16px; width:480px; max-width:92vw; max-height:88vh; overflow:auto; box-shadow:0 30px 70px rgba(8,15,35,.3); animation:popIn .3s cubic-bezier(.2,.8,.2,1) both; }
+.modal:has(.qr-pay-enhanced){ border-radius:18px; overflow:hidden; max-width:380px; }
+.modal:has(.qr-pay-enhanced) .modal-head{ display:none; }
+.modal:has(.qr-pay-enhanced) .modal-body{ padding:0; }
+.modal:has(.qr-pay-enhanced) .modal-foot{ background:#fafbfc; }
 .modal-head{ padding:18px 24px; border-bottom:1px solid #f1f4f9; display:flex; justify-content:space-between; align-items:center; font-size:17px; font-weight:700; }
 .modal-body{ padding:22px 24px; }
 .modal-foot{ padding:16px 24px; border-top:1px solid #f1f4f9; display:flex; justify-content:flex-end; gap:10px; }
@@ -426,11 +430,35 @@ tbody tr:last-child td{ border-bottom:none; }
 .card-amt{ font-weight:700; font-size:18px; color:var(--danger); }
 .card-balance-after{ border-bottom:none; font-weight:700; font-size:20px; color:var(--success); }
 
-/* 二维码支付模拟 */
-.qr-pay-box{ text-align:center; padding:20px 0; }
-.qr-placeholder{ width:160px; height:160px; margin:0 auto 12px; border:2px dashed #d9d9d9; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#fafafa; }
-.qr-icon{ font-size:36px; margin-bottom:8px; }
-.qr-amount{ font-size:20px; font-weight:800; color:var(--primary); }
+/* 二维码支付模拟（增强版） */
+.qr-pay-enhanced{ --brand:#1677FF; }
+.qr-header{ padding:24px 20px 18px; text-align:center; border-radius:14px 14px 0 0; color:#fff; }
+.qr-logo{ display:flex; justify-content:center; margin-bottom:8px; }
+.qr-title{ font-size:15px; opacity:.9; font-weight:500; }
+.qr-amount-big{ font-size:32px; font-weight:800; letter-spacing:-1px; margin-top:4px; text-shadow:0 2px 10px rgba(0,0,0,.15); }
+.qr-body{ padding:20px; text-align:center; }
+.qr-code-wrapper{ width:168px; height:168px; margin:0 auto 12px; position:relative; background:#fff; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,.1); overflow:hidden; display:flex; align-items:center; justify-content:center; }
+.qr-code-pattern{ display:grid; grid-template-columns:repeat(21,1fr); gap:0; width:148px; height:148px; padding:10px; }
+.qr-cell{ width:100%; height:100%; aspect-ratio:1/1; }
+.qr-cell-on{ background:#222; border-radius:1px; }
+.qr-cell-off{ background:#fff; }
+/* 扫描线动画 */
+.qr-scan-line{ position:absolute; left:6%; top:0; width:88%; height:2px; background:linear-gradient(90deg,transparent,var(--brand),transparent); animation:qrScan 2s ease-in-out infinite; pointer-events:none; z-index:2; }
+@keyframes qrScan{ 0%{top:0;} 50%{top:calc(100% - 2px);} 100%{top:0;} }
+/* 支付状态覆盖层 */
+.qr-status-overlay{ position:absolute; inset:0; background:rgba(255,255,255,.95); display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:10px; z-index:3; animation:fadeIn .3s ease; }
+.qr-success-icon{ width:48px; height:48px; line-height:48px; border-radius:50%; background:var(--success,#52c41a); color:#fff; font-size:26px; font-weight:700; margin-bottom:8px; animation:popIn .4s cubic-bezier(.2,.8,.2,1) both; }
+.qr-status-processing .qr-success-icon{ background:var(--primary,#1677ff); animation:none; border-radius:50%; border:3px solid #e6f0ff; border-top-color:var(--primary); width:36px; height:36px; line-height:30px; font-size:0; }
+.qr-spinner{ width:36px; height:36px; border-radius:50%; border:3px solid #e6f0ff; border-top-color:var(--primary); animation:spin .7s linear infinite; }
+@keyframes spin{ to{transform:rotate(360deg);} }
+.qr-hint-main{ font-size:14px; color:var(--text-1); font-weight:600; }
+.qr-countdown{ font-size:12px; color:var(--text-3); margin-top:4px; transition:color .3s; }
+.qr-countdown.expired{ color:var(--danger,#ff4d4f); font-weight:700; }
+.qr-footer-note{ text-align:center; padding:10px 20px 4px; font-size:11px; color:var(--text-3); border-top:1px solid #f5f5f5; }
+.qr-demo-tag{ display:inline-block; background:#fff7e6; color:#fa8c16; padding:1px 8px; border-radius:10px; font-size:10px; font-weight:600; margin-right:4px; }
+
+/* 现金快捷金额 */
+.quick-amounts{ display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin-bottom:4px; }
 
 /* 小票弹窗 */
 .receipt-modal{ max-width:380px; }
