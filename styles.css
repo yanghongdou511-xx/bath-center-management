@@ -829,19 +829,23 @@ tbody tr:last-child td{ border-bottom:none; }
   .tech-dstat{ min-width:calc(50% - 5px); }
 }
 
-/* ===== 服务项目/会员管理 状态下拉 ===== */
-.svc-status-select, .mem-status-select {
+/* ===== 服务项目/会员/员工 状态下拉 ===== */
+.svc-status-select, .mem-status-select, .emp-status-select {
   padding:3px 8px; border:1.5px solid #e2e8f0; border-radius:6px;
   font-size:12px; background:#fff; color:#333; cursor:pointer;
   transition:all .2s; outline:none; min-width:56px;
 }
-.svc-status-select:hover, .mem-status-select:hover { border-color:#1677ff; box-shadow:0 0 0 2px rgba(22,119,255,.1); }
-.svc-status-select:focus, .mem-status-select:focus { border-color:#1677ff; box-shadow:0 0 0 3px rgba(22,119,255,.15); }
-/* 启用/正常 → 绿色边框 */
-.svc-status-select option[value="on"], .mem-status-select option[value="active"] { color:#27ae60; font-weight:600; }
-/* 停用/冻结 → 红色文字 */
+.svc-status-select:hover, .mem-status-select:hover, .emp-status-select:hover { border-color:#1677ff; box-shadow:0 0 0 2px rgba(22,119,255,.1); }
+.svc-status-select:focus, .mem-status-select:focus, .emp-status-select:focus { border-color:#1677ff; box-shadow:0 0 0 3px rgba(22,119,255,.15); }
+/* 启用/正常/在职 → 绿色 */
+.svc-status-select option[value="on"], .mem-status-select option[value="active"], .emp-status-select option[value="active"] { color:#27ae60; font-weight:600; }
+/* 停用/冻结/离职 → 红色 */
 .svc-status-select option[value="off"] { color:#e74c3c; }
-.mem-status-select option[value="frozen"] { color:#e74c3c; }
+.mem-status-select option[value="frozen"], .emp-status-select option[value="leave"] { color:#e74c3c; }
+/* 试用期 → 橙色 */
+.emp-status-select option[value="trial"] { color:#f39c12; font-weight:600; }
+/* 停薪留职 → 灰色 */
+.emp-status-select option[value="suspended"] { color:#95a5a6; }
 
 /* ===== 任务管理 ===== */
 .task-list { display:flex; flex-direction:column; gap:12px; }

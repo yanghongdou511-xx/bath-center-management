@@ -1162,9 +1162,10 @@ function showInvLog() {
 }
 
 // ===== 员工管理 =====
+const EMP_STATUS = { active: ['tag-green', '在职'], leave: ['tag-red', '离职'], trial: ['tag-yellow', '试用期'], suspended: ['tag-gray', '停薪留职'] };
 function renderEmployee(c) {
   c.innerHTML = `
-    <div class="page-head"><h2>员工管理</h2><button class="btn btn-primary" onclick="toast('演示环境：新增员工已预留')">+ 新增员工</button></div>
+    <div class="page-head"><h2>员工管理</h2><button class="btn btn-primary" onclick="addEmployee()">+ 新增员工</button></div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>工号</th><th>姓名</th><th>岗位</th><th>技师等级</th><th>提成</th><th>联系电话</th><th>状态</th></tr></thead>
@@ -1172,10 +1173,93 @@ function renderEmployee(c) {
           ${DB.employees.map(e => `
             <tr><td>${e.id}</td><td><b>${e.name}</b></td><td><span class="tag tag-purple">${e.role}</span></td>
             <td>${e.techLevel === '-' ? '—' : e.techLevel}</td><td>${e.commission}</td><td>${e.phone}</td>
-            <td>${statusTag(e.status)}</td></tr>`).join('')}
+            <td><select class="emp-status-select" onchange="empStatusChange('${e.id}',this.value)">
+              ${Object.entries(EMP_STATUS).map(([k,v]) => `<option value="${k}" ${e.status===k?'selected':''}>${v[1]}</option>`).join('')}
+            </select></td></tr>`).join('')}
         </tbody>
       </table>
     </div>`;
+}
+function empStatusChange(id, newStatus) {
+  const e = DB.employees.find(x => x.id === id);
+  if (!e) return;
+  const oldStatus = e.status;
+  e.status = newStatus;
+  const statusName = EMP_STATUS[newStatus] ? EMP_STATUS[newStatus][1] : newStatus;
+  toast('员工「' + e.name + '」状态已更新为：' + statusName);
+}
+function addEmployee() {
+  openModal('新增员工', `
+    <div class="form-item"><label>姓名 <span class="required">*</span></label><input class="input" id="emp-name" placeholder="请输入员工姓名" /></div>
+    <div style="display:flex;gap:12px">
+      <div class="form-item" style="flex:1"><label>工号</label><input class="input" id="emp-code" placeholder="自动生成" readonly style="background:#f5f7fa;color:#999" value="E${String(4000+DB.employees.length+1).padStart(3,'0')}" /></div>
+      <div class="form-item" style="flex:1"><label>联系电话</label><input class="input" id="emp-phone" placeholder="11位手机号" /></div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <div class="form-item" style="flex:1"><label>岗位</label>
+        <select class="select" id="emp-role">
+          <option value="高级技师">高级技师</option>
+          <option value="按摩技师">按摩技师</option>
+          <option value="足疗技师">足疗技师</option>
+          <option value="前台主管">前台主管</option>
+          <option value="收银员">收银员</option>
+          <option value="保洁员">保洁员</option>
+          <option value="保安">保安</option>
+          <option value="店长">店长</option>
+        </select>
+      </div>
+      <div class="form-item" style="flex:1"><label>技师等级</label>
+        <select class="select" id="emp-level">
+          <option value="—">—（非技师）</option>
+          <option value="特级">特级</option>
+          <option value="高级">高级</option>
+          <option value="中级">中级</option>
+          <option value="初级">初级</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <div class="form-item" style="flex:1"><label>提成比例</label><input class="input" id="emp-commission" placeholder="如 15%" value="10%" /></div>
+      <div class="form-item" style="flex:1"><label>入职日期</label><input class="input" id="emp-joindate" type="date" value="${new Date().toISOString().slice(0,10)}" /></div>
+    </div>
+    <div class="form-item"><label>状态</label>
+      <select class="select" id="emp-status">
+        <option value="active" selected>在职</option>
+        <option value="trial">试用期</option>
+        <option value="suspended">停薪留职</option>
+        <option value="leave">离职</option>
+      </select>
+    </div>
+    <div class="form-item"><label>备注</label><textarea class="input" id="emp-note" rows="2" placeholder="可选，填写备注信息"></textarea></div>
+  `, () => {
+    const name = $('emp-name').value.trim();
+    if (!name) return toast('请输入员工姓名');
+    const phone = $('emp-phone').value.trim();
+    const code = $('emp-code').value.trim() || ('E' + String(4000+DB.employees.length+1).padStart(3,'0'));
+    // 检查工号重复
+    if (DB.employees.find(e => e.id === code)) {
+      // 工号冲突则递增
+      let newCode = code;
+      for (let i = 1; i <= 99; i++) {
+        newCode = 'E' + String(4000+DB.employees.length+i).padStart(3,'0');
+        if (!DB.employees.find(e => e.id === newCode)) break;
+      }
+      code = newCode;
+    }
+    DB.employees.push({
+      id: code,
+      name: name,
+      role: $('emp-role').value,
+      techLevel: $('emp-level').value,
+      commission: $('emp-commission').value || '10%',
+      phone: phone || '—',
+      status: $('emp-status').value,
+      joinDate: $('emp-joindate').value,
+      note: $('emp-note').value.trim()
+    });
+    toast('员工添加成功：' + name + '（工号：' + code + '）');
+    renderEmployee($('content'));
+  }, '确认添加');
 }
 
 // ===== 数据报表 =====
