@@ -804,7 +804,7 @@ function closeConvertModal() {
 }
 
 // 数据持久化 —— localStorage
-const DATA_VERSION = 4; // data.js 结构变更时递增，旧缓存自动失效
+const DATA_VERSION = 5; // data.js 结构变更时递增，旧缓存自动失效
 
 function persistData() {
   try {
@@ -2647,7 +2647,7 @@ function showTechnicianDetail(tid) {
         '</div>' +
       '</div>' +
       '<div class="modal-foot">' +
-        '<button class="btn" onclick="this.closest(\'.modal-mask\')">关闭</button>' +
+        '<button class="btn" onclick="this.closest(\'.modal-mask\').remove()">关闭</button>' +
         (t.status === 'on' && !t.busy ?
           '<button class="btn btn-primary" onclick="toast(\'已将 ' + t.name + ' 加入收银台指定技师\');$(\'.modal-mask\').remove()">预约此技师</button>'
           : (t.busy ?
