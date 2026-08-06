@@ -804,7 +804,7 @@ function closeConvertModal() {
 }
 
 // 数据持久化 —— localStorage
-const DATA_VERSION = 3; // data.js 结构变更时递增，旧缓存自动失效
+const DATA_VERSION = 4; // data.js 结构变更时递增，旧缓存自动失效
 
 function persistData() {
   try {
@@ -2409,6 +2409,25 @@ function genderTag(gender) {
     : '<span class="tag tag-teal" style="font-size:11px">♂ 男</span>';
 }
 
+// 根据技师擅长项目，从服务目录派生详细服务列表（名称/说明/价格/时长）
+function getTechServices(t) {
+  var catalog = (DB.TECH_SERVICE_CATALOG || {});
+  return (t.specialties || []).map(function(name) {
+    var info = catalog[name] || { desc: '由专业技师为您量身定制服务方案。', price: 0, duration: 60, hot: false };
+    return {
+      name: name,
+      desc: info.desc,
+      price: info.price,
+      duration: info.duration,
+      hot: !!info.hot
+    };
+  });
+}
+
+function fmtMoney(n) {
+  return '¥' + (Number(n) || 0).toLocaleString();
+}
+
 function renderTechnician(c) {
   // 筛选逻辑
   let list = DB.technicians.filter(t => t.status !== 'off');
@@ -2471,6 +2490,7 @@ function renderTechnician(c) {
     // 技师卡片网格
     '<div class="tech-grid">' +
       list.map(function(t) {
+        var services = getTechServices(t);
         return '<div class="tech-card" onclick="showTechnicianDetail(\'' + t.id + '\')">' +
           // 头部：头像+姓名+状态
           '<div class="tech-card-head">' +
@@ -2480,7 +2500,7 @@ function renderTechnician(c) {
               genderTag(t.gender) +
               '<span class="tag ' + (t.busy ? 'tag-orange' : 'tag-green') + '" style="font-size:11px;margin-left:4px">' + (t.busy ? '服务中' : '空闲') + '</span>' +
             '</div>' +
-            '<div class="tech-emp-no">工号：' + t.empNo + '</div>' +
+            '<div class="tech-emp-no">工号：' + t.empNo + (t.store ? ' · ' + t.store : '') + '</div>' +
           '</div>' +
 
           // 分类与评分
@@ -2489,12 +2509,23 @@ function renderTechnician(c) {
             '<span class="tech-rating-inline">' + starRating(t.rating) + '</span>' +
           '</div>' +
 
+          // 资质
+          '<div class="tech-cert-row">🎓 ' + esc(t.cert || '—') + '</div>' +
+
           // 擅长项目标签
           '<div class="tech-specialties">' +
             t.specialties.slice(0, 3).map(function(s) {
               return '<span class="tech-skill-tag">' + s + '</span>';
             }).join('') +
             (t.specialties.length > 3 ? '<span class="tech-skill-tag tech-more">+' + (t.specialties.length - 3) + '</span>' : '') +
+          '</div>' +
+
+          // 服务项目预览（名称 + 价格 + 时长）
+          '<div class="tech-services-preview">' +
+            services.slice(0, 2).map(function(s) {
+              return '<div class="tech-svc-chip"><span class="tech-svc-chip-name">' + s.name + '</span><span class="tech-svc-chip-meta">' + fmtMoney(s.price) + ' · ' + s.duration + '分钟</span></div>';
+            }).join('') +
+            '<div class="tech-svc-more">共 ' + services.length + ' 项可约 ›</div>' +
           '</div>' +
 
           // 从业年限与服务次数
@@ -2549,7 +2580,9 @@ function showTechnicianDetail(tid) {
               '<span>工号：<b>' + t.empNo + '</b></span>' +
               '<span style="margin-left:16px">分类：<b>' + t.category + '</b></span>' +
               '<span style="margin-left:16px">从业：<b>' + t.experience + ' 年</b></span>' +
+              '<span style="margin-left:16px">门店：<b>' + (t.store || '—') + '</b></span>' +
             '</div>' +
+            '<div class="tech-detail-cert">🎓 ' + esc(t.cert || '—') + '</div>' +
             '<div class="tech-detail-rating">' + starRating(t.rating) + ' <span class="muted">（' + t.reviewCount + ' 条评价）</span></div>' +
           '</div>' +
         '</div>' +
@@ -2557,6 +2590,7 @@ function showTechnicianDetail(tid) {
         // 联系方式与班次
         '<div class="tech-detail-contact">' +
           '<div class="tech-contact-item">📱 ' + t.phone + '</div>' +
+          '<div class="tech-contact-item">🏬 ' + (t.store || '—') + '</div>' +
           '<div class="tech-contact-item">🕐 ' + t.schedule + '</div>' +
         '</div>' +
 
@@ -2566,6 +2600,7 @@ function showTechnicianDetail(tid) {
           '<div class="tech-dstat"><div class="tech-dstat-val">' + t.reviewCount + '</div><div class="tech-dstat-lbl">顾客评价</div></div>' +
           '<div class="tech-dstat"><div class="tech-dstat-val">' + t.experience + '年</div><div class="tech-dstat-lbl">从业年限</div></div>' +
           '<div class="tech-dstat"><div class="tech-dstat-val">' + t.specialties.length + '项</div><div class="tech-dstat-lbl">擅长项目</div></div>' +
+          '<div class="tech-dstat"><div class="tech-dstat-val">' + (t.today || 0) + '</div><div class="tech-dstat-lbl">今日服务</div></div>' +
         '</div>' +
 
         // 擅长项目
@@ -2574,6 +2609,23 @@ function showTechnicianDetail(tid) {
           '<div class="tech-specialty-list">' +
             t.specialties.map(function(s) {
               return '<span class="tech-specialty-item">' + s + '</span>';
+            }).join('') +
+          '</div>' +
+        '</div>' +
+
+        // 可约服务项目（服务名称 / 内容说明 / 价格 / 时长）
+        '<div class="tech-detail-section">' +
+          '<h4 style="font-size:15px;font-weight:700;margin-bottom:10px">💆 可约服务项目（' + getTechServices(t).length + '）</h4>' +
+          '<div class="tech-service-grid">' +
+            getTechServices(t).map(function(s) {
+              return '<div class="tech-service-card' + (s.hot ? ' tech-service-hot' : '') + '">' +
+                '<div class="tech-svc-head"><span class="tech-svc-title">' + s.name + '</span>' + (s.hot ? '<span class="tech-svc-badge">热门</span>' : '') + '</div>' +
+                '<div class="tech-svc-desc">' + s.desc + '</div>' +
+                '<div class="tech-svc-foot">' +
+                  '<span class="tech-svc-price">' + fmtMoney(s.price) + '</span>' +
+                  '<span class="tech-svc-dur">⏱ ' + s.duration + ' 分钟</span>' +
+                '</div>' +
+              '</div>';
             }).join('') +
           '</div>' +
         '</div>' +
@@ -2664,6 +2716,16 @@ function addTechnician() {
     <div class="form-item"><label>联系电话</label><input class="input" id="nt-phone" placeholder="11位手机号" /></div>
     <div class="form-item"><label>个人简介</label><textarea class="input" id="nt-bio" rows="3" placeholder="简要介绍技师的从业背景、擅长领域、服务特色等..."></textarea></div>
     <div style="display:flex;gap:12px">
+      <div class="form-item" style="flex:1"><label>资质认证</label><input class="input" id="nt-cert" placeholder="如：国家高级美容师 / 中医康复理疗师" /></div>
+      <div class="form-item" style="flex:1"><label>所属门店</label>
+        <select class="select" id="nt-store">
+          <option value="旗舰店">旗舰店</option>
+          <option value="中心店">中心店</option>
+          <option value="社区店">社区店</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px">
       <div class="form-item" style="flex:1"><label>状态</label>
         <select class="select" id="nt-status">
           <option value="on" selected>在岗</option>
@@ -2710,6 +2772,9 @@ function addTechnician() {
       status: $('nt-status').value,
       busy: false,
       phone: $('nt-phone').value.trim() || '—',
+      cert: $('nt-cert').value.trim() || '—',
+      store: $('nt-store').value || '旗舰店',
+      today: 0,
       bio: $('nt-bio').value.trim() || name + '，' + $('nt-category').value + '，从业' + ($('nt-exp').value || 3) + '年，欢迎到店体验。',
       tags: ['新入职']
     });

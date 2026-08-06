@@ -206,7 +206,7 @@ assert(convertedGuest.converted === true, 'DOM: 已转化散客无法再次转�
 var savedData = localStorage.getItem('bathcenter_data');
 assert(savedData !== null, 'DOM: 数据已持久化到localStorage');
 var parsed = JSON.parse(savedData);
-assert(parsed._v === 3, 'DOM: 持久化数据版本=3');
+assert(parsed._v === 4, 'DOM: 持久化数据版本=4（技师区结构变更已递增）');
 assert(parsed.members.length === 9, 'DOM: 持久化会员数=9');
 assert(parsed.walkinGuests.find(function(x){return x.id==='W10001';}).converted === true, 'DOM: 持久化中W10001已转化');
 

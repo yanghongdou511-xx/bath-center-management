@@ -836,11 +836,48 @@ tbody tr:last-child td{ border-bottom:none; }
   padding:14px 16px; border:1px solid #f1f4f9; text-align:justify;
 }
 
+/* 卡片：资质行 */
+.tech-cert-row{ font-size:12px; color:var(--text-2); margin-bottom:10px; line-height:1.5; }
+
+/* 卡片：服务项目预览 */
+.tech-services-preview{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+.tech-svc-chip{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  background:linear-gradient(135deg,#f6f9ff,#eef4ff); border:1px solid #e2ecff; border-radius:8px;
+  padding:7px 11px; font-size:12px;
+}
+.tech-svc-chip-name{ font-weight:700; color:var(--text-1); }
+.tech-svc-chip-meta{ color:var(--primary); font-weight:700; white-space:nowrap; }
+.tech-svc-more{ font-size:12px; color:var(--text-3); text-align:right; padding-top:2px; }
+
+/* 详情：资质 */
+.tech-detail-cert{ font-size:13px; color:var(--text-2); margin-bottom:6px; }
+
+/* 详情：可约服务项目网格 */
+.tech-service-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.tech-service-card{
+  background:#fff; border:1px solid #f1f4f9; border-radius:12px; padding:14px;
+  transition:transform .18s, box-shadow .18s; position:relative; overflow:hidden;
+}
+.tech-service-card:hover{ transform:translateY(-2px); box-shadow:var(--shadow); }
+.tech-service-card.tech-service-hot{ border-color:#ffd591; background:linear-gradient(135deg,#fffdf7,#fff6e9); }
+.tech-svc-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.tech-svc-title{ font-size:14px; font-weight:800; color:var(--text-1); }
+.tech-svc-badge{
+  flex-shrink:0; font-size:10px; font-weight:800; color:#d48806; background:#fff1d6;
+  border:1px solid #ffd591; border-radius:20px; padding:1px 8px;
+}
+.tech-svc-desc{ font-size:12px; line-height:1.7; color:var(--text-3); min-height:42px; margin-bottom:10px; text-align:justify; }
+.tech-svc-foot{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.tech-svc-price{ font-size:18px; font-weight:800; color:#e8470b; }
+.tech-svc-dur{ font-size:12px; color:var(--text-3); background:#f5f7fa; border-radius:6px; padding:3px 8px; }
+
 /* 响应式 */
 @media(max-width:760px){
   .tech-grid{ grid-template-columns:1fr; }
   .tech-detail-stats{ flex-wrap:wrap; }
   .tech-dstat{ min-width:calc(50% - 5px); }
+  .tech-service-grid{ grid-template-columns:1fr; }
 }
 
 /* ===== 服务项目/会员/员工 状态下拉 ===== */
