@@ -1007,6 +1007,10 @@ tbody tr:last-child td{ border-bottom:none; }
 /* 时间戳行 */
 .task-time-row { display:flex; gap:16px; font-size:11px; color:#9ca3af; border-top:1px solid #f0f2f5; padding-top:8px; margin-top:4px; }
 
+/* 任务表单 */
+.task-form-errors{ background:#fdf0ef; border:1px solid #f5c6cb; border-radius:8px; padding:10px 14px; margin-top:8px; }
+.task-form-errors div{ display:flex; align-items:flex-start; gap:4px; }
+
 /* 响应式 */
 @media(max-width:768px){
   .task-card-body{ padding:12px 14px 10px; }

@@ -2882,6 +2882,196 @@ function changeTaskStatus(taskId, newStatus) {
   renderTask($('content'));
 }
 
+// ===== 新增任务表单 =====
+function showTaskForm(editId) {
+  var task = editId ? DB.tasks.find(function(t) { return t.id === editId; }) : null;
+  var isEdit = !!task;
+  var title = isEdit ? '编辑任务' : '新增任务';
+
+  // 负责人选项：从员工列表提取
+  var assigneeOptions = DB.employees.map(function(e) {
+    return '<option value="' + e.name + '"' + (task && task.assignee === e.name ? ' selected' : '') + '>' + e.name + ' (' + e.role + ')</option>';
+  }).join('');
+
+  var modal = document.createElement('div');
+  modal.className = 'modal-mask';
+  modal.innerHTML =
+    '<div class="modal" style="max-width:580px;width:90%">' +
+      '<div class="modal-header"><h3>' + title + '</h3><button class="modal-close" onclick="this.closest(\'.modal-mask\').remove()">&times;</button></div>' +
+      '<div class="modal-body">' +
+        '<form id="taskForm" onsubmit="return false;">' +
+          '<input type="hidden" id="task-edit-id" value="' + (editId || '') + '" />' +
+
+          '<div class="form-item"><label>任务标题 <span style="color:#e74c3c">*</span></label>' +
+            '<input type="text" id="task-title" class="input" placeholder="请输入任务标题（必填，2-50字）" value="' + esc(task ? task.title : '') + '" maxlength="50" /></div>' +
+
+          '<div class="form-item"><label>任务描述</label>' +
+            '<textarea id="task-desc" class="textarea" rows="3" placeholder="请输入任务详细描述（选填）" maxlength="500">' + esc(task ? task.desc : '') + '</textarea>' +
+            '<div class="muted" style="font-size:11px;text-align:right;margin-top:2px"><span id="task-desc-count">' + (task ? task.desc.length : 0) + '</span>/500</div></div>' +
+
+          '<div style="display:flex;gap:12px">' +
+            '<div class="form-item" style="flex:1"><label>负责人 <span style="color:#e74c3c">*</span></label>' +
+              '<select id="task-assignee" class="select">' +
+                '<option value="">-- 请选择负责人 --</option>' +
+                assigneeOptions +
+              '</select></div>' +
+            '<div class="form-item" style="flex:1"><label>优先级</label>' +
+              '<select id="task-priority" class="select">' +
+                '<option value="高"' + (task && task.priority === '高' ? ' selected' : '') + '>🔴 高优先</option>' +
+                '<option value="中"' + (!task || task.priority === '中' ? ' selected' : '') + '>🟡 中优先</option>' +
+                '<option value="低"' + (task && task.priority === '低' ? ' selected' : '') + '>🟢 低优先</option>' +
+              '</select></div>' +
+          '</div>' +
+
+          '<div style="display:flex;gap:12px">' +
+            '<div class="form-item" style="flex:1"><label>截止日期 <span style="color:#e74c3c">*</span></label>' +
+              '<input type="date" id="task-deadline" class="input" value="' + (task ? task.deadline : '') + '" /></div>' +
+            '<div class="form-item" style="flex:1"><label>状态</label>' +
+              '<select id="task-status-sel" class="select">' +
+                '<option value="待开始"' + ((!task || task.status === '待开始') ? ' selected' : '') + '>待开始</option>' +
+                '<option value="进行中"' + (task && task.status === '进行中' ? ' selected' : '') + '>进行中</option>' +
+                '<option value="已完成"' + (task && task.status === '已完成' ? ' selected' : '') + '>已完成</option>' +
+                '<option value="已取消"' + (task && task.status === '已取消' ? ' selected' : '') + '>已取消</option>' +
+              '</select></div>' +
+          '</div>' +
+
+          '<div id="task-form-errors" class="task-form-errors" style="display:none"></div>' +
+        '</form>' +
+      '</div>' +
+      '<div class="modal-footer" style="justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #eee">' +
+        '<button class="btn btn-sm" onclick="this.closest(\'.modal-mask\').remove()">取消</button>' +
+        '<button class="btn btn-primary btn-sm" onclick="saveTask()">' + (isEdit ? '保存修改' : '创建任务') + '</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(modal);
+
+  // 描述字数统计
+  var descEl = document.getElementById('task-desc');
+  if (descEl) {
+    descEl.addEventListener('input', function() {
+      document.getElementById('task-desc-count').textContent = this.value.length;
+    });
+  }
+
+  // 截止日期默认值：今天+7天
+  if (!task) {
+    var dl = document.getElementById('task-deadline');
+    if (dl && !dl.value) {
+      var def = new Date();
+      def.setDate(def.getDate() + 7);
+      dl.value = def.toISOString().slice(0, 10);
+    }
+  }
+}
+
+// 表单验证
+function validateTaskForm() {
+  var errors = [];
+  var title = document.getElementById('task-title').value.trim();
+  var assignee = document.getElementById('task-assignee').value;
+  var deadline = document.getElementById('task-deadline').value;
+
+  if (!title) {
+    errors.push('任务标题为必填项');
+  } else if (title.length < 2) {
+    errors.push('任务标题至少需要2个字符');
+  } else if (title.length > 50) {
+    errors.push('任务标题不能超过50个字符');
+  }
+
+  if (!assignee) {
+    errors.push('请选择负责人');
+  }
+
+  if (!deadline) {
+    errors.push('截止日期为必填项');
+  } else {
+    var d = new Date(deadline);
+    var today = new Date(); today.setHours(0,0,0,0);
+    if (d < today) {
+      errors.push('截止日期不能早于今天');
+    }
+  }
+
+  return errors;
+}
+
+// 显示/隐藏表单错误
+function showTaskErrors(errors) {
+  var el = document.getElementById('task-form-errors');
+  if (!el) return;
+  if (errors.length > 0) {
+    el.style.display = 'block';
+    el.innerHTML = errors.map(function(e) { return '<div style="color:#e74c3c;font-size:12px;margin-bottom:4px">⚠️ ' + e + '</div>'; }).join('');
+  } else {
+    el.style.display = 'none';
+    el.innerHTML = '';
+  }
+}
+
+// 保存任务
+function saveTask() {
+  var errors = validateTaskForm();
+  showTaskErrors(errors);
+  if (errors.length > 0) return;
+
+  var editId = document.getElementById('task-edit-id').value;
+  var title = document.getElementById('task-title').value.trim();
+  var desc = document.getElementById('task-desc').value.trim();
+  var assignee = document.getElementById('task-assignee').value;
+  var priority = document.getElementById('task-priority').value;
+  var deadline = document.getElementById('task-deadline').value;
+  var status = document.getElementById('task-status-sel').value;
+  var now = new Date().toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }).replace(/\//g, '-');
+
+  if (editId) {
+    // 编辑模式
+    var task = DB.tasks.find(function(t) { return t.id === editId; });
+    if (task) {
+      task.title = title;
+      task.desc = desc;
+      task.assignee = assignee;
+      task.priority = priority;
+      task.deadline = deadline;
+      task.status = status;
+      task.updatedAt = now;
+      toast('任务「' + title + '」已更新');
+    }
+  } else {
+    // 新增模式 - 自动生成ID
+    var maxNum = 0;
+    DB.tasks.forEach(function(t) {
+      var m = t.id.match(/^TK(\d+)$/);
+      if (m) maxNum = Math.max(maxNum, parseInt(m[1]));
+    });
+    var newId = 'TK' + String(maxNum + 1).padStart(3, '0');
+
+    var newTask = {
+      id: newId,
+      title: title,
+      desc: desc,
+      assignee: assignee,
+      priority: priority,
+      deadline: deadline,
+      status: status,
+      createdAt: now,
+      updatedAt: now
+    };
+    DB.tasks.push(newTask);
+    toast('任务「' + title + '」创建成功（编号：' + newId + '）');
+  }
+
+  // 持久化到 localStorage
+  persistData();
+
+  // 关闭弹窗并刷新
+  var modal = document.querySelector('.modal-mask');
+  if (modal) modal.remove();
+
+  renderTask($('content'));
+}
+
 function renderTask(c) {
   var list = DB.tasks.slice();
   if (taskFilter) list = list.filter(function(t) { return t.status === taskFilter; });
@@ -2901,7 +3091,7 @@ function renderTask(c) {
 
   c.innerHTML =
     '<div class="page-head">' +
-    '<button class="btn btn-primary" onclick="toast(\'演示环境：新增任务功能已预留\')">+ 新增任务</button></div>' +
+    '<button class="btn btn-primary" onclick="showTaskForm()">+ 新增任务</button></div>' +
 
     '<div class="att-stats">' +
       '<div class="att-stat-card"><div class="att-stat-num">' + total + '</div><div class="att-stat-label">全部任务</div></div>' +
