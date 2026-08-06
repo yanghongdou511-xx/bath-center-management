@@ -752,27 +752,35 @@ function toggleRoom(no) {
 
 // ===== 库存管理 =====
 const INV_STATUS = { normal: ['tag-green', '正常'], warn: ['tag-red', '库存预警'], disabled: ['tag-gray', '停用'] };
-const INV_STATUS_FLOW = { normal: 'warn', warn: 'disabled', disabled: 'normal' };
 const INV_STATUS_TXT = { normal: '正常', warn: '库存预警', disabled: '停用' };
+const INV_STATUS_OPTIONS = [
+  { value: 'normal', label: '正常', cls: 'tag-green' },
+  { value: 'warn', label: '库存预警', cls: 'tag-red' },
+  { value: 'disabled', label: '停用', cls: 'tag-gray' }
+];
 
-function invStatusTag(s) {
-  const [c, t] = INV_STATUS[s] || INV_STATUS['normal'];
-  return `<span class="tag ${c}" style="cursor:pointer;user-select:none" onclick="toggleInvStatus(this)" data-status="${s}">${t} ▾</span>`;
+// 状态下拉选择框（带颜色标识）
+function invStatusSelect(pid, currentStatus) {
+  const opts = INV_STATUS_OPTIONS.map(o =>
+    `<option value="${o.value}" ${o.value === currentStatus ? 'selected' : ''}>${o.label}</option>`
+  ).join('');
+  return `<select class="inv-status-select" data-pid="${pid}" onchange="changeInvStatus(this)">
+    ${opts}
+  </select>`;
 }
 
-function toggleInvStatus(el) {
-  const cur = el.dataset.status;
-  const next = INV_STATUS_FLOW[cur];
-  // 找到对应商品（向上找到tr，再找id）
-  const tr = el.closest('tr');
-  if (!tr) return;
-  const pid = tr.cells[0].textContent.trim();
+function changeInvStatus(sel) {
+  const pid = sel.dataset.pid;
+  const newStatus = sel.value;
   const p = DB.inventory.find(x => x.id === pid);
   if (!p) return;
-  p.status = next;
-  addInvLog(pid, p.name, 0, '状态变更', INV_STATUS_TXT[cur] + ' → ' + INV_STATUS_TXT[next]);
-  toast(p.name + ' 状态 → ' + INV_STATUS_TXT[next]);
-  renderInventory($('content'));
+  const oldStatus = p.status;
+  if (oldStatus === newStatus) return;
+  p.status = newStatus;
+  addInvLog(pid, p.name, 0, '状态变更', INV_STATUS_TXT[oldStatus] + ' → ' + INV_STATUS_TXT[newStatus]);
+  toast(p.name + ' 状态 → ' + INV_STATUS_TXT[newStatus]);
+  // 只刷新当前行状态列，不重新渲染整个表格（避免闪烁）
+  sel.className = 'inv-status-select inv-status-' + newStatus;
 }
 
 function addInvLog(pid, pname, qty, type, note) {
@@ -788,37 +796,49 @@ function addInvLog(pid, pname, qty, type, note) {
 function renderInventory(c) {
   c.innerHTML = `
     <div class="page-head"><h2>库存管理</h2>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;align-items:center">
         <button class="btn btn-primary" onclick="purchaseInbound()">+ 采购入库</button>
         <button class="btn" onclick="showInvLog()">📋 操作日志</button>
       </div>
     </div>
-    <div class="filter-bar">
-      <span class="muted">⚠️ 红色为低于安全库存预警商品 · 点击状态标签可切换 正常↔预警↔停用</span>
+    <div class="filter-bar" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span class="muted">⚠️ 红色为低于安全库存预警商品</span>
+      <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+        <label class="muted" style="font-size:13px;white-space:nowrap">状态筛选：</label>
+        <select id="inv-filter-status" class="select" style="width:120px;padding:4px 8px;font-size:13px;border-radius:6px" onchange="renderInventory($('content'))">
+          <option value="">全部</option>
+          <option value="normal">正常</option>
+          <option value="warn">库存预警</option>
+          <option value="disabled">停用</option>
+        </select>
+      </div>
     </div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>编号</th><th>商品名称</th><th>当前库存</th><th>单位</th><th>安全线</th><th>供应商</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>
-          ${DB.inventory.map(p => {
-            const autoWarn = p.stock < p.warnLine && p.status !== 'disabled';
-            const statusShow = p.status === 'disabled' ? INV_STATUS[p.status] : (autoWarn ? INV_STATUS['warn'] : INV_STATUS['normal']);
-            const [sCls, sTxt] = statusShow;
-            return `<tr style="${autoWarn && p.status !== 'disabled' ? 'background:#fff1f0' : ''}">
-              <td>${p.id}</td>
-              <td><b>${p.name}</b></td>
-              <td><span class="inv-stock" style="cursor:pointer;font-weight:600;color:${autoWarn ? '#ff4d4f' : '#333'};text-decoration:underline;text-decoration-style:dotted;padding:2px 6px;border-radius:4px;background:${autoWarn ? '#fff1f0':'#f8fafc'}" onclick="adjustStock('${p.id}')">${p.stock}</span></td>
-              <td>${p.unit}</td>
-              <td>${p.warnLine}</td>
-              <td>${p.supplier}</td>
-              <td><span class="tag ${sCls}" style="cursor:pointer;user-select:none" onclick="toggleInvStatus(this)" data-status="${p.status}">${sTxt} ▾</span></td>
-              <td>
-                <button class="btn btn-sm btn-primary" onclick="stockIn('${p.id}')">入库</button>
-                <button class="btn btn-sm" onclick="stockOut('${p.id}')">出库</button>
-                <button class="btn btn-sm" onclick="editProduct('${p.id}')">编辑</button>
-              </td>
-            </tr>`;
-          }).join('')}
+          ${(() => {
+            const fStatus = $('inv-filter-status') ? $('inv-filter-status').value : '';
+            let items = DB.inventory;
+            if (fStatus) items = items.filter(p => p.status === fStatus);
+            return items.map(p => {
+              const autoWarn = p.stock < p.warnLine && p.status !== 'disabled';
+              return `<tr style="${autoWarn && p.status !== 'disabled' ? 'background:#fff1f0' : ''}">
+                <td>${p.id}</td>
+                <td><b>${p.name}</b></td>
+                <td><span class="inv-stock" style="cursor:pointer;font-weight:600;color:${autoWarn ? '#ff4d4f' : '#333'};text-decoration:underline;text-decoration-style:dotted;padding:2px 6px;border-radius:4px;background:${autoWarn ? '#fff1f0':'#f8fafc'}" onclick="adjustStock('${p.id}')">${p.stock}</span></td>
+                <td>${p.unit}</td>
+                <td>${p.warnLine}</td>
+                <td>${p.supplier}</td>
+                <td>${invStatusSelect(p.id, autoWarn && p.status !== 'disabled' ? 'warn' : p.status)}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary" onclick="stockIn('${p.id}')">入库</button>
+                  <button class="btn btn-sm" onclick="stockOut('${p.id}')">出库</button>
+                  <button class="btn btn-sm" onclick="editProduct('${p.id}')">编辑</button>
+                </td>
+              </tr>`;
+            }).join('');
+          })()}
         </tbody>
       </table>
     </div>
