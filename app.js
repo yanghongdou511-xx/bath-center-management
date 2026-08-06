@@ -320,8 +320,22 @@ function renderWalkin(c) {
     if (!kw) return true;
     return g.name.indexOf(kw) !== -1 || g.phone.indexOf(kw) !== -1 || g.id.indexOf(kw) !== -1;
   });
+  var total = DB.walkinGuests.length;
+  var convertedCnt = DB.walkinGuests.filter(function(g) { return g.converted; }).length;
+  var convRate = total ? Math.round(convertedCnt / total * 100) : 0;
+
   c.innerHTML =
-    '<div class="page-head"><h2>散客区</h2><button class="btn btn-primary" onclick="addWalkinGuest()">+ 新增散客</button></div>' +
+    '<div class="page-head"><h2>散客区</h2>' +
+      '<div style="display:flex;gap:10px;align-items:center">' +
+        '<button class="btn btn-text" onclick="resetDemoData()" title="清除本地缓存，恢复初始演示数据">↺ 重置数据</button>' +
+        '<button class="btn btn-primary" onclick="addWalkinGuest()">+ 新增散客</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">' +
+      '<div class="stat-card"><div class="stat-icon">🚶</div><div class="stat-label">散客总数</div><div class="stat-value">' + total + '</div><div class="stat-trend" style="color:var(--text-3)">当前在册散客</div></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="color:#7c3aed">👑</div><div class="stat-label">已转会员</div><div class="stat-value" style="color:#7c3aed">' + convertedCnt + '</div><div class="stat-trend" style="color:var(--text-3)">累计转化人数</div></div>' +
+      '<div class="stat-card"><div class="stat-icon" style="color:#16a34a">📈</div><div class="stat-label">转化率</div><div class="stat-value" style="color:#16a34a">' + convRate + '%</div><div class="stat-trend" style="color:var(--text-3)">已转化 / 散客总数</div></div>' +
+    '</div>' +
     '<div class="filter-bar">' +
       '<input class="search-input" placeholder="搜索姓名/手机号/散客号" value="' + esc(kw) + '" oninput="walkinKeyword=this.value;renderWalkin($(\'content\'))" />' +
       '<span class="muted">共 ' + list.length + ' 位散客</span>' +
@@ -339,10 +353,21 @@ function renderWalkin(c) {
           '<td>' + g.lastVisit + '</td>' +
           '<td>' + walkinStatusSelect(g.id, g.status) + '</td>' +
           '<td class="row-actions">' +
+            (g.converted ? '<span class="tag tag-purple" style="font-size:11px">已转会员</span> ' : '<span class="text-link" style="color:#1677ff;font-weight:600" onclick="convertToMember(\'' + g.id + '\')">👑 转会员</span>') +
             '<span class="text-link" onclick="editWalkinGuest(\'' + g.id + '\')">编辑</span>' +
             '<span class="text-link" style="color:#e74c3c" onclick="deleteWalkinGuest(\'' + g.id + '\')">删除</span>' +
           '</td></tr>';
       }).join('') + '</tbody></table></div>';
+}
+
+// 生成下一个散客号：取现有最大编号 +1，避免删除后重号
+function nextWalkinId() {
+  var max = 10000;
+  DB.walkinGuests.forEach(function(g) {
+    var n = parseInt(String(g.id).replace(/\D/g, ''), 10);
+    if (!isNaN(n) && n > max) max = n;
+  });
+  return 'W' + (max + 1);
 }
 
 // 新增散客弹窗
@@ -358,7 +383,7 @@ function addWalkinGuest() {
     function() {
       var name = $('wg-name').value.trim();
       if (!name) return toast('请输入姓名');
-      var id = 'W' + String(10009 + DB.walkinGuests.length);
+      var id = nextWalkinId();
       DB.walkinGuests.unshift({
         id: id,
         name: name,
@@ -424,6 +449,295 @@ function deleteWalkinGuest(id) {
       renderWalkin($('content'));
     }, '确认删除');
 }
+
+// ===== 散客转会员模块 =====
+
+// 会员等级权益配置
+const MEMBER_BENEFITS = [
+  { level: '普通会员', icon: '🥉', discount: '9.8折', color: '#94a3b8', bgColor: '#f8fafc', features: ['基础会员折扣', '积分累计1倍/元', '生日当月8.8折', '在线预约服务'] },
+  { level: '银卡', icon: '🥈', discount: '9.5折', color: '#64748b', bgColor: '#f1f5f9', features: ['银卡专属折扣', '积分累计1.2倍/元', '生日当月8.5折', '每月1次免费茶点', '优先排队'] },
+  { level: '金卡', icon: '🥇', discount: '9.0折', color: '#d97706', bgColor: '#fffbf0', features: ['金卡专属折扣', '积分累计1.5倍/元', '生日当月8折', '每月2次免费茶点', 'VIP休息区', '免费停车2h'] },
+  { level: '铂金卡', icon: '💎', discount: '8.5折', color: '#7c3aed', bgColor: '#f6f2ff', features: ['铂金专属折扣', '积分累计2倍/元', '生日免单1次(限¥200)', '无限次免费茶点', 'VIP包厢优先', '免费停车4h', '专属客服'] },
+  { level: '钻石卡', icon: '👑', discount: '8.0折', color: '#dc2626', bgColor: '#fef3f2', features: ['钻石专属折扣', '积分累计3倍/元', '生日免单1次(限¥500)', '全品类免费茶点', 'VIP私汤预留', '免费停车不限', '专属客服+技师', '年度健康体检'] }
+];
+
+// 转化步骤状态
+let convertStep = 1;
+let convertSelectedLevel = 2; // 默认推荐金卡
+let convertGuestId = null;
+
+// 主入口：点击"转会员"
+function convertToMember(guestId) {
+  var g = DB.walkinGuests.find(function(x) { return x.id === guestId; });
+  if (!g) return;
+  if (g.status === 'blacklist') { toast('黑名单用户无法转为会员'); return; }
+  if (g.converted) { toast('该散客已于 ' + (g.convertDate || '') + ' 转为会员 ' + g.convertedTo); return; }
+
+  convertGuestId = guestId;
+  convertStep = 1;
+  convertSelectedLevel = 2; // 默认推荐金卡
+
+  renderConvertModal(g);
+}
+
+// 渲染转化弹窗（多步骤）
+function renderConvertModal(guest) {
+  var stepsHtml = '';
+  for (var i = 1; i <= 4; i++) {
+    var cls = i === convertStep ? 'active' : (i < convertStep ? 'done' : '');
+    var lineCls = i < 4 ? (i < convertStep ? 'done' : '') : '';
+    stepsHtml += '<div class="convert-step ' + cls + '">' +
+      '<div class="convert-step-num">' + (i < convertStep ? '✓' : i) + '</div>' +
+      '<span class="convert-step-label">' + ['','查看权益','选卡类型','填写信息','完成'][i] + '</span>' +
+      '</div>';
+    if (i < 4) stepsHtml += '<div class="convert-step-line ' + lineCls + '"></div>';
+  }
+
+  var bodyHtml = '<div class="convert-steps">' + stepsHtml + '</div>';
+
+  if (convertStep === 1) {
+    // Step 1: 权益展示
+    bodyHtml += '<div style="padding:20px 24px;text-align:center"><h3 style="margin-bottom:4px">悦泉会员权益体系</h3><p style="color:var(--text-3);font-size:13px">选择适合的会员等级，享受专属特权</p></div>';
+    bodyHtml += '<div class="benefits-grid">';
+    for (var bi = 0; bi < MEMBER_BENEFITS.length; bi++) {
+      var b = MEMBER_BENEFITS[bi];
+      var sel = bi === convertSelectedLevel ? ' selected' : '';
+      var rec = bi === 2 ? ' recommended' : '';
+      bodyHtml += '<div class="benefit-card' + sel + rec + '" onclick="selectBenefitLevel(' + bi + ')">' +
+        '<div class="benefit-icon">' + b.icon + '</div>' +
+        '<div class="benefit-name">' + b.level + '</div>' +
+        '<div class="benefit-discount">' + b.discount + '</div>' +
+        '<ul class="benefit-features">' + b.features.map(function(f){ return '<li>' + f + '</li>'; }).join('') + '</ul>' +
+        '</div>';
+    }
+    bodyHtml += '</div>';
+    bodyHtml += '<div style="padding:16px 24px 24px;text-align:center"><button class="btn btn-primary btn-block" onclick="nextConvertStep()">下一步：选择此等级 →</button></div>';
+
+  } else if (convertStep === 2) {
+    // Step 2: 确认卡类型 + 散客信息
+    var bSel = MEMBER_BENEFITS[convertSelectedLevel];
+    bodyHtml += '<div class="convert-form-area">';
+    bodyHtml += '<div class="convert-guest-info"><div class="convert-guest-avatar">' + guest.name.charAt(0) + '</div><div class="convert-guest-detail"><div class="convert-guest-name">' + esc(guest.name) + '</div><div class="convert-guest-meta">手机：' + esc(guest.phone) + ' | 到访 ' + guest.visitCount + ' 次 | 累计消费 ' + fmtMoney(guest.totalSpent) + '</div></div></div>';
+
+    bodyHtml += '<h4 style="margin-bottom:14px;font-size:15px">选择会员卡类型</h4>';
+    bodyHtml += '<div class="form-row">';
+    bodyHtml += '<div class="form-item"><label>会员等级</label><div class="input" style="background:' + bSel.bgColor + ';border-color:' + bSel.color + ';color:' + bSel.color + ';font-weight:700">' + bSel.icon + ' ' + bSel.level + '（' + bSel.discount + '）</div></div>';
+    bodyHtml += '<div class="form-item"><label>储值金额</label><select class="select" id="cv-recharge">' +
+      '<option value="0">暂不储值</option><option value="500" selected>￥500</option><option value="1000">￥1000（送200）</option><option value="2000">￥2000（送500）</option><option value="3000">￥3000（送800）</option><option value="5000">￥5000（送1500）</option></select></div>';
+    bodyHtml += '</div>';
+    bodyHtml += '<div style="display:flex;gap:12px;margin-top:20px"><button class="btn btn-text" onclick="prevConvertStep()">← 上一步</button><button class="btn btn-primary" style="flex:1" onclick="nextConvertStep()">下一步：填写信息 →</button></div>';
+    bodyHtml += '</div>';
+
+  } else if (convertStep === 3) {
+    // Step 3: 信息采集表单
+    bodyHtml += '<div class="convert-form-area">';
+    bodyHtml += '<div class="convert-guest-info"><div class="convert-guest-avatar">' + guest.name.charAt(0) + '</div><div class="convert-guest-detail"><div class="convert-guest-name">' + esc(guest.name) + ' → 会员注册</div><div class="convert-guest-meta">完善以下信息即可完成会员开通</div></div></div>';
+
+    bodyHtml += '<div class="form-row">';
+    bodyHtml += '<div class="form-item"><label>姓名 <span style="color:#e74c3c">*</span></label><input class="input" id="cm-name" value="' + esc(guest.name) + '" placeholder="请输入真实姓名" /></div>';
+    bodyHtml += '<div class="form-item"><label>手机号 <span style="color:#e74c3c">*</span></label><input class="input" id="cm-phone" value="' + (guest.phone && guest.phone !== '—' ? guest.phone.replace(/\*+/g, '') : '') + '" placeholder="11位手机号" /></div>';
+    bodyHtml += '</div>';
+    bodyHtml += '<div class="form-row">';
+    bodyHtml += '<div class="form-item"><label>性别</label><select class="select" id="cm-gender"><option value="">请选择</option><option value="男" selected>男</option><option value="女">女</option></select></div>';
+    bodyHtml += '<div class="form-item"><label>出生日期</label><input class="input" id="cm-birthday" type="date" /></div>';
+    bodyHtml += '</div>';
+    bodyHtml += '<div class="form-item"><label>备注信息</label><input class="input" id="cm-note" placeholder="如：过敏史、特殊需求等（可选）" /></div>';
+
+    bodyHtml += '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:13px;color:#166534"><b>📋 开通即享：</b>' + MEMBER_BENEFITS[convertSelectedLevel].features.slice(0, 3).join('、') + '</div>';
+
+    bodyHtml += '<div style="display:flex;gap:12px;margin-top:20px"><button class="btn btn-text" onclick="prevConvertStep()">← 上一步</button><button class="btn btn-primary" style="flex:1" onclick="submitConvertMember()">确认开通会员 ✓</button></div>';
+    bodyHtml += '</div>';
+
+  } else if (convertStep === 4) {
+    // Step 4: 完成成功页
+    bodyHtml += '<div class="convert-success">';
+    bodyHtml += '<div class="convert-success-icon">✓</div>';
+    bodyHtml += '<h3>会员开通成功！</h3>';
+    bodyHtml += '<p>欢迎加入悦泉洗浴会员大家庭<br/>已为您生成会员账号并同步数据</p>';
+    bodyHtml += '<div class="convert-success-stats" id="convert-success-stats"></div>';
+    bodyHtml += '<button class="btn btn-primary" style="margin-top:16px;padding:0 36px;height:44px;font-size:15px" onclick="closeConvertModal()">查看会员列表</button>';
+    bodyHtml += '</div>';
+  }
+
+  openModal('散客转会员', bodyHtml, function() {}, '✓ 确认');
+  // 给弹窗加特殊class，隐藏默认footer（转化流程有自己按钮）
+  var modals = document.querySelectorAll('.modal');
+  if (modals.length > 0) {
+    var m = modals[modals.length - 1];
+    m.classList.add('convert-modal');
+    var foot = m.querySelector('.modal-foot');
+    if (foot) foot.style.display = 'none';
+  }
+}
+
+// 选择权益等级
+function selectBenefitLevel(idx) {
+  convertSelectedLevel = idx;
+  renderConvertModal(DB.walkinGuests.find(function(x) { return x.id === convertGuestId; }));
+}
+
+// 下一步
+function nextConvertStep() {
+  if (convertStep < 4) { convertStep++; renderConvertModal(DB.walkinGuests.find(function(x) { return x.id === convertGuestId; })); }
+}
+
+// 上一步
+function prevConvertStep() {
+  if (convertStep > 1) { convertStep--; renderConvertModal(DB.walkinGuests.find(function(x) { return x.id === convertGuestId; })); }
+}
+
+// 储值赠送规则（与下拉选项文案保持一致）
+const RECHARGE_BONUS = { 0: 0, 500: 0, 1000: 200, 2000: 500, 3000: 800, 5000: 1500 };
+function rechargeBonus(amt) {
+  return RECHARGE_BONUS[amt] !== undefined ? RECHARGE_BONUS[amt] : 0;
+}
+
+// 生成下一个会员号：取现有最大编号 +1
+function nextMemberId() {
+  var max = 10000;
+  DB.members.forEach(function(m) {
+    var n = parseInt(String(m.id).replace(/\D/g, ''), 10);
+    if (!isNaN(n) && n > max) max = n;
+  });
+  return 'M' + (max + 1);
+}
+
+// 提交转化 —— 创建会员记录 + 持久化
+function submitConvertMember() {
+  var name = $('cm-name').value.trim();
+  var phone = $('cm-phone').value.trim();
+  if (!name) return toast('请输入姓名');
+  if (!phone || phone.length < 11) return toast('请输入有效的手机号');
+
+  var guest = DB.walkinGuests.find(function(x) { return x.id === convertGuestId; });
+  if (!guest) return toast('散客数据异常');
+
+  var benefit = MEMBER_BENEFITS[convertSelectedLevel];
+  var rechargeAmt = parseInt($('cv-recharge').value || 0, 10) || 0;
+  var bonusAmt = rechargeBonus(rechargeAmt);
+
+  // 生成新会员号（取现有最大编号 +1，避免跳号与重号）
+  var newId = nextMemberId();
+  var nowStr = new Date().toISOString().slice(0, 10);
+
+  // 创建会员记录
+  var newMember = {
+    id: newId,
+    name: name,
+    phone: phone.indexOf('*') > -1 ? guest.phone : (phone.substring(0, 3) + '****' + phone.substring(7)),
+    level: benefit.level,
+    balance: rechargeAmt + bonusAmt,          // 储值本金 + 赠送金额
+    points: Math.floor(rechargeAmt * (convertSelectedLevel + 1)) + 100, // 等级倍率积分 + 开卡礼100
+    regDate: nowStr,
+    status: 'active',
+    sourceWalkin: guest.id, // 记录来源散客
+    gender: $('cm-gender').value || '',
+    birthday: $('cm-birthday').value || '',
+    note: $('cm-note').value || ''
+  };
+
+  // 添加到内存数据库
+  DB.members.push(newMember);
+
+  // 标记散客为已转化
+  guest.converted = true;
+  guest.convertedTo = newId;
+  guest.convertDate = nowStr;
+
+  // 持久化到 localStorage
+  persistData();
+
+  // 进入完成页，显示结果
+  convertStep = 4;
+  renderConvertModal(guest);
+
+  // 填充成功统计数据
+  setTimeout(function() {
+    var statsEl = document.getElementById('convert-success-stats');
+    if (statsEl) {
+      statsEl.innerHTML =
+        '<div class="convert-success-stat"><div class="convert-success-stat-val">' + newId + '</div><div class="convert-success-stat-lbl">会员号</div></div>' +
+        '<div class="convert-success-stat"><div class="convert-success-stat-val">' + benefit.icon + ' ' + benefit.level + '</div><div class="convert-success-stat-lbl">会员等级</div></div>' +
+        '<div class="convert-success-stat"><div class="convert-success-stat-val">' + fmtMoney(newMember.balance) + '</div><div class="convert-success-stat-lbl">卡内余额' + (bonusAmt > 0 ? '（含赠' + fmtMoney(bonusAmt) + '）' : '') + '</div></div>' +
+        '<div class="convert-success-stat"><div class="convert-success-stat-val">' + newMember.points.toLocaleString() + '</div><div class="convert-success-stat-lbl">赠送积分</div></div>';
+    }
+  }, 50);
+
+  toast('🎉 恭喜「' + name + '」成为悦泉' + benefit.level + '会员！');
+}
+
+// 关闭转化弹窗后刷新页面
+function closeConvertModal() {
+  var masks = document.querySelectorAll('.modal-mask');
+  if (masks.length > 0) { masks[masks.length - 1].remove(); }
+  render('member'); // 跳转到会员列表
+}
+
+// 数据持久化 —— localStorage
+const DATA_VERSION = 3; // data.js 结构变更时递增，旧缓存自动失效
+
+function persistData() {
+  try {
+    var dataToSave = {
+      _v: DATA_VERSION,
+      _savedAt: new Date().toISOString(),
+      members: DB.members,
+      walkinGuests: DB.walkinGuests,
+      orders: DB.orders,
+      inventory: DB.inventory,
+      inventoryLog: DB.inventoryLog,
+      tasks: DB.tasks,
+      reviews: DB.reviews,
+      lockers: DB.lockers,
+      coupons: DB.coupons,
+      packages: DB.packages
+    };
+    localStorage.setItem('bathcenter_data', JSON.stringify(dataToSave));
+  } catch(e) {
+    console.warn('持久化失败:', e);
+  }
+}
+
+// 加载持久化数据
+function loadPersistedData() {
+  try {
+    var saved = localStorage.getItem('bathcenter_data');
+    if (saved) {
+      var data = JSON.parse(saved);
+      // 版本不一致 → 丢弃旧缓存，使用 data.js 的最新种子数据
+      if (data._v !== DATA_VERSION) {
+        localStorage.removeItem('bathcenter_data');
+        return;
+      }
+      if (data.members) DB.members = data.members;
+      if (data.walkinGuests) DB.walkinGuests = data.walkinGuests;
+      if (data.orders) DB.orders = data.orders;
+      if (data.inventory) DB.inventory = data.inventory;
+      if (data.inventoryLog) DB.inventoryLog = data.inventoryLog;
+      if (data.tasks) DB.tasks = data.tasks;
+      if (data.reviews) DB.reviews = data.reviews;
+      if (data.lockers) DB.lockers = data.lockers;
+      if (data.coupons) DB.coupons = data.coupons;
+      if (data.packages) DB.packages = data.packages;
+    }
+  } catch(e) {
+    console.warn('加载持久化数据失败:', e);
+  }
+}
+// 重置演示数据：清除本地缓存并重新加载页面
+function resetDemoData() {
+  openModal('↺ 重置演示数据',
+    '<p style="font-size:14px;color:var(--text-2);margin:8px 0">将清除浏览器本地保存的所有业务数据（含新增会员、转化记录等），恢复为初始演示数据。</p>' +
+    '<p style="font-size:12px;color:#e74c3c">此操作不可撤销。</p>',
+    function() {
+      try { localStorage.removeItem('bathcenter_data'); } catch (e) {}
+      toast('已重置，正在重新加载…');
+      setTimeout(function() { location.reload(); }, 600);
+    }, '确认重置');
+}
+
+// 页面加载时尝试恢复数据
+loadPersistedData();
 
 // ===== 服务项目 =====
 let svcCategory = '';
