@@ -92,6 +92,16 @@ assert(missing.length === 0,
 assert(bannedInSpecs.length === 0,
   '技师 specialties 不含任何已删除项目');
 
+console.log('\n=== C2. 分类筛选/新增表单无「中医推拿师」及中医残留 ===');
+assert(TECH_CATEGORIES.indexOf('中医推拿师') < 0,
+  'TECH_CATEGORIES 过滤项不含「中医推拿师」(' + TECH_CATEGORIES.join('/') + ')');
+assert(ac.indexOf('中医推拿师') < 0, 'app.js 源码不含「中医推拿师」');
+assert(ac.indexOf('<option value="中医推拿师">') < 0, '新增技师表单下拉不含「中医推拿师」');
+assert(ac.indexOf('中医康复理疗师') < 0, '表单资质 placeholder 不含「中医康复理疗师」');
+['刮痧拔罐','艾灸养生','产后修复','全身经络疏通'].forEach(function (b) {
+  assert(ac.indexOf('<option value="' + b + '">') < 0, '新增技师表单擅长项不含已删项目: ' + b);
+});
+
 console.log('\n=== D. 技师简介/标签/资质无中医关键词 ===');
 var kwFound = [];
 DB.technicians.forEach(function (t) {
@@ -114,7 +124,7 @@ DB.technicians.forEach(function (t) {
     if (!s.name || !s.desc || typeof s.price !== 'number' || typeof s.duration !== 'number') allOk = false;
   });
 });
-assert(allOk, '12 位技师均成功派生服务项目(名称/说明/价格/时长齐全)');
+assert(allOk, DB.technicians.length + ' 位技师均成功派生服务项目(名称/说明/价格/时长齐全)');
 assert(getTechServices(DB.technicians[0]).length === DB.technicians[0].specialties.length, '服务数量 = 擅长项目数量');
 assert(typeof fmtMoney(398) === 'string' && fmtMoney(398).indexOf('¥') === 0, 'fmtMoney 格式化正常: ' + fmtMoney(398));
 
@@ -146,12 +156,38 @@ try {
   assert(mhtml.indexOf(s0.name) >= 0, '详情含服务名: ' + s0.name);
 } catch (e) { assert(false, 'showTechnicianDetail 异常: ' + e.message); }
 
-console.log('\n=== H. 全量技师字段完整 + DATA_VERSION ===');
+console.log('\n=== H. 全量技师字段完整 + 新增6位女技师 + DATA_VERSION ===');
 var fieldOk = DB.technicians.every(function (t) {
   return getTechServices(t).length > 0 &&
     typeof t.cert === 'string' && typeof t.store === 'string' && typeof t.today === 'number';
 });
 assert(fieldOk, '所有技师均有服务列表且 cert/store/today 字段完整');
+assert(DB.technicians.length === 18, '技师总数 = 18（原12 + 新增6）实际:' + DB.technicians.length);
+var newFemales = DB.technicians.filter(function (t) {
+  return ['T1013','T1014','T1015','T1016','T1017','T1018'].indexOf(t.id) >= 0;
+});
+assert(newFemales.length === 6, '新增女技师数 = 6（实际 ' + newFemales.length + '）');
+assert(newFemales.every(function (t) { return t.gender === '女'; }), '6 位新增技师均为女性');
+assert(newFemales.every(function (t) {
+  return t.name && t.empNo && t.avatar && t.category && (t.specialties || []).length >= 1 &&
+    typeof t.experience === 'number' && typeof t.rating === 'number' && t.schedule && t.phone && t.bio && (t.tags || []).length >= 1;
+}), '6 位新增女技师字段完整(姓名/工号/头像/分类/擅长/从业/评分/班次/电话/简介/标签)');
+assert(newFemales.every(function (t) {
+  return (t.specialties || []).every(function (s) { return !!DB.TECH_SERVICE_CATALOG[s]; });
+}), '6 位新增女技师的擅长项目均能在服务目录中找到说明');
+var femaleCount = DB.technicians.filter(function (t) { return t.gender === '女'; }).length;
+assert(femaleCount >= 12, '女技师总数 ≥ 12（实际 ' + femaleCount + '）');
+
+console.log('\n=== I. 渲染页面无「中医推拿师」文本 ===');
+var mockContent2 = { innerHTML: '' };
+try {
+  renderTechnician(mockContent2);
+  var rh = mockContent2.innerHTML;
+  assert(rh.indexOf('中医推拿师') < 0, '技师区渲染结果不含「中医推拿师」');
+  assert(rh.indexOf('att-stat-ico') >= 0, '技师区统计卡含图标圆(att-stat-ico)视觉增强');
+  assert(rh.indexOf('tech-avatar-f') >= 0 || rh.indexOf('tech-avatar-m') >= 0, '技师卡片含性别头像描边(tech-avatar-f/m)');
+} catch (e) { assert(false, 'renderTechnician 异常: ' + e.message); }
+
 assert(DATA_VERSION === 5, 'DATA_VERSION = 5（旧缓存自动失效）');
 
 console.log('\n=============================');

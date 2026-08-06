@@ -2397,7 +2397,7 @@ let techCategory = '';
 let techKeyword = '';
 let techStatusFilter = '';
 
-const TECH_CATEGORIES = ['全部', 'SPA技师', '足疗技师', '按摩技师', '中医推拿师', '美容美体师', '全能技师'];
+const TECH_CATEGORIES = ['全部', 'SPA技师', '足疗技师', '按摩技师', '美容美体师', '全能技师'];
 
 function starRating(score) {
   const full = Math.floor(score);
@@ -2464,11 +2464,11 @@ function renderTechnician(c) {
 
     // 统计卡片
     '<div class="att-stats">' +
-      '<div class="att-stat-card"><div class="att-stat-num">' + totalCount + '</div><div class="att-stat-label">总人数</div></div>' +
-      '<div class="att-stat-num att-stat-green">' + onCount + '</div><div class="att-stat-label">在岗</div></div>' +
-      '<div class="att-stat-card"><div class="att-stat-num att-stat-blue">' + femaleCount + '</div><div class="att-stat-label">女技师</div></div>' +
-      '<div class="att-stat-card"><div class="att-stat-num' + (busyCount > 0 ? ' att-stat-orange' : '') + '">' + busyCount + '</div><div class="att-stat-label">服务中</div></div>' +
-      '<div class="att-stat-card"><div class="att-stat-num">⭐ ' + avgRating + '</div><div class="att-stat-label">平均评分</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-ico">👥</div><div class="att-stat-num">' + totalCount + '</div><div class="att-stat-label">总人数</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-ico att-ico-green">✅</div><div class="att-stat-num att-stat-green">' + onCount + '</div><div class="att-stat-label">在岗</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-ico att-ico-blue">💁</div><div class="att-stat-num att-stat-blue">' + femaleCount + '</div><div class="att-stat-label">女技师</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-ico att-ico-orange">💆</div><div class="att-stat-num' + (busyCount > 0 ? ' att-stat-orange' : '') + '">' + busyCount + '</div><div class="att-stat-label">服务中</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-ico att-ico-gold">⭐</div><div class="att-stat-num att-stat-gold">' + avgRating + '</div><div class="att-stat-label">平均评分</div></div>' +
     '</div>' +
 
     // 筛选栏
@@ -2495,7 +2495,7 @@ function renderTechnician(c) {
         return '<div class="tech-card" onclick="showTechnicianDetail(\'' + t.id + '\')">' +
           // 头部：头像+姓名+状态
           '<div class="tech-card-head">' +
-            '<div class="tech-avatar">' + t.avatar + '</div>' +
+            '<div class="tech-avatar ' + (t.gender === '女' ? 'tech-avatar-f' : 'tech-avatar-m') + '">' + t.avatar + '</div>' +
             '<div class="tech-name-row">' +
               '<div class="tech-name">' + t.name + '</div>' +
               genderTag(t.gender) +
@@ -2526,7 +2526,7 @@ function renderTechnician(c) {
             services.slice(0, 2).map(function(s) {
               return '<div class="tech-svc-chip"><span class="tech-svc-chip-name">' + s.name + '</span><span class="tech-svc-chip-meta">' + fmtMoney(s.price) + ' · ' + s.duration + '分钟</span></div>';
             }).join('') +
-            '<div class="tech-svc-more">共 ' + services.length + ' 项可约 ›</div>' +
+            '<div class="tech-svc-more">查看全部 ' + services.length + ' 项可约服务 ›</div>' +
           '</div>' +
 
           // 从业年限与服务次数
@@ -2680,7 +2680,6 @@ function addTechnician() {
           <option value="SPA技师">SPA技师</option>
           <option value="足疗技师">足疗技师</option>
           <option value="按摩技师">按摩技师</option>
-          <option value="中医推拿师">中医推拿师</option>
           <option value="美容美体师">美容美体师</option>
           <option value="全能技师">全能技师</option>
         </select>
@@ -2706,18 +2705,16 @@ function addTechnician() {
         <option value="中式推拿">中式推拿</option>
         <option value="面部护理">面部护理</option>
         <option value="淋巴排毒">淋巴排毒</option>
-        <option value="刮痧拔罐">刮痧拔罐</option>
-        <option value="艾灸养生">艾灸养生</option>
         <option value="热石疗法">热石疗法</option>
-        <option value="产后修复">产后修复</option>
         <option value="身体塑形">身体塑形</option>
-        <option value="全身经络疏通">全身经络疏通</option>
+        <option value="玫瑰花瓣浴">玫瑰花瓣浴</option>
+        <option value="头皮养护">头皮养护</option>
       </select>
     </div>
     <div class="form-item"><label>联系电话</label><input class="input" id="nt-phone" placeholder="11位手机号" /></div>
     <div class="form-item"><label>个人简介</label><textarea class="input" id="nt-bio" rows="3" placeholder="简要介绍技师的从业背景、擅长领域、服务特色等..."></textarea></div>
     <div style="display:flex;gap:12px">
-      <div class="form-item" style="flex:1"><label>资质认证</label><input class="input" id="nt-cert" placeholder="如：国家高级美容师 / 中医康复理疗师" /></div>
+      <div class="form-item" style="flex:1"><label>资质认证</label><input class="input" id="nt-cert" placeholder="如：国家高级美容师 / 高级按摩师" /></div>
       <div class="form-item" style="flex:1"><label>所属门店</label>
         <select class="select" id="nt-store">
           <option value="旗舰店">旗舰店</option>

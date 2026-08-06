@@ -52,7 +52,7 @@ assert(svcNames.indexOf('泡澡套餐（沐浴+搓背+头部）') > -1, 'DATA: �
 assert(svcNames.indexOf('牛奶玫瑰浴') > -1, 'DATA: 新增-牛奶玫瑰浴');
 assert(svcNames.indexOf('中药泡浴') > -1, 'DATA: 新增-中药泡浴');
 assert(svcNames.indexOf('足底反射疗法') > -1, 'DATA: 新增-足底反射疗法');
-assert(svcNames.indexOf('艾灸养生足疗') > -1, 'DATA: 新增-艾灸养生足疗');
+assert(svcNames.indexOf('草本养生足疗') > -1, 'DATA: 新增-草本养生足疗(原艾灸养生足疗，去中医化)');
 assert(svcNames.indexOf('中式推拿全身') > -1, 'DATA: 新增-中式推拿全身');
 assert(svcNames.indexOf('热石疗法') > -1, 'DATA: 新增-热石疗法');
 assert(svcNames.indexOf('日式指压') > -1, 'DATA: 新增-日式指压');

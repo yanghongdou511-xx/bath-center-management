@@ -36,7 +36,7 @@ const DB = {
     { id: 'S2002', name: '中药足疗', category: '足疗按摩', price: 168, duration: 90, technician: '需指定', status: 'on' },
     { id: 'S2013', name: '足底反射疗法', category: '足疗按摩', price: 198, duration: 90, technician: '需指定', status: 'on' },
     { id: 'S2014', name: '经络疏通（腿/脚）', category: '足疗按摩', price: 228, duration: 80, technician: '需指定', status: 'on' },
-    { id: 'S2015', name: '艾灸养生足疗', category: '足疗按摩', price: 268, duration: 100, technician: '需指定', status: 'on' },
+    { id: 'S2015', name: '草本养生足疗', category: '足疗按摩', price: 268, duration: 100, technician: '需指定', status: 'on' },
     // —— 按摩SPA ——
     { id: 'S2003', name: '泰式按摩', category: '按摩SPA', price: 298, duration: 120, technician: '需指定', status: 'on' },
     { id: 'S2004', name: '精油SPA', category: '按摩SPA', price: 458, duration: 120, technician: '需指定', status: 'on' },
@@ -243,7 +243,7 @@ const DB = {
       status: 'on', busy: false,
       bio: '专业足疗技师，持有高级康复理疗师资格证。精通���底反射区理论与按摩手法，擅长通过中药足浴配合肩颈头部放松调理亚健康状态。中药足浴配方独家调配，对手脚冰凉、湿气重、疲劳乏力效果显著。服务耐心细致，深受女性顾客喜爱。',
       tags: ['足疗专家', '养生调理'],
-      schedule: '早班 09:00-17:00', phone: '159****4456', cert: '中医康复理疗师资格证', store: '旗舰店', today: 4
+      schedule: '早班 09:00-17:00', phone: '159****4456', cert: '国家高级足部按摩师资格证', store: '旗舰店', today: 4
     },
     {
       id: 'T1003', name: '陈思琪', gender: '女', empNo: 'E4003',
@@ -277,7 +277,7 @@ const DB = {
       avatar: '👩', category: '足疗技师', specialties: ['中药足疗', '足底反射疗法', '腿部塑形按摩', '头部舒缓'],
       experience: 4, rating: 4.6, reviewCount: 145, serviceCount: 2100,
       status: 'on', busy: false,
-      bio: '毕业于河北中医学院康复治疗专业，年轻有活力。擅长结合现代解剖学与中医反射理论进行足疗服务。自创腿部塑形按摩手法，对水肿腿、静脉曲张预防效果良好。态度热情开朗，与年轻顾客沟通融洽。',
+      bio: '毕业于康复治疗技术专业，年轻有活力。擅长结合现代解剖学与现代反射理论进行足疗服务。自创腿部塑形按摩手法，对水肿腿、静脉曲张预防效果良好。态度热情开朗，与年轻顾客沟通融洽。',
       tags: ['新生代', '活力满满'],
       schedule: '中班 12:00-20:00', phone: '152****8899', cert: '康复治疗专业 · 新生代', store: '社区店', today: 2
     },
@@ -334,6 +334,60 @@ const DB = {
       bio: '店内从业年限最长的女技师，全能型选手。精通所有门店服务项目，尤其擅长为首次到店的顾客提供个性化推荐方案。多次被评为年度优秀员工，带教过8名新人技师。服务全面周到，从进门接待到离店关怀都让人倍感舒适。是很多老顾客的指定首选。',
       tags: ['全能技师', '年度优秀', '带教导师'],
       schedule: '早班 09:00-17:00', phone: '158****0012', cert: '年度优秀员工 · 带教导师', store: '旗舰店', today: 9
+    },
+    {
+      id: 'T1013', name: '林悦', gender: '女', empNo: 'E4013',
+      avatar: '👩‍🦰', category: 'SPA技师', specialties: ['精油SPA', '泰式按摩', '面部护理', '淋巴排毒'],
+      experience: 5, rating: 4.8, reviewCount: 243, serviceCount: 3200,
+      status: 'on', busy: false,
+      bio: 'SPA芳疗师，曾在新加坡知名度假村SPA中心进修一年。擅长将精油开背与泰式拉伸结合，为都市白领定制"解压焕活"方案。手法温柔细腻，注重呼吸节奏与音乐氛围的配合，许多顾客反馈"做完像充了电一样"。服务贴心，深受女性顾客与商务客群喜爱。',
+      tags: ['芳疗新秀', '解压专家'],
+      schedule: '中班 12:00-20:00', phone: '159****3320', cert: '国际SPA管理师认证', store: '中心店', today: 4
+    },
+    {
+      id: 'T1014', name: '沈佳怡', gender: '女', empNo: 'E4014',
+      avatar: '👩', category: '足疗技师', specialties: ['中药足疗', '足底反射疗法', '头部舒缓', '腿部塑形按摩'],
+      experience: 6, rating: 4.7, reviewCount: 276, serviceCount: 3640,
+      status: 'on', busy: true,
+      bio: '资深足疗技师，持有高级足部按摩师资格证。深耕足底反射疗法多年，能根据顾客足底状态判断身体疲劳点，配合中药足浴与头部舒缓形成"足头联动"的放松方案。自创的腿部塑形按摩对久坐水肿效果显著。话术少、手法稳，是很多老顾客的"固定搭档"。',
+      tags: ['足疗能手', '反射疗法'],
+      schedule: '晚班 16:00-24:00', phone: '160****7741', cert: '高级足部按摩师资格证', store: '社区店', today: 6
+    },
+    {
+      id: 'T1015', name: '许梦琪', gender: '女', empNo: 'E4015',
+      avatar: '👩‍🦱', category: '按摩技师', specialties: ['中式推拿', '肩颈深度放松', '热石疗法', '深度指压'],
+      experience: 7, rating: 4.8, reviewCount: 312, serviceCount: 4680,
+      status: 'on', busy: false,
+      bio: '专业按摩技师，毕业于正规推拿培训院校。擅长中式推拿与肩颈深度放松，对办公族常见的上交叉综合征有系统化松解流程。热石疗法是其招牌，配合深度指压可快速缓解深层肌肉紧张。力度恰到好处，既能放松又不至于让人"喊疼"，复诊率极高。',
+      tags: ['肩颈专家', '热石招牌'],
+      schedule: '早班 09:00-17:00', phone: '161****8852', cert: '高级按摩师 · 理疗专项', store: '旗舰店', today: 5
+    },
+    {
+      id: 'T1016', name: '顾婉宁', gender: '女', empNo: 'E4016',
+      avatar: '👩‍🦳', category: '美容美体师', specialties: ['面部抗衰', '身体塑形', '全身磨砂', '玫瑰花瓣浴'],
+      experience: 8, rating: 4.9, reviewCount: 421, serviceCount: 5600,
+      status: 'on', busy: false,
+      bio: '资深美容美体师，专注面部抗衰与身体塑形领域八年。曾赴法国进修细胞焕活护理课程，将欧式手法与本店玫瑰花瓣浴、全身磨砂相结合，打造"沉浸式焕颜"体验。对熟龄肌的紧致提升有独到方案，是店内高端女性顾客的首选。服务细节控，连毛巾温度都会亲自确认。',
+      tags: ['焕颜导师', '高端定制'],
+      schedule: '中班 12:00-20:00', phone: '162****1193', cert: '国家高级美容师 · 抗衰专项', store: '旗舰店', today: 7
+    },
+    {
+      id: 'T1017', name: '苏曼玉', gender: '女', empNo: 'E4017',
+      avatar: '👩‍💼', category: '全能技师', specialties: ['精油SPA', '商务减压套餐', '头皮养护', '中药足疗'],
+      experience: 10, rating: 4.9, reviewCount: 538, serviceCount: 7200,
+      status: 'on', busy: true,
+      bio: '店内元老级全能技师，十年如一日深耕服务一线。既能独立完成精油SPA与商务减压套餐，也能为忙碌的商务客提供"头皮养护+足疗"的一条龙解压方案。善于根据顾客当天的状态灵活组合项目，被很多回头客称为"最懂我的技师"。带教耐心，是新人的标杆。',
+      tags: ['全能元老', '商务首选', '带教标杆'],
+      schedule: '晚班 16:00-24:00', phone: '163****2204', cert: '年度服务之星 · 全能技师', store: '中心店', today: 8
+    },
+    {
+      id: 'T1018', name: '叶清雅', gender: '女', empNo: 'E4018',
+      avatar: '👩‍🦰', category: 'SPA技师', specialties: ['玫瑰花瓣浴', '海藻面膜护理', '淋巴排毒', '眼部舒缓'],
+      experience: 4, rating: 4.7, reviewCount: 168, serviceCount: 1980,
+      status: 'on', busy: false,
+      bio: '新生代SPA技师，主打"疗愈美学"。将玫瑰花瓣浴与海藻面膜护理打造为店内的网红打卡项目，配合淋巴排毒与眼部舒缓，特别适合熬夜肌与换季敏感肌。审美在线、手法轻柔，擅长用香氛与灯光营造放松氛围，是年轻女性顾客拍照分享的高频选择。',
+      tags: ['疗愈美学', '网红项目'],
+      schedule: '中班 12:00-20:00', phone: '164****3315', cert: 'SPA疗愈师认证', store: '社区店', today: 3
     }
   ],
 
