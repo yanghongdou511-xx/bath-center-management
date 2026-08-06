@@ -26,14 +26,40 @@ const DB = {
   ],
 
   services: [
+    // —— 基础洗浴 ——
     { id: 'S2001', name: '经典沐浴', category: '基础洗浴', price: 88, duration: 60, technician: '不限', status: 'on' },
+    { id: 'S2007', name: '搓背服务', category: '基础洗浴', price: 38, duration: 30, technician: '不限', status: 'on' },
+    { id: 'S2010', name: '泡澡套餐（沐浴+搓背+头部）', category: '基础洗浴', price: 128, duration: 75, technician: '不限', status: 'on' },
+    { id: 'S2011', name: '牛奶玫瑰浴', category: '基础洗浴', price: 158, duration: 60, technician: '不限', status: 'on' },
+    { id: 'S2012', name: '中药泡浴', category: '基础洗浴', price: 138, duration: 60, technician: '不限', status: 'on' },
+    // —— 足疗按摩 ——
     { id: 'S2002', name: '中药足疗', category: '足疗按摩', price: 168, duration: 90, technician: '需指定', status: 'on' },
+    { id: 'S2013', name: '足底反射疗法', category: '足疗按摩', price: 198, duration: 90, technician: '需指定', status: 'on' },
+    { id: 'S2014', name: '经络疏通（腿/脚）', category: '足疗按摩', price: 228, duration: 80, technician: '需指定', status: 'on' },
+    { id: 'S2015', name: '艾灸养生足疗', category: '足疗按摩', price: 268, duration: 100, technician: '需指定', status: 'on' },
+    // —— 按摩SPA ——
     { id: 'S2003', name: '泰式按摩', category: '按摩SPA', price: 298, duration: 120, technician: '需指定', status: 'on' },
     { id: 'S2004', name: '精油SPA', category: '按摩SPA', price: 458, duration: 120, technician: '需指定', status: 'on' },
+    { id: 'S2016', name: '中式推拿全身', category: '按摩SPA', price: 328, duration: 90, technician: '需指定', status: 'on' },
+    { id: 'S2017', name: '热石疗法', category: '按摩SPA', price: 398, duration: 90, technician: '需指定', status: 'on' },
+    { id: 'S2018', name: '日式指压', category: '按摩SPA', price: 358, duration: 80, technician: '需指定', status: 'on' },
+    { id: 'S2019', name: '肩颈深度放松', category: '按摩SPA', price: 188, duration: 45, technician: '需指定', status: 'on' },
+    // —— 休闲娱乐 ——
     { id: 'S2005', name: '汗蒸体验', category: '休闲娱乐', price: 58, duration: 180, technician: '不限', status: 'on' },
     { id: 'S2006', name: '鱼疗', category: '休闲娱乐', price: 68, duration: 45, technician: '不限', status: 'on' },
-    { id: 'S2007', name: '搓背服务', category: '基础洗浴', price: 38, duration: 30, technician: '不限', status: 'on' },
+    { id: 'S2020', name: '休闲茶歇（含小吃）', category: '休闲娱乐', price: 48, duration: 120, technician: '不限', status: 'on' },
+    { id: 'S2021', name: '桌球/棋牌畅玩', category: '休闲娱乐', price: 38, duration: 0, technician: '不限', status: 'on' },
+    { id: 'S2022', name: '3D影院休息', category: '休闲娱乐', price: 28, duration: 0, technician: '不限', status: 'on' },
+    // —— 包厢服务 ——
     { id: 'S2008', name: 'VIP私汤', category: '包厢服务', price: 688, duration: 240, technician: '需指定', status: 'on' },
+    { id: 'S2023', name: '双人VIP包厢', category: '包厢服务', price: 988, duration: 240, technician: '需指定', status: 'on' },
+    { id: 'S2024', name: '聚会包厢（4-6人）', category: '包厢服务', price: 1288, duration: 300, technician: '需指定', status: 'on' },
+    { id: 'S2025', name: '商务洽谈包厢', category: '包厢服务', price: 1588, duration: 240, technician: '需指定', status: 'on' },
+    // —— 美容美体 ——
+    { id: 'S2026', name: '面部深层护理', category: '美容美体', price: 258, duration: 75, technician: '需指定', status: 'on' },
+    { id: 'S2027', name: '全身磨砂去角质', category: '美容美体', price: 298, duration: 60, technician: '需指定', status: 'on' },
+    { id: 'S2028', name: '淋巴排毒', category: '美容美体', price: 328, duration: 70, technician: '需指定', status: 'on' },
+    { id: 'S2029', name: '身体塑形紧致', category: '美容美体', price: 388, duration: 90, technician: '需指定', status: 'on' },
     { id: 'S2009', name: '面部护理', category: '美容美体', price: 218, duration: 75, technician: '需指定', status: 'off' },
   ],
 

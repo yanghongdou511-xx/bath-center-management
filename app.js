@@ -296,6 +296,52 @@ function walkinSourceTag(src) {
   return '<span class="tag ' + (WALKIN_SOURCE_TAGS[src] || 'tag-gray') + '">' + src + '</span>';
 }
 
+// 来源字段 —— 可点击编辑版本（内联下拉）
+function walkinSourceEditable(id, src) {
+  return '<div class="source-edit-wrap" id="source-wrap-' + id + '">' +
+    '<span class="tag ' + (WALKIN_SOURCE_TAGS[src] || 'tag-gray') + ' source-tag" onclick="toggleSourceEdit(\'' + id + '\',\'' + src + '\')" title="点击修改来源">' +
+    src + ' <small style="opacity:.5;margin-left:2px">✎</small></span>' +
+    '</div>';
+}
+
+// 切换来源编辑下拉
+function toggleSourceEdit(id, currentSrc) {
+  var wrap = document.getElementById('source-wrap-' + id);
+  if (!wrap) return;
+  // 如果已展开则收起
+  if (wrap.querySelector('.source-select')) {
+    renderWalkin($('content'));
+    return;
+  }
+  var tag = wrap.querySelector('.source-tag');
+  if (tag) tag.style.display = 'none';
+  // 创建内联select
+  var sel = document.createElement('select');
+  sel.className = 'select source-select';
+  sel.style.cssText = 'width:100%;height:30px;font-size:12.5px;border-radius:6px;cursor:pointer;';
+  WALKIN_SOURCES.forEach(function(s) {
+    var opt = document.createElement('option');
+    opt.value = s; opt.textContent = s;
+    if (s === currentSrc) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', function() { quickChangeSource(id, this.value); });
+  sel.addEventListener('blur', function() { setTimeout(function() { renderWalkin($('content')); }, 150); });
+  wrap.appendChild(sel);
+  sel.focus();
+}
+
+// 快速修改来源（不弹窗，直接更新）
+function quickChangeSource(id, newSource) {
+  var g = DB.walkinGuests.find(function(x) { return x.id === id; });
+  if (!g) return;
+  var old = g.source;
+  g.source = newSource;
+  persistData();
+  toast('来源已更新：' + old + ' → ' + newSource);
+  renderWalkin($('content'));
+}
+
 function walkinStatusSelect(id, status) {
   return '<select class="mem-status-select" onchange="changeWalkinStatus(\'' + id + '\', this.value)">' +
     Object.keys(WALKIN_STATUSES).map(function(k) {
@@ -347,7 +393,7 @@ function renderWalkin(c) {
           '<td>' + g.id + '</td>' +
           '<td>' + esc(g.name) + '</td>' +
           '<td>' + esc(g.phone) + '</td>' +
-          '<td>' + walkinSourceTag(g.source) + '</td>' +
+          '<td>' + walkinSourceEditable(g.id, g.source) + '</td>' +
           '<td>' + g.visitCount + ' 次</td>' +
           '<td><b>' + fmtMoney(g.totalSpent) + '</b></td>' +
           '<td>' + g.lastVisit + '</td>' +
@@ -452,13 +498,23 @@ function deleteWalkinGuest(id) {
 
 // ===== 散客转会员模块 =====
 
-// 会员等级权益配置
+// 会员等级权益配置（增强版 —— 每级含升级条件与专属权益描述）
 const MEMBER_BENEFITS = [
-  { level: '普通会员', icon: '🥉', discount: '9.8折', color: '#94a3b8', bgColor: '#f8fafc', features: ['基础会员折扣', '积分累计1倍/元', '生日当月8.8折', '在线预约服务'] },
-  { level: '银卡', icon: '🥈', discount: '9.5折', color: '#64748b', bgColor: '#f1f5f9', features: ['银卡专属折扣', '积分累计1.2倍/元', '生日当月8.5折', '每月1次免费茶点', '优先排队'] },
-  { level: '金卡', icon: '🥇', discount: '9.0折', color: '#d97706', bgColor: '#fffbf0', features: ['金卡专属折扣', '积分累计1.5倍/元', '生日当月8折', '每月2次免费茶点', 'VIP休息区', '免费停车2h'] },
-  { level: '铂金卡', icon: '💎', discount: '8.5折', color: '#7c3aed', bgColor: '#f6f2ff', features: ['铂金专属折扣', '积分累计2倍/元', '生日免单1次(限¥200)', '无限次免费茶点', 'VIP包厢优先', '免费停车4h', '专属客服'] },
-  { level: '钻石卡', icon: '👑', discount: '8.0折', color: '#dc2626', bgColor: '#fef3f2', features: ['钻石专属折扣', '积分累计3倍/元', '生日免单1次(限¥500)', '全品类免费茶点', 'VIP私汤预留', '免费停车不限', '专属客服+技师', '年度健康体检'] }
+  { level: '普通会员', icon: '🥉', discount: '9.8折', color: '#94a3b8', bgColor: '#f8fafc',
+    upgrade: '注册即享', price: '免费',
+    features: ['基础会员折扣', '积分累计1倍/元', '生日当月8.8折', '在线预约服务'] },
+  { level: '银卡', icon: '🥈', discount: '9.5折', color: '#64748b', bgColor: '#f1f5f9',
+    upgrade: '首充≥500元', price: '￥500起',
+    features: ['银卡专属折扣', '积分累计1.2倍/元', '生日当月8.5折', '每月1次免费茶点', '优先排队'] },
+  { level: '金卡', icon: '🥇', discount: '9.0折', color: '#d97706', bgColor: '#fffbf0',
+    upgrade: '首充≥1000元', price: '￥1000起',
+    features: ['金卡专属折扣', '积分累计1.5倍/元', '生日当月8折', '每月2次免费茶点', 'VIP休息区', '免费停车2h'] },
+  { level: '铂金卡', icon: '💎', discount: '8.5折', color: '#7c3aed', bgColor: '#f6f2ff',
+    upgrade: '首充≥3000元', price: '￥3000起',
+    features: ['铂金专属折扣', '积分累计2倍/元', '生日免单1次(限¥200)', '无限次免费茶点', 'VIP包厢优先', '免费停车4h', '专属客服'] },
+  { level: '钻石卡', icon: '👑', discount: '8.0折', color: '#dc2626', bgColor: '#fef3f2',
+    upgrade: '首充≥5000元', price: '￥5000起',
+    features: ['钻石专属折扣', '积分累计3倍/元', '生日免单1次(限¥500)', '全品类免费茶点', 'VIP私汤预留', '免费停车不限', '专属客服+技师', '年度健康体检'] }
 ];
 
 // 转化步骤状态
@@ -480,8 +536,9 @@ function convertToMember(guestId) {
   renderConvertModal(g);
 }
 
-// 渲染转化弹窗（多步骤）
+// 渲染转化弹窗（多步骤 —— 内容丰富版）
 function renderConvertModal(guest) {
+  // 步骤条
   var stepsHtml = '';
   for (var i = 1; i <= 4; i++) {
     var cls = i === convertStep ? 'active' : (i < convertStep ? 'done' : '');
@@ -496,14 +553,16 @@ function renderConvertModal(guest) {
   var bodyHtml = '<div class="convert-steps">' + stepsHtml + '</div>';
 
   if (convertStep === 1) {
-    // Step 1: 权益展示
-    bodyHtml += '<div style="padding:20px 24px;text-align:center"><h3 style="margin-bottom:4px">悦泉会员权益体系</h3><p style="color:var(--text-3);font-size:13px">选择适合的会员等级，享受专属特权</p></div>';
+    // ===== Step 1: 权益展示（增强版） =====
+    bodyHtml += '<div class="benefits-header">' +
+      '<h3>🏆 悦泉会员权益体系</h3>' +
+      '<p>选择适合的会员等级，即刻享受专属特权与超值优惠</p></div>';
     bodyHtml += '<div class="benefits-grid">';
     for (var bi = 0; bi < MEMBER_BENEFITS.length; bi++) {
       var b = MEMBER_BENEFITS[bi];
       var sel = bi === convertSelectedLevel ? ' selected' : '';
       var rec = bi === 2 ? ' recommended' : '';
-      bodyHtml += '<div class="benefit-card' + sel + rec + '" onclick="selectBenefitLevel(' + bi + ')">' +
+      bodyHtml += '<div class="benefit-card' + sel + rec + '" onclick="selectBenefitLevel(' + bi + ')" style="--bc-primary:' + b.color + ';--bc-accent:' + b.bgColor + '">' +
         '<div class="benefit-icon">' + b.icon + '</div>' +
         '<div class="benefit-name">' + b.level + '</div>' +
         '<div class="benefit-discount">' + b.discount + '</div>' +
@@ -511,51 +570,104 @@ function renderConvertModal(guest) {
         '</div>';
     }
     bodyHtml += '</div>';
-    bodyHtml += '<div style="padding:16px 24px 24px;text-align:center"><button class="btn btn-primary btn-block" onclick="nextConvertStep()">下一步：选择此等级 →</button></div>';
+    // 已选等级提示
+    var curB = MEMBER_BENEFITS[convertSelectedLevel];
+    bodyHtml += '<div style="padding:14px 30px;background:linear-gradient(135deg,#eff6ff,#f0f9ff);border-top:1px solid #bfdbfe;display:flex;align-items:center;justify-content:center;gap:12px;">' +
+      '<span style="font-size:13px;color:#475569">已选择：</span>' +
+      '<span style="font-size:15px;font-weight:800;color:#2563eb">' + curB.icon + ' ' + curB.level + '（' + curB.discount + '）</span>' +
+      '<span style="font-size:12px;color:#64748b;padding:2px 10px;background:#fff;border-radius:8px;border:1px solid #e2e8f0">' + curB.upgrade + '</span>' +
+      '</div>';
+    bodyHtml += '<div class="benefits-footer"><button class="btn btn-primary" onclick="nextConvertStep()">下一步：选择此等级 →</button></div>';
 
   } else if (convertStep === 2) {
-    // Step 2: 确认卡类型 + 散客信息
+    // ===== Step 2: 确认卡类型 + 储值选择（增强版：卡片式储值选项） =====
     var bSel = MEMBER_BENEFITS[convertSelectedLevel];
     bodyHtml += '<div class="convert-form-area">';
-    bodyHtml += '<div class="convert-guest-info"><div class="convert-guest-avatar">' + guest.name.charAt(0) + '</div><div class="convert-guest-detail"><div class="convert-guest-name">' + esc(guest.name) + '</div><div class="convert-guest-meta">手机：' + esc(guest.phone) + ' | 到访 ' + guest.visitCount + ' 次 | 累计消费 ' + fmtMoney(guest.totalSpent) + '</div></div></div>';
+    // 散客信息卡片
+    bodyHtml += '<div class="convert-guest-info">' +
+      '<div class="convert-guest-avatar">' + guest.name.charAt(0) + '</div>' +
+      '<div class="convert-guest-detail">' +
+      '<div class="convert-guest-name">' + esc(guest.name) + ' <span style="font-weight:400;font-size:14px;color:var(--text-3)">→ 申请成为会员</span></div>' +
+      '<div class="convert-guest-meta">📱 ' + esc(guest.phone) + ' &nbsp;|&nbsp; 🕐 到访 <b>' + guest.visitCount + '</b> 次 &nbsp;|&nbsp; 💰 累计消费 <b>' + fmtMoney(guest.totalSpent) + '</b> &nbsp;|&nbsp; 来源：<b>' + (guest.source || '到店') + '</b></div>' +
+      '</div></div>';
 
-    bodyHtml += '<h4 style="margin-bottom:14px;font-size:15px">选择会员卡类型</h4>';
-    bodyHtml += '<div class="form-row">';
-    bodyHtml += '<div class="form-item"><label>会员等级</label><div class="input" style="background:' + bSel.bgColor + ';border-color:' + bSel.color + ';color:' + bSel.color + ';font-weight:700">' + bSel.icon + ' ' + bSel.level + '（' + bSel.discount + '）</div></div>';
-    bodyHtml += '<div class="form-item"><label>储值金额</label><select class="select" id="cv-recharge">' +
-      '<option value="0">暂不储值</option><option value="500" selected>￥500</option><option value="1000">￥1000（送200）</option><option value="2000">￥2000（送500）</option><option value="3000">￥3000（送800）</option><option value="5000">￥5000（送1500）</option></select></div>';
+    // 已选会员等级展示
+    bodyHtml += '<div style="background:' + bSel.bgColor + ';border:2px solid ' + bSel.color + ';border-radius:14px;padding:18px 22px;margin-bottom:22px;display:flex;align-items:center;gap:16px">' +
+      '<div style="font-size:40px">' + bSel.icon + '</div>' +
+      '<div style="flex:1"><div style="font-size:18px;font-weight:800;color:' + bSel.color + '">' + bSel.level + '</div>' +
+      '<div style="font-size:24px;font-weight:900;color:' + bSel.color + ';margin-top:2px">' + bSel.discount + '</div></div>' +
+      '<div style="text-align:right"><div style="font-size:12px;color:' + bSel.color + ';font-weight:600">升级条件</div><div style="font-size:15px;font-weight:700;color:' + bSel.color + '">' + bSel.price + '</div></div>' +
+      '</div>';
+
+    // 储值方案 —— 卡片式选择
+    bodyHtml += '<div class="cm-form-section-title">💳 选择储值方案（可选，充值享赠送）</div>';
+    bodyHtml += '<div class="recharge-options">';
+    var rechargePlans = [
+      { amt: 0, bonus: 0, label: '暂不储值', tip: '先开通后充值', popular: false },
+      { amt: 500, bonus: 0, label: '￥500', tip: '', popular: false },
+      { amt: 1000, bonus: 200, label: '￥1000', tip: '送￥200', popular: true },
+      { amt: 2000, bonus: 500, label: '￥2000', tip: '送￥500', popular: false },
+      { amt: 3000, bonus: 800, label: '￥3000', tip: '送￥800', popular: false },
+      { amt: 5000, bonus: 1500, label: '￥5000', tip: '送￥1500', popular: false }
+    ];
+    for (var ri = 0; ri < rechargePlans.length; ri++) {
+      var rp = rechargePlans[ri];
+      var popCls = rp.popular ? ' popular' : '';
+      var ptsEst = Math.floor(rp.amt * (convertSelectedLevel + 1)) + 100;
+      bodyHtml += '<div class="recharge-card' + popCls + '" data-amt="' + rp.amt + '" onclick="selectRecharge(this,' + rp.amt + ')">' +
+        '<div class="rc-amount">' + rp.label + '</div>' +
+        (rp.bonus > 0 ? '<div class="rc-bonus">🎁 ' + rp.tip + '</div>' : '<div class="rc-bonus" style="color:var(--text-3)">' + rp.tip + '</div>') +
+        '<div class="rc-points">≈ ' + ptsEst.toLocaleString() + ' 积分</div>' +
+        '</div>';
+    }
     bodyHtml += '</div>';
-    bodyHtml += '<div style="display:flex;gap:12px;margin-top:20px"><button class="btn btn-text" onclick="prevConvertStep()">← 上一步</button><button class="btn btn-primary" style="flex:1" onclick="nextConvertStep()">下一步：填写信息 →</button></div>';
+    // 隐藏的select供JS读取
+    bodyHtml += '<input type="hidden" id="cv-recharge" value="1000" />';
+
+    bodyHtml += '<div style="display:flex;gap:12px;margin-top:26px"><button class="btn btn-text" onclick="prevConvertStep()" style="height:44px;font-size:14px">← 上一步</button><button class="btn btn-primary" style="flex:1;height:48px;font-size:15px;font-weight:700;border-radius:12px" onclick="nextConvertStep()">下一步：填写信息 →</button></div>';
     bodyHtml += '</div>';
 
   } else if (convertStep === 3) {
-    // Step 3: 信息采集表单
+    // ===== Step 3: 信息采集表单（增强版） =====
+    var bSel3 = MEMBER_BENEFITS[convertSelectedLevel];
     bodyHtml += '<div class="convert-form-area">';
-    bodyHtml += '<div class="convert-guest-info"><div class="convert-guest-avatar">' + guest.name.charAt(0) + '</div><div class="convert-guest-detail"><div class="convert-guest-name">' + esc(guest.name) + ' → 会员注册</div><div class="convert-guest-meta">完善以下信息即可完成会员开通</div></div></div>';
+    bodyHtml += '<div class="convert-guest-info"><div class="convert-guest-avatar">' + guest.name.charAt(0) + '</div><div class="convert-guest-detail"><div class="convert-guest-name">' + esc(guest.name) + ' → ' + bSel3.icon + ' ' + bSel3.level + ' 注册</div><div class="convert-guest-meta">完善以下信息即可完成会员开通 · 所有字段均加密存储</div></div></div>';
 
+    // 基本信息
+    bodyHtml += '<div class="cm-form-section"><div class="cm-form-section-title">📝 基本信息（必填）</div>';
     bodyHtml += '<div class="form-row">';
-    bodyHtml += '<div class="form-item"><label>姓名 <span style="color:#e74c3c">*</span></label><input class="input" id="cm-name" value="' + esc(guest.name) + '" placeholder="请输入真实姓名" /></div>';
-    bodyHtml += '<div class="form-item"><label>手机号 <span style="color:#e74c3c">*</span></label><input class="input" id="cm-phone" value="' + (guest.phone && guest.phone !== '—' ? guest.phone.replace(/\*+/g, '') : '') + '" placeholder="11位手机号" /></div>';
-    bodyHtml += '</div>';
+    bodyHtml += '<div class="form-item"><label>真实姓名 <span style="color:#e74c3c">*</span></label><input class="input" id="cm-name" value="' + esc(guest.name) + '" placeholder="请输入真实姓名，用于身份核验" /></div>';
+    bodyHtml += '<div class="form-item"><label>手机号码 <span style="color:#e74c3c">*</span></label><input class="input" id="cm-phone" value="' + (guest.phone && guest.phone !== '—' ? guest.phone.replace(/\*+/g, '') : '') + '" placeholder="11位手机号，用于接收通知" /></div>';
+    bodyHtml += '</div></div>';
+
+    // 补充信息
+    bodyHtml += '<div class="cm-form-section"><div class="cm-form-section-title">👤 补充信息（选填，提升服务体验）</div>';
     bodyHtml += '<div class="form-row">';
     bodyHtml += '<div class="form-item"><label>性别</label><select class="select" id="cm-gender"><option value="">请选择</option><option value="男" selected>男</option><option value="女">女</option></select></div>';
-    bodyHtml += '<div class="form-item"><label>出生日期</label><input class="input" id="cm-birthday" type="date" /></div>';
+    bodyHtml += '<div class="form-item"><label>出生日期</label><input class="input" id="cm-birthday" type="date" placeholder="生日当月享特别折扣" /></div>';
     bodyHtml += '</div>';
-    bodyHtml += '<div class="form-item"><label>备注信息</label><input class="input" id="cm-note" placeholder="如：过敏史、特殊需求等（可选）" /></div>';
+    bodyHtml += '<div class="form-item"><label>备注信息</label><input class="input" id="cm-note" placeholder="如：过敏史、特殊需求、偏好技师等（可选）" /></div>';
+    bodyHtml += '</div>';
 
-    bodyHtml += '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:13px;color:#166534"><b>📋 开通即享：</b>' + MEMBER_BENEFITS[convertSelectedLevel].features.slice(0, 3).join('、') + '</div>';
+    // 权益预览
+    bodyHtml += '<div class="cm-benefit-preview"><div class="cm-benefit-preview-title">🎉 开通即享 · ' + bSel3.icon + ' ' + bSel3.level + ' 专属权益</div><div class="cm-benefit-preview-list">';
+    for (var fi = 0; fi < bSel3.features.length; fi++) {
+      bodyHtml += '<span>✓ ' + bSel3.features[fi] + '</span>';
+    }
+    bodyHtml += '</div></div>';
 
-    bodyHtml += '<div style="display:flex;gap:12px;margin-top:20px"><button class="btn btn-text" onclick="prevConvertStep()">← 上一步</button><button class="btn btn-primary" style="flex:1" onclick="submitConvertMember()">确认开通会员 ✓</button></div>';
+    bodyHtml += '<div style="display:flex;gap:12px;margin-top:22px"><button class="btn btn-text" onclick="prevConvertStep()" style="height:44px;font-size:14px">← 上一步</button><button class="btn btn-primary" style="flex:1;height:48px;font-size:15px;font-weight:700;border-radius:12px" onclick="submitConvertMember()">✓ 确认开通会员</button></div>';
     bodyHtml += '</div>';
 
   } else if (convertStep === 4) {
-    // Step 4: 完成成功页
+    // ===== Step 4: 完成成功页（增强版） =====
     bodyHtml += '<div class="convert-success">';
     bodyHtml += '<div class="convert-success-icon">✓</div>';
-    bodyHtml += '<h3>会员开通成功！</h3>';
-    bodyHtml += '<p>欢迎加入悦泉洗浴会员大家庭<br/>已为您生成会员账号并同步数据</p>';
+    bodyHtml += '<h3>🎊 会员开通成功！</h3>';
+    bodyHtml += '<p>欢迎加入悦泉洗浴会员大家庭<br/>您的会员账号已生成，权益即时生效</p>';
     bodyHtml += '<div class="convert-success-stats" id="convert-success-stats"></div>';
-    bodyHtml += '<button class="btn btn-primary" style="margin-top:16px;padding:0 36px;height:44px;font-size:15px" onclick="closeConvertModal()">查看会员列表</button>';
+    bodyHtml += '<div class="convert-success-tip">💡 提示：会员卡已同步至系统，下次到店报手机号或出示会员号即可享受全部权益</div>';
+    bodyHtml += '<button class="btn btn-primary" style="margin-top:20px;padding:0 40px;height:48px;font-size:16px;font-weight:700;border-radius:12px" onclick="closeConvertModal()">👥 查看会员列表</button>';
     bodyHtml += '</div>';
   }
 
@@ -567,6 +679,13 @@ function renderConvertModal(guest) {
     m.classList.add('convert-modal');
     var foot = m.querySelector('.modal-foot');
     if (foot) foot.style.display = 'none';
+    // Step 2 时自动选中默认储值卡片
+    if (convertStep === 2) {
+      setTimeout(function() {
+        var defaultCard = m.querySelector('.recharge-card[data-amt="1000"]');
+        if (defaultCard) selectRecharge(defaultCard, 1000);
+      }, 80);
+    }
   }
 }
 
@@ -574,6 +693,17 @@ function renderConvertModal(guest) {
 function selectBenefitLevel(idx) {
   convertSelectedLevel = idx;
   renderConvertModal(DB.walkinGuests.find(function(x) { return x.id === convertGuestId; }));
+}
+
+// 选择储值方案（卡片式）
+function selectRecharge(el, amt) {
+  // 移除其他选中
+  var cards = document.querySelectorAll('.recharge-card');
+  for (var i = 0; i < cards.length; i++) { cards[i].classList.remove('selected'); }
+  el.classList.add('selected');
+  // 更新隐藏字段
+  var hidden = document.getElementById('cv-recharge');
+  if (hidden) hidden.value = String(amt);
 }
 
 // 下一步
@@ -613,7 +743,7 @@ function submitConvertMember() {
   if (!guest) return toast('散客数据异常');
 
   var benefit = MEMBER_BENEFITS[convertSelectedLevel];
-  var rechargeAmt = parseInt($('cv-recharge').value || 0, 10) || 0;
+  var rechargeAmt = parseInt($('cv-recharge').value || '1000', 10) || 0;
   var bonusAmt = rechargeBonus(rechargeAmt);
 
   // 生成新会员号（取现有最大编号 +1，避免跳号与重号）
@@ -651,15 +781,15 @@ function submitConvertMember() {
   convertStep = 4;
   renderConvertModal(guest);
 
-  // 填充成功统计数据
+  // 填充成功统计数据（增强版）
   setTimeout(function() {
     var statsEl = document.getElementById('convert-success-stats');
     if (statsEl) {
       statsEl.innerHTML =
-        '<div class="convert-success-stat"><div class="convert-success-stat-val">' + newId + '</div><div class="convert-success-stat-lbl">会员号</div></div>' +
-        '<div class="convert-success-stat"><div class="convert-success-stat-val">' + benefit.icon + ' ' + benefit.level + '</div><div class="convert-success-stat-lbl">会员等级</div></div>' +
-        '<div class="convert-success-stat"><div class="convert-success-stat-val">' + fmtMoney(newMember.balance) + '</div><div class="convert-success-stat-lbl">卡内余额' + (bonusAmt > 0 ? '（含赠' + fmtMoney(bonusAmt) + '）' : '') + '</div></div>' +
-        '<div class="convert-success-stat"><div class="convert-success-stat-val">' + newMember.points.toLocaleString() + '</div><div class="convert-success-stat-lbl">赠送积分</div></div>';
+        '<div class="convert-success-stat"><div class="convert-success-stat-val" style="font-size:20px">' + newId + '</div><div class="convert-success-stat-lbl">会员号</div></div>' +
+        '<div class="convert-success-stat"><div class="convert-success-stat-val" style="font-size:22px">' + benefit.icon + ' ' + benefit.level + '</div><div class="convert-success-stat-lbl">会员等级</div></div>' +
+        '<div class="convert-success-stat"><div class="convert-success-stat-val" style="color:#16a34a">￥' + (newMember.balance).toLocaleString() + '</div><div class="convert-success-stat-lbl">卡内余额' + (bonusAmt > 0 ? '（含赠￥' + bonusAmt.toLocaleString() + '）' : '') + '</div></div>' +
+        '<div class="convert-success-stat"><div class="convert-success-stat-val" style="color:#f59e0b">' + newMember.points.toLocaleString() + '</div><div class="convert-success-stat-lbl">赠送积分</div></div>';
     }
   }, 50);
 

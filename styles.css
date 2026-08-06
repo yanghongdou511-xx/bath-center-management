@@ -434,6 +434,13 @@ tbody tr:last-child td{ border-bottom:none; }
 .tag-gray{ background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; }
 .tag-purple{ background:var(--purple-bg); color:#6d28d9; border:1px solid var(--purple-bd); }
 
+/* 来源字段内联编辑 */
+.source-edit-wrap{ position:relative; display:inline-block; min-width:72px; }
+.source-tag{ cursor:pointer; transition:all .2s; padding:3px 8px 3px 11px; }
+.source-tag:hover{ box-shadow:0 2px 6px rgba(0,0,0,.1); transform:translateY(-1px); }
+.source-tag:hover small{ opacity:1 !important; }
+.source-select{ animation:fadeUp .15s ease both; }
+
 /* ===== 表单 ===== */
 .form-row{ display:flex; gap:18px; flex-wrap:wrap; margin-bottom:18px; }
 .form-item{ flex:1; min-width:200px; }
@@ -944,71 +951,218 @@ tbody tr:last-child td{ border-bottom:none; }
   .content{ padding:18px; }
 }
 
-/* ===== 散客转会员 —— 转化引导弹窗 ===== */
-.convert-modal{ max-width:680px; }
-.convert-modal .modal-body{ padding:0; }
+/* ===== 散客转会员 —— 转化引导弹窗（全面优化版） ===== */
+.convert-modal{ max-width:940px; }
+.convert-modal .modal-head{ padding:20px 30px; font-size:19px; }
+.convert-modal .modal-body{ padding:0; overflow-y:auto; max-height:78vh; }
 
-/* 步骤条 */
-.convert-steps{ display:flex; align-items:center; justify-content:center; padding:24px 30px 0; gap:0; background:linear-gradient(180deg,#f8fafc,#fff); border-bottom:1px solid #f1f4f9; }
-.convert-step{ display:flex; flex-direction:column; align-items:center; position:relative; z-index:1; }
+/* 步骤条 —— 加大加粗 */
+.convert-steps{
+  display:flex; align-items:center; justify-content:center;
+  padding:28px 36px 22px; gap:0;
+  background:linear-gradient(135deg,#f0f4ff 0%,#fafbff 50%,#fff 100%);
+  border-bottom:1px solid #e8ecf4; position:relative;
+}
+.convert-steps::after{
+  content:''; position:absolute; bottom:0; left:10%; right:10%;
+  height:1px; background:linear-gradient(90deg,transparent,rgba(47,107,255,.25),transparent);
+}
+.convert-step{ display:flex; flex-direction:column; align-items:center; position:relative; z-index:1; min-width:64px; }
 .convert-step-num{
-  width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-  font-size:14px; font-weight:700; transition:all .3s;
-  background:#e2e8f0; color:#94a3b8; border:2.5px solid transparent;
+  width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:16px; font-weight:800; transition:all .35s cubic-bezier(.2,.8,.2,1);
+  background:#e8ecf4; color:#94a3b8; border:3px solid transparent;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
 }
-.convert-step.active .convert-step-num{ background:linear-gradient(135deg,#2f6bff,#13c2c2); color:#fff; box-shadow:0 4px 12px rgba(47,107,255,.35); }
-.convert-step.done .convert-step-num{ background:#22c55e; color:#fff; }
-.convert-step-label{ font-size:12px; color:#94a3b8; margin-top:6px; font-weight:500; white-space:nowrap; }
-.convert-step.active .convert-step-label{ color:#2f6bff; font-weight:600; }
-.convert-step.done .convert-step-label{ color:#22c55e; }
-.convert-step-line{ width:60px; height:2.5px; background:#e2e8f0; margin:0 8px; margin-bottom:28px; border-radius:2px; transition:background .3s; }
-.convert-step-line.done{ background:#22c55e; }
+.convert-step.active .convert-step-num{
+  background:linear-gradient(135deg,#2563eb,#06b6d4); color:#fff;
+  box-shadow:0 6px 20px rgba(37,99,235,.38), inset 0 1px 0 rgba(255,255,255,.25);
+  transform:scale(1.08);
+}
+.convert-step.done .convert-step-num{ background:linear-gradient(135deg,#16a34a,#22c55e); color:#fff; box-shadow:0 4px 12px rgba(34,197,94,.3); }
+.convert-step-label{ font-size:13px; color:#94a3b8; margin-top:8px; font-weight:600; white-space:nowrap; letter-spacing:.3px; }
+.convert-step.active .convert-step-label{ color:#2563eb; font-weight:700; }
+.convert-step.done .convert-step-label{ color:#16a34a; font-weight:600; }
+.convert-step-line{ width:72px; height:3px; background:#e2e8f0; margin:0 10px; margin-bottom:32px; border-radius:3px; transition:background .4s; position:relative; overflow:hidden; }
+.convert-step-line::after{ content:''; position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#16a34a);transition:width .5s; border-radius:3px; }
+.convert-step-line.done{ background:transparent; }
+.convert-step-line.done::after{ width:100%; }
 
-/* 权益对比卡片网格 */
-.benefits-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; padding:20px 24px 0; }
+/* 权益对比卡片网格 —— 宽屏5列，加大间距 */
+.benefits-grid{
+  display:grid; grid-template-columns:repeat(5,1fr); gap:16px;
+  padding:24px 30px 0;
+}
 .benefit-card{
-  background:#fff; border-radius:12px; border:2px solid #f1f4f9; padding:14px 12px; text-align:center;
-  transition:all .25s; cursor:pointer; position:relative; overflow:hidden;
+  background:#fff; border-radius:16px; border:2px solid #eef2f7;
+  padding:22px 16px 18px; text-align:center;
+  transition:all .3s cubic-bezier(.2,.8,.2,1); cursor:pointer;
+  position:relative; overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.04);
 }
-.benefit-card:hover{ transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.08); }
-.benefit-card.selected{ border-color:#2f6bff; box-shadow:0 0 0 3px rgba(47,107,255,.12), 0 8px 24px rgba(47,107,255,.15); }
-.benefit-card.recommended::after{ content:'推荐'; position:absolute;top:0;right:0;background:#f04438;color:#fff;font-size:10px;padding:2px 8px;border-radius:0 10px 0 8px;font-weight:700; }
-.benefit-icon{ font-size:28px; margin-bottom:6px; }
-.benefit-name{ font-size:13px; font-weight:800; color:var(--text); margin-bottom:4px; }
-.benefit-discount{ font-size:15px; font-weight:700; color:var(--primary); margin-bottom:6px; }
-.benefit-features{ font-size:11px; color:var(--text-3); line-height:1.7; text-align:left; padding-left:4px; }
-.benefit-features li{ list-style:none; position:relative; padding-left:14px; }
-.benefit-features li::before{ content:'✓'; position:absolute;left:0;color:#22c55e;font-weight:700;font-size:11px; }
+.benefit-card::before{
+  content:''; position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--bc-primary,#64748b),var(--bc-accent,#94a3b8));
+  opacity:0; transition:opacity .3s;
+}
+.benefit-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 12px 32px rgba(0,0,0,.1);
+  border-color:#c7d6ed;
+}
+.benefit-card:hover::before{ opacity:1; }
+.benefit-card.selected{
+  border-color:#2563eb;
+  box-shadow:0 0 0 4px rgba(37,99,235,.12), 0 12px 32px rgba(37,99,235,.18);
+  transform:translateY(-4px);
+}
+.benefit-card.selected::before{ opacity:1; background:linear-gradient(90deg,#2563eb,#06b6d4); }
+.benefit-card.recommended::after{
+  content:'推荐'; position:absolute;top:0;right:14px;
+  background:linear-gradient(135deg,#f04438,#dc2626); color:#fff;
+  font-size:11px; padding:3px 12px; border-radius:0 14px 0 12px;
+  font-weight:800; letter-spacing:1px; box-shadow:0 2px 8px rgba(244,68,56,.35);
+  transform:translateY(-1px); z-index:2;
+}
 
-/* 转化表单区域 */
-.convert-form-area{ padding:24px 28px; }
-.convert-form-area .form-row{ margin-bottom:18px; }
+/* 卡片内容 —— 放大字号 */
+.benefit-icon{ font-size:34px; margin-bottom:8px; display:block; filter:drop-shadow(0 2px 4px rgba(0,0,0,.08)); }
+.benefit-name{ font-size:15px; font-weight:800; color:var(--text); margin-bottom:6px; letter-spacing:.3px; }
+.benefit-discount{
+  font-size:22px; font-weight:900; margin-bottom:12px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.benefit-card.selected .benefit-discount{
+  background:linear-gradient(135deg,#2563eb,#06b6d4);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.benefit-features{ font-size:12.5px; color:var(--text-2); line-height:2; text-align:left; padding:0 2px; margin:0; list-style:none; }
+.benefit-features li{
+  list-style:none; position:relative; padding-left:18px;
+  transition:color .2s;
+}
+.benefit-features li::before{
+  content:'✓'; position:absolute; left:0; top:-1px;
+  color:#22c55e; font-weight:800; font-size:12px;
+}
+.benefit-card.selected .benefit-features li::before{ color:#2563eb; }
+
+/* Step 1 标题区 */
+.benefits-header{
+  text-align:center; padding:26px 30px 4px;
+  background:linear-gradient(180deg,#fff 0%,#fafcff 100%);
+}
+.benefits-header h3{ font-size:22px; font-weight:800; margin-bottom:6px; color:var(--text); letter-spacing:.5px; }
+.benefits-header p{ color:var(--text-3); font-size:14px; }
+
+/* 底部操作区 */
+.benefits-footer{ padding:20px 30px 28px; text-align:center; background:#fafcff; border-top:1px solid #f1f4f9; }
+.benefits-footer .btn{ height:48px; font-size:15px; font-weight:700; border-radius:12px; padding:0 32px; }
+
+/* 转化表单区域 —— 更宽敞 */
+.convert-form-area{ padding:28px 34px; }
+.convert-form-area h4{ margin-bottom:18px; font-size:17px; font-weight:700; color:var(--text); }
+.convert-form-area .form-row{ margin-bottom:20px; }
+.convert-form-area .form-item label{ font-size:13.5px; margin-bottom:8px; }
+.convert-form-area .input, .convert-form-area .select{ height:44px; font-size:14.5px; border-radius:10px; }
+
 .convert-guest-info{
-  background:linear-gradient(135deg,#f0f7ff,#ecfdfa); border-radius:12px; padding:14px 18px;
-  margin-bottom:20px; border:1px solid #d9ebfc; display:flex; align-items:center; gap:14px;
+  background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);
+  border-radius:14px; padding:18px 22px;
+  margin-bottom:24px; border:1px solid #bfdbfe;
+  display:flex; align-items:center; gap:16px;
+  box-shadow:0 2px 8px rgba(37,99,235,.06);
 }
-.convert-guest-avatar{ width:44px; height:44px; border-radius:50%; background:var(--grad); color:#fff; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; flex-shrink:0; }
+.convert-guest-avatar{
+  width:52px; height:52px; border-radius:50%;
+  background:linear-gradient(135deg,#2563eb,#06b6d4); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; font-weight:800; flex-shrink:0;
+  box-shadow:0 4px 12px rgba(37,99,235,.25);
+}
 .convert-guest-detail{ flex:1; min-width:0; }
-.convert-guest-name{ font-size:16px; font-weight:700; }
-.convert-guest-meta{ font-size:12px; color:var(--text-3); margin-top:2px; }
+.convert-guest-name{ font-size:17px; font-weight:800; color:var(--text); }
+.convert-guest-meta{ font-size:13px; color:var(--text-3); margin-top:4px; line-height:1.5; }
 
-/* 完成成功页 */
-.convert-success{ text-align:center; padding:40px 24px; }
-.convert-success-icon{ width:72px; height:72px; line-height:72px; border-radius:50%; background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; font-size:36px; margin:0 auto 18px; animation:popIn .4s cubic-bezier(.2,.8,.2,1) both; box-shadow:0 8px 30px rgba(34,197,94,.35); }
-.convert-success h3{ font-size:20px; font-weight:700; margin-bottom:8px; }
-.convert-success p{ color:var(--text-2); font-size:14px; line-height:1.7; }
-.convert-success-stats{ display:flex; justify-content:center; gap:24px; margin:20px 0; }
-.convert-success-stat{ text-align:center; }
-.convert-success-stat-val{ font-size:22px; font-weight:800; color:var(--primary); }
-.convert-success-stat-lbl{ font-size:11px; color:var(--text-3); margin-top:2px; }
+/* 储值选项卡片组 */
+.recharge-options{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:6px;
+}
+.recharge-card{
+  border:2px solid #e8ecf4; border-radius:12px; padding:16px 14px;
+  text-align:center; cursor:pointer; transition:all .25s;
+  background:#fff; position:relative;
+}
+.recharge-card:hover{ border-color:#93c5fd; transform:translateY(-2px); box-shadow:0 6px 16px rgba(37,99,235,.1); }
+.recharge-card.selected{ border-color:#2563eb; background:#eff6ff; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+.recharge-card .rc-amount{ font-size:20px; font-weight:900; color:var(--text); }
+.recharge-card .rc-bonus{ font-size:12px; color:#16a34a; font-weight:700; margin-top:4px; }
+.recharge-card .rc-points{ font-size:11px; color:var(--text-3); margin-top:2px; }
+.recharge-card.popular::after{
+  content:'热门'; position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff;
+  font-size:10px; padding:2px 10px; border-radius:10px; font-weight:700;
+}
+
+/* 信息采集表单增强 */
+.cm-form-section{ margin-bottom:20px; }
+.cm-form-section-title{
+  font-size:14px; font-weight:700; color:var(--text-2); margin-bottom:12px;
+  padding-left:10px; border-left:3px solid #2563eb;
+}
+.cm-benefit-preview{
+  background:linear-gradient(135deg,#f0fdf4,#ecfccb); border:1px solid #bef264;
+  border-radius:12px; padding:16px 20px; margin-top:18px;
+}
+.cm-benefit-preview-title{ font-size:13px; font-weight:700; color:#166534; margin-bottom:8px; }
+.cm-benefit-preview-list{ font-size:13px; color:#15803d; line-height:1.8; }
+.cm-benefit-preview-list span{
+  display:inline-block; background:#fff; padding:2px 10px; border-radius:6px;
+  margin:2px 4px 2px 0; font-size:12.5px; font-weight:600; border:1px solid #bbf7d0;
+}
+
+/* 完成成功页 —— 更丰富 */
+.convert-success{ text-align:center; padding:48px 30px 36px; }
+.convert-success-icon{
+  width:84px; height:84px; line-height:84px; border-radius:50%;
+  background:linear-gradient(135deg,#16a34a,#22c55e); color:#fff;
+  font-size:40px; margin:0 auto 22px;
+  animation:popIn .5s cubic-bezier(.2,.8,.2,1) both;
+  box-shadow:0 8px 36px rgba(34,197,94,.4), inset 0 2px 0 rgba(255,255,255,.3);
+}
+.convert-success h3{ font-size:23px; font-weight:800; margin-bottom:10px; color:var(--text); }
+.convert-success p{ color:var(--text-2); font-size:15px; line-height:1.8; }
+.convert-success-stats{
+  display:flex; justify-content:center; gap:28px; margin:28px 0;
+  background:linear-gradient(135deg,#f8fafc,#f0f9ff); border-radius:16px;
+  padding:22px 20px; border:1px solid #e0f2fe;
+}
+.convert-success-stat{ text-align:center; flex:1; }
+.convert-success-stat-val{ font-size:24px; font-weight:900; color:var(--primary); }
+.convert-success-stat-lbl{ font-size:12px; color:var(--text-3); margin-top:4px; font-weight:500; }
+.convert-success-tip{
+  background:#fefce8; border:1px solid #fde68a; border-radius:10px;
+  padding:12px 20px; margin-top:20px; font-size:13px; color:#854d0e;
+  display:inline-block;
+}
 
 /* 响应式 */
-@media(max-width:720px){
-  .benefits-grid{ grid-template-columns:repeat(3,1fr); }
-  .convert-steps{ padding:18px 16px 0; }
-  .convert-step-line{ width:32px; }
+@media(max-width:960px){
+  .convert-modal{ max-width:92%; }
+  .benefits-grid{ grid-template-columns:repeat(3,1fr); gap:12px; padding:20px 20px 0; }
   .benefit-card:nth-child(4), .benefit-card:nth-child(5){ display:none; }
+  .recharge-options{ grid-template-columns:repeat(2,1fr); }
 }
-@media(max-width:480px){
-  .benefits-grid{ grid-template-columns:1fr 1fr; }
-  .convert-form-area{ padding:18px 16px; }
+@media(max-width:720px){
+  .convert-modal{ max-width:96%; }
+  .convert-steps{ padding:20px 16px 16px; }
+  .convert-step-line{ width:36px; }
+  .convert-step-label{ font-size:11px; }
+  .benefits-grid{ grid-template-columns:repeat(2,1fr); gap:10px; }
+  .benefit-card:nth-child(3), .benefit-card:nth-child(4), .benefit-card:nth-child(5){ display:none; }
+  .convert-form-area{ padding:20px 18px; }
+  .convert-success-stats{ flex-wrap:wrap; gap:16px; }
+  .recharge-options{ grid-template-columns:1fr 1fr; }
+}
