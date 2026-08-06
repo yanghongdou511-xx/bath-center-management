@@ -2498,8 +2498,10 @@ function renderTechnician(c) {
             '<div class="tech-avatar ' + (t.gender === '女' ? 'tech-avatar-f' : 'tech-avatar-m') + '">' + t.avatar + '</div>' +
             '<div class="tech-name-row">' +
               '<div class="tech-name">' + t.name + '</div>' +
-              genderTag(t.gender) +
-              '<span class="tag ' + (t.busy ? 'tag-orange' : 'tag-green') + '" style="font-size:11px;margin-left:4px">' + (t.busy ? '服务中' : '空闲') + '</span>' +
+              '<div class="tech-tag-inline">' +
+                genderTag(t.gender) +
+                '<span class="tag ' + (t.busy ? 'tag-orange' : 'tag-green') + '" style="font-size:11px">' + (t.busy ? '服务中' : '��闲') + '</span>' +
+              '</div>' +
             '</div>' +
             '<div class="tech-emp-no">工号：' + t.empNo + (t.store ? ' · ' + t.store : '') + '</div>' +
           '</div>' +
@@ -2574,8 +2576,10 @@ function showTechnicianDetail(tid) {
           '<div class="tech-detail-info">' +
             '<div class="tech-detail-name-row">' +
               '<h3 style="font-size:20px;font-weight:800;margin:0">' + t.name + '</h3>' +
-              genderTag(t.gender) +
-              '<span class="tag ' + (t.busy ? 'tag-orange' : 'tag-green') + '">' + (t.busy ? '服务中' : '空闲') + '</span>' +
+              '<div class="tech-tag-inline">' +
+                genderTag(t.gender) +
+                '<span class="tag ' + (t.busy ? 'tag-orange' : 'tag-green') + '">' + (t.busy ? '服务中' : '空闲') + '</span>' +
+              '</div>' +
             '</div>' +
             '<div class="tech-detail-meta">' +
               '<span>工号：<b>' + t.empNo + '</b></span>' +
