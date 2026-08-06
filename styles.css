@@ -37,63 +37,268 @@ a{ text-decoration:none; color:inherit; }
 ::-webkit-scrollbar-thumb:hover{ background:#b4c0d4; }
 ::-webkit-scrollbar-track{ background:transparent; }
 
-/* ===== 登录页（双栏） ===== */
-.login-view{ position:fixed; inset:0; display:flex; overflow:hidden; background:#fff; }
+/* ===== 登录页（沉浸式水疗风格 · 澜庭水汇） ===== */
+.login-view{ position:fixed; inset:0; display:flex; overflow:hidden; background:#0a1628; }
+
+/* ---- 动态背景层 ---- */
+.login-bg-layer{ position:absolute; inset:0; overflow:hidden; z-index:0; }
+.login-gradient-base{
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(14,165,164,.35) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 80% 90%, rgba(47,107,255,.3) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 80% at 50% 50%, rgba(6,95,70,.2) 0%, transparent 65%),
+    linear-gradient(160deg, #063a40 0%, #0c2d5e 30%, #102a5e 60%, #0a1f3d 100%);
+  animation:bgShift 12s ease-in-out infinite alternate;
+}
+@keyframes bgShift{
+  0%{ filter:hue-rotate(0deg) brightness(1); }
+  100%{ filter:hue-rotate(8deg) brightness(1.08); }
+}
+
+/* 水波纹 */
+.login-ripples{ position:absolute; inset:0; }
+.ripple{
+  position:absolute; border-radius:50%; border:1px solid rgba(100,220,220,.15);
+  animation:rippleExpand 8s ease-in-out infinite;
+}
+.r1{ width:300px; height:300px; top:-80px; left:-60px; animation-delay:0s; }
+.r2{ width:500px; height:500px; top:30%; right:-150px; animation-delay:2s; border-color:rgba(80,160,255,.12); }
+.r3{ width:400px; height:400px; bottom:-100px; left:20%; animation-delay:4s; border-color:rgba(14,200,180,.13); }
+.r4{ width:250px; height:250px; top:50%; left:45%; animation-delay:6s; border-color:rgba(120,200,255,.1); }
+.r5{ width:600px; height:600px; bottom:-200px; right:-100px; animation-delay:3s; border-color:rgba(80,180,220,.09); }
+@keyframes rippleExpand{
+  0%,100%{ transform:scale(.7); opacity:.4; }
+  50%{ transform:scale(1.15); opacity:.18; }
+}
+
+/* 浮动粒子/气泡 */
+.login-particles{ position:absolute; inset:0; pointer-events:none; }
+.particle{
+  position:absolute; border-radius:50%; background:radial-gradient(circle, rgba(140,230,225,.7), rgba(100,210,205,0));
+  animation:particleFloat linear infinite;
+  box-shadow:0 0 6px rgba(100,220,215,.25);
+}
+@keyframes particleFloat{
+  0%{ transform:translateY(110vh) scale(.3); opacity:0; }
+  10%{ opacity:.7; }
+  90%{ opacity:.5; }
+  100%{ transform:translateY(-10vh) scale(1.2); opacity:0; }
+}
+
+/* 光晕装饰球 */
+.login-orb{ position:absolute; border-radius:50%; filter:blur(60px); opacity:.35; animation:orbDrift 10s ease-in-out infinite alternate; }
+.orb1{ width:350px; height:350px; background:radial-gradient(circle, rgba(14,200,190,.5), transparent 70%); top:-120px; left:-80px; animation-duration:11s; }
+.orb2{ width:280px; height:280px; background:radial-gradient(circle, rgba(47,130,255,.45), transparent 70%); bottom:-80px; right:-60px; animation-delay:3s; animation-duration:9s; }
+.orb3{ width:200px; height:200px; background:radial-gradient(circle, rgba(80,220,200,.4), transparent 70%); top:40%; left:35%; animation-delay:5s; animation-duration:13s; }
+@keyframes orbDrift{
+  0%{ transform:translate(0,0) scale(1); }
+  100%{ transform:translate(30px,-20px) scale(1.15); }
+}
 
 /* 左：品牌展示 */
 .login-left{
   flex:1.15; position:relative; color:#fff; display:flex; flex-direction:column; justify-content:center;
-  padding:0 64px; overflow:hidden;
-  background:linear-gradient(135deg,#1e3a8a 0%,#2f6bff 52%,#0ea5a4 100%);
+  padding:0 64px; overflow:hidden; z-index:1;
+  background:linear-gradient(135deg, rgba(6,58,56,.85) 0%, rgba(12,45,78,.75) 40%, rgba(16,42,82,.65) 100%);
+  backdrop-filter:saturate(1.4) blur(2px);
 }
-.login-left::before{ content:""; position:absolute; width:460px; height:460px; border-radius:50%; background:rgba(255,255,255,.08); top:-140px; right:-100px; }
-.login-left::after{ content:""; position:absolute; width:320px; height:320px; border-radius:50%; background:rgba(255,255,255,.06); bottom:-120px; left:30px; }
-.login-brand{ display:flex; align-items:center; gap:12px; font-size:22px; font-weight:800; position:relative; z-index:1; }
-.login-logo{ width:46px; height:46px; border-radius:13px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; font-size:24px; }
-.login-hero{ font-size:40px; font-weight:800; line-height:1.28; margin:40px 0 16px; position:relative; z-index:1; letter-spacing:1px; }
-.login-desc{ font-size:15px; line-height:1.95; color:rgba(255,255,255,.85); max-width:420px; position:relative; z-index:1; }
-.login-feats{ list-style:none; margin:30px 0 0; padding:0; position:relative; z-index:1; }
-.login-feats li{ display:flex; align-items:center; gap:12px; padding:10px 0; font-size:15px; color:rgba(255,255,255,.92); }
-.login-feats li::before{ content:""; width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.85); flex-shrink:0; }
-.login-foot{ position:absolute; bottom:26px; left:64px; font-size:12px; color:rgba(255,255,255,.6); z-index:1; }
-
-/* 右：登录表单 */
-.login-right{ flex:1; background:#fff; display:flex; align-items:center; justify-content:center; position:relative; }
-.login-right::before{ content:""; position:absolute; inset:0; background:radial-gradient(circle at 50% 0%,#f1f6ff,transparent 62%); }
-
-.login-card{
-  position:relative; z-index:1; width:380px; background:#fff; border-radius:20px; padding:38px 36px 30px;
-  box-shadow:0 20px 60px rgba(16,24,40,.12), 0 2px 8px rgba(16,24,40,.06); border:1px solid #eef2f9;
-  animation:popIn .5s cubic-bezier(.2,.8,.2,1) both;
+.login-left::before{
+  content:""; position:absolute; width:520px; height:520px; border-radius:50%;
+  background:radial-gradient(circle, rgba(14,200,185,.12), transparent 65%);
+  top:-180px; right:-120px; animation:orbPulse 7s ease-in-out infinite alternate;
 }
-.login-demo{ position:absolute; top:18px; right:18px; background:var(--warning-bg); color:#d97706; border:1px solid var(--warning-bd); font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; }
+.login-left::after{
+  content:""; position:absolute; width:360px; height:360px; border-radius:50%;
+  background:radial-gradient(circle, rgba(47,120,255,.1), transparent 65%);
+  bottom:-140px; left:20px; animation:orbPulse 9s ease-in-out infinite alternate-reverse;
+}
+@keyframes orbPulse{ 0%{ transform:scale(.9); opacity:.5;} 100%{ transform:scale(1.2); opacity:.85;} }
+
+.login-brand{ display:flex; align-items:center; gap:12px; font-size:22px; font-weight:800; position:relative; z-index:1; letter-spacing:1px; }
+.login-logo{
+  width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg, rgba(14,200,185,.3), rgba(47,130,255,.3));
+  backdrop-filter:blur(8px); border:1px solid rgba(140,230,225,.25);
+  display:flex; align-items:center; justify-content:center; font-size:24px;
+  box-shadow:0 4px 20px rgba(14,200,185,.2), inset 0 1px 0 rgba(255,255,255,.1);
+  animation:logoGlow 4s ease-in-out infinite alternate;
+}
+@keyframes logoGlow{
+  0%{ box-shadow:0 4px 20px rgba(14,200,185,.2), inset 0 1px 0 rgba(255,255,255,.1); }
+  100%{ box-shadow:0 4px 28px rgba(14,200,185,.35), 0 0 40px rgba(14,200,185,.12), inset 0 1px 0 rgba(255,255,255,.15); }
+}
+
+.login-hero{ font-size:42px; font-weight:800; line-height:1.25; margin:44px 0 18px; position:relative; z-index:1; letter-spacing:1.5px; }
+.hero-accent{
+  background:linear-gradient(135deg, #4ee8e0, #69b8ff, #4ee8e0);
+  background-size:200% auto;
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  animation:textShimmer 4s linear infinite;
+}
+@keyframes textShimmer{ to{ background-position:200% center;} }
+
+.login-desc{ font-size:15px; line-height:1.95; color:rgba(255,255,255,.8); max-width:420px; position:relative; z-index:1; }
+.login-feats{ list-style:none; margin:32px 0 0; padding:0; position:relative; z-index:1; }
+.login-feats li{
+  display:flex; align-items:center; gap:14px; padding:11px 0; font-size:15px; color:rgba(255,255,255,.88);
+  transition:transform .2s; cursor:default;
+}
+.login-feats li:hover{ transform:translateX(6px); }
+.feat-icon{ font-size:18px; flex-shrink:0; filter:drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
+.login-foot{ position:absolute; bottom:26px; left:64px; font-size:12px; color:rgba(255,255,255,.45); z-index:1; letter-spacing:.5px; }
+
+/* 右：毛玻璃登录卡片区 */
+.login-right{
+  flex:1; display:flex; align-items:center; justify-content:center; position:relative; z-index:1;
+  padding:24px;
+}
+.login-right::before{
+  content:""; position:absolute; inset:0;
+  background:radial-gradient(circle at 50% -10%, rgba(100,200,220,.08), transparent 55%);
+}
+
+/* 毛玻璃卡片 */
+.glass-card{
+  position:relative; width:400px; background:rgba(255,255,255,.08);
+  backdrop-filter:blur(24px) saturate(1.6); -webkit-backdrop-filter:blur(24px) saturate(1.6);
+  border-radius:24px; padding:40px 36px 32px;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:
+    0 24px 80px rgba(0,0,0,.25),
+    0 8px 32px rgba(0,0,0,.15),
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -1px 0 rgba(0,0,0,.05);
+  animation:cardEntrance .7s cubic-bezier(.2,.8,.2,1) both;
+  overflow:hidden;
+}
+@keyframes cardEntrance{
+  from{ opacity:0; transform:scale(.96) translateY(16px); }
+  to{ opacity:1; transform:scale(1) translateY(0); }
+}
+
+/* 卡片顶部光带 */
+.card-glow-bar{
+  position:absolute; top:0; left:20%; right:20%; height:2px;
+  background:linear-gradient(90deg, transparent, rgba(78,232,224,.6), rgba(105,184,255,.8), rgba(78,232,224,.6), transparent);
+  border-radius:2px;
+  animation:glowBarSlide 3s ease-in-out infinite;
+}
+@keyframes glowBarSlide{
+  0%,100%{ opacity:.5; left:30%; right:30%; }
+  50%{ opacity:1; left:15%; right:15%; }
+}
+
+/* 品牌标识（带光环） */
+.login-badge-wrap{ text-align:center; margin-bottom:16px; }
 .login-badge{
-  width:58px; height:58px; margin:0 auto 14px; border-radius:16px; background:var(--grad);
+  width:64px; height:64px; margin:0 auto; border-radius:18px;
+  background:linear-gradient(145deg, rgba(14,200,185,.25), rgba(47,130,255,.2));
+  backdrop-filter:blur(8px); border:1px solid rgba(140,230,225,.25);
   display:flex; align-items:center; justify-content:center; font-size:30px; color:#fff;
-  box-shadow:0 10px 22px rgba(47,107,255,.4);
+  position:relative;
+  box-shadow:0 8px 32px rgba(14,200,185,.25), 0 2px 8px rgba(0,0,0,.1);
 }
-.login-title{ text-align:center; font-size:23px; font-weight:800; letter-spacing:1px; }
-.login-sub{ text-align:center; color:var(--text-3); margin:6px 0 24px; font-size:13px; }
-.field-label{ display:block; margin-bottom:7px; color:var(--text-2); font-weight:600; font-size:13px; }
-.field{ position:relative; margin-bottom:18px; }
-.field-ic{ position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:15px; opacity:.55; pointer-events:none; }
-.field .input{ padding-left:42px; margin-bottom:0; }
-.input{
-  width:100%; height:44px; padding:0 14px; border:1.5px solid var(--border); border-radius:11px;
-  outline:none; transition:.2s; margin-bottom:18px; background:#fbfcfe; color:var(--text);
+.badge-icon{ position:relative; z-index:1; filter:drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
+.badge-ring{
+  position:absolute; inset:-4px; border-radius:22px;
+  border:1.5px solid rgba(78,232,224,.3);
+  animation:ringRotate 6s linear infinite;
 }
-.input::placeholder{ color:#aeb8c7; }
-.input:focus{ border-color:var(--primary); background:#fff; box-shadow:0 0 0 4px var(--primary-bg); }
-.login-remember{ display:flex; justify-content:space-between; align-items:center; margin:2px 0 20px; font-size:13px; color:var(--text-2); }
-.login-remember .text-link{ font-weight:500; }
-.login-tip{ text-align:center; color:var(--text-3); font-size:12px; margin-top:16px; }
-.login-form .btn-block{ margin-top:6px; }
+@keyframes ringRotate{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
 
-/* 窄屏：隐藏左栏，仅表单 */
+.login-title{ text-align:center; font-size:24px; font-weight:800; letter-spacing:2px; color:#fff; margin-bottom:4px; }
+.login-sub{ text-align:center; color:rgba(255,255,255,.5); margin:0 0 28px; font-size:13px; letter-spacing:1px; }
+
+/* 表单组 */
+.field-group{ margin-bottom:20px; }
+.field-label{ display:block; margin-bottom:8px; color:rgba(255,255,255,.72); font-weight:600; font-size:13px; letter-spacing:.5px; }
+.field{ position:relative; margin-bottom:0; }
+.field-glass{ position:relative; }
+.field-ic{
+  position:absolute; left:15px; top:50%; transform:translateY(-50%); font-size:16px;
+  opacity:.5; pointer-events:none; transition:opacity .25s, transform .25s; z-index:2;
+}
+.field-line{
+  position:absolute; bottom:0; left:50%; width:0; height:2px;
+  background:linear-gradient(90deg, #4ee8e0, #69b8ff);
+  transition:width .35s cubic-bezier(.4,0,.2,1), left .35s cubic-bezier(.4,0,.2,1);
+  border-radius:1px;
+}
+
+/* 毛玻璃输入框 */
+.input-glass{
+  width:100%; height:48px; padding:0 16px 0 44px; border:1.5px solid rgba(255,255,255,.14);
+  border-radius:13px; outline:none; transition:all .3s cubic-bezier(.4,0,.2,1);
+  background:rgba(255,255,255,.06); color:#fff; font-size:14px; letter-spacing:.5px;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.06);
+}
+.input-glass::placeholder{ color:rgba(255,255,255,.32); }
+.input-glass:hover{
+  border-color:rgba(140,230,225,.3); background:rgba(255,255,255,.09);
+  box-shadow:0 0 0 4px rgba(78,232,224,.06), inset 0 1px 3px rgba(0,0,0,.04);
+}
+.input-glass:focus{
+  border-color:rgba(78,232,224,.55); background:rgba(255,255,255,.1);
+  box-shadow:0 0 0 5px rgba(78,232,224,.1), 0 4px 20px rgba(14,200,185,.12);
+}
+.input-glass:focus ~ .field-line{ width:calc(100% - 2px); left:1px; }
+.input-glass:focus + .field-ic,
+.input-glass:focus ~ .field-ic{ opacity:.85; transform:translateY(-50%) scale(1.1); }
+
+/* 安全标签 & 忘记密码 */
+.login-remember{
+  display:flex; justify-content:space-between; align-items:center; margin:4px 0 24px;
+  font-size:13px; color:rgba(255,255,255,.5);
+}
+.secure-tag{ display:inline-flex; align-items:center; gap:4px; }
+.login-remember .text-link{ font-weight:600; color:rgba(78,232,224,.75); transition:color .2s; }
+.login-remember .text-link:hover{ color:#4ee8e0; }
+
+/* 登录按钮（渐变+光效） */
+.btn-login{
+  position:relative; height:50px; font-size:16px; letter-spacing:4px; font-weight:700;
+  background:linear-gradient(135deg, #0ea5a4 0%, #2f86ff 50%, #0ea5a4 100%);
+  background-size:200% auto; border:none; border-radius:13px; color:#fff;
+  box-shadow:0 8px 28px rgba(14,165,164,.35), 0 2px 8px rgba(0,0,0,.1);
+  overflow:hidden; transition:all .3s cubic-bezier(.4,0,.2,1);
+  animation:btnGradient 4s linear infinite;
+}
+@keyframes btnGradient{ to{ background-position:200% center;} }
+.btn-login:hover{
+  transform:translateY(-2px); box-shadow:0 12px 36px rgba(14,165,164,.45), 0 4px 12px rgba(0,0,0,.1);
+  filter:brightness(1.08);
+}
+.btn-login:active{ transform:translateY(0) scale(.98); box-shadow:0 4px 16px rgba(14,165,164,.3); }
+.btn-shimmer{
+  position:absolute; top:0; left:-100%; width:60%; height:100%;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+  animation:shimmerMove 3s ease-in-out infinite;
+}
+@keyframes shimmerMove{ to{ left:150%;} }
+.btn-login:hover .btn-shimmer{ animation-duration:1.5s; }
+
+/* 按钮点击涟漪 */
+.btn-ripple{
+  position:absolute; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.35), rgba(255,255,255,0));
+  transform:scale(0); animation:rippleOut .7s cubic-bezier(.4,0,.2,1) forwards; pointer-events:none; z-index:1;
+}
+@keyframes rippleOut{ to{ transform:scale(2.6); opacity:0; } }
+
+/* 底部装饰点 */
+.card-bottom-deco{ display:flex; justify-content:center; gap:8px; margin-top:24px; }
+.deco-dot{
+  width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.18); transition:all .3s;
+}
+.deco-dot.active{ width:24px; border-radius:4px; background:linear-gradient(90deg, #4ee8e0, #69b8ff); }
+
+/* 窄屏适配：隐藏左栏，全屏毛玻璃卡片 */
 @media(max-width:760px){
   .login-left{ display:none; }
-  .login-right{ flex:1; }
-  .login-card{ width:90%; }
+  .login-right{ flex:1; padding:16px; }
+  .glass-card{ width:100%; max-width:380px; padding:32px 24px 26px; border-radius:20px; }
+  .login-hero{ font-size:34px; }
+  .login-orb{ display:none; }
+  .ripple{ display:none; }
 }
 
 /* ===== 按钮 ===== */

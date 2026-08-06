@@ -39,6 +39,45 @@ $('logout-btn').addEventListener('click', () => {
   $('login-view').classList.remove('hidden');
 });
 
+// ===== 登录页动态效果（粒子/涟漪/光晕） =====
+function initLoginEffects() {
+  // 1) 生成浮动气泡/粒子
+  const box = document.getElementById('login-particles');
+  if (box && box.appendChild) {
+    const N = 20;
+    for (let i = 0; i < N; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = 4 + Math.random() * 11;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDuration = (10 + Math.random() * 15) + 's';
+      p.style.animationDelay = (-Math.random() * 22) + 's';
+      p.style.opacity = (0.3 + Math.random() * 0.5).toFixed(2);
+      box.appendChild(p);
+    }
+  }
+  // 2) 登录按钮点击涟漪
+  const btn = document.querySelector('.btn-login');
+  if (btn && btn.addEventListener) {
+    btn.addEventListener('click', function (e) {
+      const r = document.createElement('span');
+      r.className = 'btn-ripple';
+      const rect = btn.getBoundingClientRect ? btn.getBoundingClientRect() : { width: 120, height: 50, left: 0, top: 0 };
+      const size = Math.max(rect.width, rect.height);
+      const cx = e && e.clientX != null ? e.clientX - rect.left : rect.width / 2;
+      const cy = e && e.clientY != null ? e.clientY - rect.top : rect.height / 2;
+      r.style.width = r.style.height = size + 'px';
+      r.style.left = (cx - size / 2) + 'px';
+      r.style.top = (cy - size / 2) + 'px';
+      if (btn.appendChild) btn.appendChild(r);
+      if (r.remove) setTimeout(() => r.remove(), 700);
+    });
+  }
+}
+initLoginEffects();
+
 // ===== 菜单切换 =====
 const TITLES = { dashboard: '数据概览', member: '会员管理', service: '服务项目', cashier: '前台收银', room: '房间管理', inventory: '库存管理', employee: '员工管理', technician: '技师区', reservation: '预约管理', marketing: '营销活动', locker: '寄存管理', attendance: '考勤排班', review: '客诉评价', package: '会员卡套餐', report: '数据报表', store: '门店设置' };
 $('menu').addEventListener('click', (e) => {

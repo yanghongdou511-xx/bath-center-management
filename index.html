@@ -7,43 +7,91 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- ============ 登录页 ============ -->
+  <!-- ============ 登录页（沉浸式水疗风格） ============ -->
   <div id="login-view" class="login-view">
-    <!-- 左：品牌展示 -->
+    <!-- 动态背景层 -->
+    <div class="login-bg-layer">
+      <!-- 渐变流光基底 -->
+      <div class="login-gradient-base"></div>
+      <!-- 水波纹容器 -->
+      <div class="login-ripples">
+        <div class="ripple r1"></div>
+        <div class="ripple r2"></div>
+        <div class="ripple r3"></div>
+        <div class="ripple r4"></div>
+        <div class="ripple r5"></div>
+      </div>
+      <!-- 浮动粒子/气泡 -->
+      <div class="login-particles" id="login-particles"></div>
+      <!-- 光晕装饰 -->
+      <div class="login-orb orb1"></div>
+      <div class="login-orb orb2"></div>
+      <div class="login-orb orb3"></div>
+    </div>
+
+    <!-- 左：品牌展示区 -->
     <div class="login-left">
       <div class="login-brand"><span class="login-logo">💧</span><span>悦泉洗浴</span></div>
-      <h1 class="login-hero">智慧洗浴<br/>一体化管理</h1>
+      <h1 class="login-hero">智慧洗浴<br/><span class="hero-accent">一体化管理</span></h1>
       <p class="login-desc">会员、收银、房态、库存、预约、营销——一个后台，全部搞定。</p>
       <ul class="login-feats">
-        <li>实时经营数据看板</li>
-        <li>多门店连锁运营</li>
-        <li>消息推送与智能提醒</li>
+        <li><span class="feat-icon">📊</span>实时经营数据看板</li>
+        <li><span class="feat-icon">🏪</span>多门店连锁运营</li>
+        <li><span class="feat-icon">💬</span>消息推送与智能提醒</li>
       </ul>
-      <div class="login-foot">© 2026 悦泉洗浴中心</div>
+      <div class="login-foot">© 2026 悦泉洗浴中心 · 澜庭水汇</div>
     </div>
-    <!-- 右：登录表单 -->
+
+    <!-- 右：毛玻璃登录卡片 -->
     <div class="login-right">
-        <div class="login-card">
-        <div class="login-badge">💧</div>
+      <div class="login-card glass-card">
+        <!-- 顶部光带 -->
+        <div class="card-glow-bar"></div>
+        <!-- 品牌标识 -->
+        <div class="login-badge-wrap">
+          <div class="login-badge">
+            <span class="badge-icon">💧</span>
+            <div class="badge-ring"></div>
+          </div>
+        </div>
         <h1 class="login-title">欢迎登录</h1>
         <p class="login-sub">综合管理系统 · 管理后台</p>
+
         <form id="login-form" class="login-form">
-          <label class="field-label">账号</label>
-          <div class="field">
-            <span class="field-ic">👤</span>
-            <input id="login-user" class="input" type="text" value="24031532" autocomplete="off" />
+          <div class="field-group">
+            <label class="field-label">账号</label>
+            <div class="field field-glass">
+              <span class="field-ic">👤</span>
+              <input id="login-user" class="input input-glass" type="text" value="24031532" autocomplete="off" placeholder="请输入账号" />
+              <span class="field-line"></span>
+            </div>
           </div>
-          <label class="field-label">密码</label>
-          <div class="field">
-            <span class="field-ic">🔒</span>
-            <input id="login-pass" class="input" type="password" value="123456" />
+          <div class="field-group">
+            <label class="field-label">密码</label>
+            <div class="field field-glass">
+              <span class="field-ic">🔒</span>
+              <input id="login-pass" class="input input-glass" type="password" value="123456" placeholder="请输入密码" />
+              <span class="field-line"></span>
+            </div>
           </div>
+
           <div class="login-remember">
-            <span>🔐 安全登录 · 数据加密</span>
+            <span class="secure-tag">🔐 安全登录 · 数据加密</span>
             <a class="text-link">忘记密码？</a>
           </div>
-          <button type="submit" class="btn btn-primary btn-block">登 录</button>
+
+          <button type="submit" class="btn btn-primary btn-login btn-block">
+            <span class="btn-text">登 录</span>
+            <span class="btn-shimmer"></span>
+          </button>
         </form>
+
+        <!-- 底部装饰线 -->
+        <div class="card-bottom-deco">
+          <span class="deco-dot"></span>
+          <span class="deco-dot"></span>
+          <span class="deco-dot active"></span>
+        </div>
       </div>
     </div>
   </div>
