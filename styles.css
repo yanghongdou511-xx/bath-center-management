@@ -829,6 +829,78 @@ tbody tr:last-child td{ border-bottom:none; }
   .tech-dstat{ min-width:calc(50% - 5px); }
 }
 
+/* ===== 任务管理 ===== */
+.task-list { display:flex; flex-direction:column; gap:12px; }
+
+.task-card {
+  display:flex; background:#fff; border-radius:12px; border:1px solid #eef1f6;
+  overflow:hidden; transition:all .25s ease; cursor:default;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+.task-card:hover { box-shadow:0 6px 20px rgba(0,0,0,.08); transform:translateY(-1px); }
+
+/* 左侧优先级色条 */
+.task-priority-bar { width:4px; flex-shrink:0; transition:width .2s; }
+.task-card:hover .task-priority-bar { width:5px; }
+
+/* 卡片主体 */
+.task-card-body { flex:1; padding:16px 18px 14px; min-width:0; }
+
+/* 标题行：标题 + 状态标签 */
+.task-card-header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+.task-title { font-size:15px; font-weight:700; color:#1a2332; margin:0; line-height:1.4;
+  flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.task-title:hover { color:var(--primary); cursor:pointer; }
+
+/* 状态标签（可点击） */
+.task-status-wrapper { flex-shrink:0; position:relative; cursor:pointer; }
+.task-status-tag {
+  font-size:12px !important; padding:3px 10px !important; border-radius:6px !important;
+  transition:all .2s; user-select:none;
+}
+.task-status-wrapper:hover .task-status-tag {
+  box-shadow:0 2px 8px rgba(0,0,0,.12); transform:scale(1.05);
+}
+
+/* 状态下拉菜单 */
+.task-status-dropdown {
+  position:absolute; z-index:1000; background:#fff; border:1px solid #e2e8f0;
+  border-radius:10px; padding:6px; min-width:130px; box-shadow:0 8px 30px rgba(0,0,0,.14);
+  animation:fadeUp .18s ease;
+}
+.tsd-arrow {
+  position:absolute; top:-5px; left:50%; transform:translateX(-50%);
+  width:10px; height:10px; background:#fff; border-left:1px solid #e2e8f0; border-top:1px solid #e2e8f0;
+  transform:translateX(-50%) rotate(45deg);
+}
+.tsd-item {
+  display:flex; align-items:center; padding:7px 10px; border-radius:6px; cursor:pointer;
+  transition:background .15s;
+}
+.tsd-item:hover { background:#f5f7fa; }
+.tsd-item.tsd-active { background:#f0f6ff; }
+.tsd-item + .tsd-item { margin-top:2px; }
+
+/* 描述文本（多行截断） */
+.task-desc {
+  font-size:13px; color:#5a6a7e; line-height:1.65; margin:0 0 10px;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+
+/* 元信息行 */
+.task-meta-row { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:6px; }
+.task-meta-item { font-size:12px; color:#6b7785; white-space:nowrap; }
+
+/* 时间戳行 */
+.task-time-row { display:flex; gap:16px; font-size:11px; color:#9ca3af; border-top:1px solid #f0f2f5; padding-top:8px; margin-top:4px; }
+
+/* 响应式 */
+@media(max-width:768px){
+  .task-card-body{ padding:12px 14px 10px; }
+  .task-meta-row{ gap:10px; }
+  .task-time-row{ flex-direction:column; gap:2px; }
+}
+
 /* ===== 动画 ===== */
 @keyframes fadeUp{ from{ opacity:0; transform:translateY(10px);} to{ opacity:1; transform:translateY(0);} }
 @keyframes fadeIn{ from{ opacity:0;} to{ opacity:1;} }

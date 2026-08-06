@@ -79,7 +79,7 @@ function initLoginEffects() {
 initLoginEffects();
 
 // ===== 菜单切换 =====
-const TITLES = { dashboard: '数据概览', member: '会员管理', service: '服务项目', cashier: '前台收银', room: '房间管理', inventory: '库存管理', employee: '员工管理', technician: '技师区', reservation: '预约管理', marketing: '营销活动', locker: '寄存管理', attendance: '考勤排班', review: '客诉评价', package: '会员卡套餐', report: '数据报表', store: '门店设置' };
+const TITLES = { dashboard: '数据概览', member: '会员管理', service: '服务项目', cashier: '前台收银', room: '房间管理', inventory: '库存管理', employee: '员工管理', technician: '技师区', task: '任务管理', reservation: '预约管理', marketing: '营销活动', locker: '寄存管理', attendance: '考勤排班', review: '客诉评价', package: '会员卡套餐', report: '数据报表', store: '门店设置' };
 $('menu').addEventListener('click', (e) => {
   const item = e.target.closest('.menu-item');
   if (!item) return;
@@ -92,7 +92,7 @@ $('menu').addEventListener('click', (e) => {
 function render(page) {
   $('page-title').textContent = TITLES[page] || '';
   const c = $('content');
-  const fns = { dashboard: renderDashboard, member: renderMember, service: renderService, cashier: renderCashier, room: renderRoom, inventory: renderInventory, employee: renderEmployee, technician: renderTechnician, reservation: renderReservation, marketing: renderMarketing, locker: renderLocker, attendance: renderAttendance, review: renderReview, package: renderPackage, report: renderReport, store: renderStore };
+  const fns = { dashboard: renderDashboard, member: renderMember, service: renderService, cashier: renderCashier, room: renderRoom, inventory: renderInventory, employee: renderEmployee, technician: renderTechnician, task: renderTask, reservation: renderReservation, marketing: renderMarketing, locker: renderLocker, attendance: renderAttendance, review: renderReview, package: renderPackage, report: renderReport, store: renderStore };
   (fns[page] || renderDashboard)(c);
 }
 
@@ -1791,8 +1791,166 @@ function showTechnicianDetail(tid) {
           '<button class="btn btn-primary" onclick="toast(\'已将 ' + t.name + ' 加入收银台指定技师\');$(\'.modal-mask\').remove()">预约此技师</button>'
           : (t.busy ?
             '<button class="btn btn-primary" disabled title="该技师正在服务中">当前服务中</button>'
-            : '<button class="btn" disabled title="该技师暂未在岗">暂未在岗</button>')) +
+            :           '<button class="btn" disabled title="该技师暂未在岗">暂未在岗</button>')) +
       '</div>' +
     '</div>';
   document.body.appendChild(mask);
+}
+
+// ===== 任务管理 =====
+var taskFilter = '';       // 状态筛选: '' | '待开始' | '进行中' | '已完成' | '已取消'
+var taskPriorityFilter = ''; // 优先级筛选: '' | '高' | '中' | '低'
+var taskKeyword = '';      // 搜索关键词
+
+// 状态配置：标签样式 + 颜色
+var TASK_STATUS = {
+  '待开始': ['tag-gray', '待开始'],
+  '进行中': ['tag-blue', '进行中'],
+  '已完成': ['tag-green', '已完成'],
+  '已取消': ['tag-red', '已取消']
+};
+
+// 优先级配置：颜色 + 图标
+var TASK_PRIORITY = {
+  '高': { color: '#e74c3c', bg: '#fdf0ef', icon: '🔴' },
+  '中': { color: '#f39c12', bg: '#fef9e7', icon: '🟡' },
+  '低': { color: '#27ae60', bg: '#eafaf1', icon: '🟢' }
+};
+
+// 点击状态标签切换
+function toggleTaskStatusMenu(event, taskId) {
+  event.stopPropagation();
+  var existing = document.querySelector('.task-status-dropdown');
+  if (existing) existing.remove();
+
+  var task = DB.tasks.find(function(t) { return t.id === taskId; });
+  if (!task) return;
+
+  var btn = event.currentTarget;
+  var rect = btn.getBoundingClientRect();
+
+  var dropdown = document.createElement('div');
+  dropdown.className = 'task-status-dropdown';
+  dropdown.innerHTML =
+    '<div class="tsd-arrow"></div>' +
+    Object.keys(TASK_STATUS).map(function(s) {
+      var cls = TASK_STATUS[s][0];
+      var active = s === task.status ? ' tsd-active' : '';
+      return '<div class="tsd-item' + active + '" data-status="' + s + '" onclick="changeTaskStatus(\'' + taskId + '\', \'' + s + '\')">' +
+        '<span class="tag ' + cls + '" style="font-size:12px;pointer-events:none">' + s + '</span>' +
+        '</div>';
+    }).join('');
+
+  dropdown.style.position = 'fixed';
+  dropdown.style.left = (rect.left + rect.width / 2 - 60) + 'px';
+  dropdown.style.top = (rect.bottom + 4) + 'px';
+  document.body.appendChild(dropdown);
+
+  setTimeout(function() {
+    document.addEventListener('click', function closeDrop() {
+      var d = document.querySelector('.task-status-dropdown');
+      if (d) d.remove();
+      document.removeEventListener('click', closeDrop);
+    });
+  }, 10);
+}
+
+// 执行状态变更
+function changeTaskStatus(taskId, newStatus) {
+  var task = DB.tasks.find(function(t) { return t.id === taskId; });
+  if (!task) return;
+  var oldStatus = task.status;
+  task.status = newStatus;
+  task.updatedAt = new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-');
+
+  var drop = document.querySelector('.task-status-dropdown');
+  if (drop) drop.remove();
+
+  toast('任务「' + task.title + '」状态：' + oldStatus + ' → ' + newStatus);
+  renderTask($('content'));
+}
+
+function renderTask(c) {
+  var list = DB.tasks.slice();
+  if (taskFilter) list = list.filter(function(t) { return t.status === taskFilter; });
+  if (taskPriorityFilter) list = list.filter(function(t) { return t.priority === taskPriorityFilter; });
+  if (taskKeyword) {
+    var kw = taskKeyword.toLowerCase();
+    list = list.filter(function(t) {
+      return t.title.toLowerCase().includes(kw) || t.desc.toLowerCase().includes(kw) || t.assignee.toLowerCase().includes(kw);
+    });
+  }
+
+  var total = DB.tasks.length;
+  var pending = DB.tasks.filter(function(t) { return t.status === '待开始'; }).length;
+  var inProgress = DB.tasks.filter(function(t) { return t.status === '进行中'; }).length;
+  var done = DB.tasks.filter(function(t) { return t.status === '已完成'; }).length;
+  var cancelled = DB.tasks.filter(function(t) { return t.status === '已取消'; }).length;
+
+  c.innerHTML =
+    '<div class="page-head"><h2>📋 任务管理</h2>' +
+    '<button class="btn btn-primary" onclick="toast(\'演示环境：新增任务功能已预留\')">+ 新增任���</button></div>' +
+
+    '<div class="att-stats">' +
+      '<div class="att-stat-card"><div class="att-stat-num">' + total + '</div><div class="att-stat-label">全部任务</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-num att-stat-orange">' + pending + '</div><div class="att-stat-label">待开始</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-num att-stat-blue">' + inProgress + '</div><div class="att-stat-label">进行中</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-num att-stat-green">' + done + '</div><div class="att-stat-label">已完成</div></div>' +
+      '<div class="att-stat-card"><div class="att-stat-num" style="color:#999">' + cancelled + '</div><div class="att-stat-label">已取消</div></div>' +
+    '</div>' +
+
+    '<div class="filter-bar" style="align-items:center">' +
+      '<input class="search-input" placeholder="🔍 搜索任务标题/描述/负责人..." value="' + esc(taskKeyword) + '" oninput="taskKeyword=this.value;renderTask($(\'content\'))" />' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto">' +
+        ['全部', '高', '中', '低'].map(function(p) {
+          var isActive = (!taskPriorityFilter && p === '全部') || (taskPriorityFilter === p);
+          var pColor = p === '高' ? '#e74c3c' : (p === '中' ? '#f39c12' : (p === '低' ? '#27ae60' : ''));
+          return '<button class="btn btn-sm ' + (isActive ? 'btn-primary' : '') + '" onclick="taskPriorityFilter=\'' + (p === '全部' ? '' : p) + '\';renderTask($(\'content\'))" style="' + (pColor ? 'border-color:' + pColor + ';color:' + pColor : '') + '">' + (p === '全部' ? '优先级' : TASK_PRIORITY[p].icon + ' ' + p + '优先') + '</button>';
+        }).join('') +
+      '</div>' +
+    '</div>' +
+    '<div class="filter-bar" style="margin-top:-10px;padding-top:4px">' +
+      '<label class="muted" style="font-size:13px;white-space:nowrap">状态：</label>' +
+      [''].concat(Object.keys(TASK_STATUS)).map(function(s) {
+        var label = s || '全部';
+        var isActive = (taskFilter === s);
+        return '<button class="btn btn-sm ' + (isActive ? 'btn-primary' : '') + '" onclick="taskFilter=\'' + s + '\';renderTask($(\'content\'))">' + label + '</button>';
+      }).join('') +
+      '<span class="muted" style="margin-left:auto">共 <b>' + list.length + '</b> 条任务</span>' +
+    '</div>' +
+
+    '<div class="task-list">' +
+      list.map(function(t) {
+        var pri = TASK_PRIORITY[t.priority];
+        var stCls = TASK_STATUS[t.status];
+        var todayStr = new Date().toISOString().slice(0, 10);
+        var isOverdue = t.deadline < todayStr && t.status !== '已完成' && t.status !== '已取消';
+
+        return '<div class="task-card" data-priority="' + t.priority + '">' +
+          '<div class="task-priority-bar" style="background:' + pri.color + '"></div>' +
+          '<div class="task-card-body">' +
+            '<div class="task-card-header">' +
+              '<h3 class="task-title">' + t.title + '</h3>' +
+              '<div class="task-status-wrapper" onclick="toggleTaskStatusMenu(event,\'' + t.id + '\')">' +
+                '<span class="tag ' + stCls[0] + ' task-status-tag">' + t.status + ' ▾</span>' +
+              '</div>' +
+            '</div>' +
+            '<p class="task-desc">' + t.desc + '</p>' +
+            '<div class="task-meta-row">' +
+              '<span class="task-meta-item">👤 ' + t.assignee + '</span>' +
+              '<span class="task-meta-item" style="color:' + pri.color + ';font-weight:600">' + pri.icon + ' ' + t.priority + '</span>' +
+              '<span class="task-meta-item" style="color:' + (isOverdue ? '#e74c3c' : 'inherit') + '">📅 ' + t.deadline + (isOverdue ? ' ⚠️ 已逾期' : '') + '</span>' +
+            '</div>' +
+            '<div class="task-time-row">' +
+              '<span>创建：' + t.createdAt.split(' ')[0] + '</span>' +
+              '<span>更新：' + t.updatedAt.split(' ')[0] + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>' +
+
+    (list.length === 0 ?
+      '<div class="empty" style="grid-column:1/-1"><div style="font-size:40px;margin-bottom:10px">📋</div>没有匹配的任务<br><span class="muted">请尝试调整筛选条件</span></div>'
+      : '');
 }
