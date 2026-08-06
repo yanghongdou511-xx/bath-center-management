@@ -7,93 +7,115 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- ============ 登录页（沉浸式水疗风格） ============ -->
+  <!-- ============ 登录页（高端简约 · 品牌统一） ============ -->
   <div id="login-view" class="login-view">
-    <!-- 动态背景层 -->
-    <div class="login-bg-layer">
-      <!-- 渐变流光基底 -->
-      <div class="login-gradient-base"></div>
-      <!-- 水波纹容器 -->
-      <div class="login-ripples">
-        <div class="ripple r1"></div>
-        <div class="ripple r2"></div>
-        <div class="ripple r3"></div>
-        <div class="ripple r4"></div>
-        <div class="ripple r5"></div>
-      </div>
-      <!-- 浮动粒子/气泡 -->
-      <div class="login-particles" id="login-particles"></div>
-      <!-- 光晕装饰 -->
-      <div class="login-orb orb1"></div>
-      <div class="login-orb orb2"></div>
-      <div class="login-orb orb3"></div>
-    </div>
-
     <!-- 左：品牌展示区 -->
-    <div class="login-left">
-      <div class="login-brand"><span class="login-logo">💧</span><span>悦泉洗浴</span></div>
-      <h1 class="login-hero">智慧洗浴<br/><span class="hero-accent">一体化管理</span></h1>
-      <p class="login-desc">会员、收银、房态、库存、预约、营销——一个后台，全部搞定。</p>
-      <ul class="login-feats">
-        <li><span class="feat-icon">📊</span>实时经营数据看板</li>
-        <li><span class="feat-icon">🏪</span>多门店连锁运营</li>
-        <li><span class="feat-icon">💬</span>消息推送与智能提醒</li>
-      </ul>
-      <div class="login-foot">© 2026 悦泉洗浴中心 · 澜庭水汇</div>
-    </div>
+    <aside class="login-aside">
+      <div class="aside-aurora" aria-hidden="true"></div>
+      <div class="aside-blob blob-a" aria-hidden="true"></div>
+      <div class="aside-blob blob-b" aria-hidden="true"></div>
 
-    <!-- 右：毛玻璃登录卡片 -->
-    <div class="login-right">
-      <div class="login-card glass-card">
-        <!-- 顶部光带 -->
-        <div class="card-glow-bar"></div>
-        <!-- 品牌标识 -->
-        <div class="login-badge-wrap">
-          <div class="login-badge">
-            <span class="badge-icon">💧</span>
-            <div class="badge-ring"></div>
-          </div>
+      <div class="aside-inner">
+        <div class="brand-mark">
+          <svg class="brand-drop" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2.4C12 2.4 4.8 10.6 4.8 15.4a7.2 7.2 0 0 0 14.4 0C19.2 10.6 12 2.4 12 2.4Z"/>
+          </svg>
+          <span class="brand-name">悦泉洗浴</span>
         </div>
-        <h1 class="login-title">欢迎登录</h1>
-        <p class="login-sub">综合管理系统 · 管理后台</p>
 
-        <form id="login-form" class="login-form">
-          <div class="field-group">
-            <label class="field-label">账号</label>
-            <div class="field field-glass">
-              <span class="field-ic">👤</span>
-              <input id="login-user" class="input input-glass" type="text" value="24031532" autocomplete="off" placeholder="请输入账号" />
-              <span class="field-line"></span>
+        <div class="aside-hero">
+          <h1 class="aside-title">智慧洗浴<br/><span class="aside-accent">一体化管理</span></h1>
+          <p class="aside-desc">会员、收银、房态、库存、预约、营销——一个后台，从容掌控每一处水波。</p>
+        </div>
+
+        <ul class="aside-feats">
+          <li class="feat">
+            <span class="feat-ic">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-5"/><path d="M12 16V8"/><path d="M16 16v-3"/></svg>
+            </span>
+            <div class="feat-tx">
+              <p class="feat-t">实时经营数据看板</p>
+              <p class="feat-s">多维度指标，一眼掌握门店健康度</p>
+            </div>
+          </li>
+          <li class="feat">
+            <span class="feat-ic">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9l8-5 8 5"/><path d="M5 9v10h14V9"/><path d="M9 19v-6h6v6"/></svg>
+            </span>
+            <div class="feat-tx">
+              <p class="feat-t">多门店连锁运营</p>
+              <p class="feat-s">总部管控，分店独立，数据互通</p>
+            </div>
+          </li>
+          <li class="feat">
+            <span class="feat-ic">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 7 2 7H4s2-2 2-7Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+            </span>
+            <div class="feat-tx">
+              <p class="feat-t">消息推送与智能提醒</p>
+              <p class="feat-s">预约、库存、客诉，及时触达</p>
+            </div>
+          </li>
+        </ul>
+
+        <div class="aside-foot">© 2026 悦泉洗浴中心 · 保留所有权利</div>
+      </div>
+    </aside>
+
+    <!-- 右：登录表单区 -->
+    <main class="login-main">
+      <div class="login-card">
+        <div class="card-head">
+          <div class="card-logo">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2.4C12 2.4 4.8 10.6 4.8 15.4a7.2 7.2 0 0 0 14.4 0C19.2 10.6 12 2.4 12 2.4Z"/>
+            </svg>
+          </div>
+          <h2 class="card-title">欢迎登录</h2>
+          <p class="card-sub">悦泉洗浴中心 · 综合管理平台</p>
+        </div>
+
+        <form id="login-form" class="login-form" autocomplete="off">
+          <div class="field">
+            <label class="field-label" for="login-user">账号</label>
+            <div class="field-control">
+              <svg class="field-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M5 20c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5"/></svg>
+              <input id="login-user" class="input" type="text" value="24031532" placeholder="请输入账号" />
             </div>
           </div>
-          <div class="field-group">
-            <label class="field-label">密码</label>
-            <div class="field field-glass">
-              <span class="field-ic">🔒</span>
-              <input id="login-pass" class="input input-glass" type="password" value="123456" placeholder="请输入密码" />
-              <span class="field-line"></span>
+
+          <div class="field field--pw">
+            <label class="field-label" for="login-pass">密码</label>
+            <div class="field-control">
+              <svg class="field-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
+              <input id="login-pass" class="input" type="password" value="123456" placeholder="请输入密码" />
+              <button type="button" class="pw-toggle" id="pw-toggle" aria-label="显示或隐藏密码">
+                <svg class="ic-eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="ic-eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 10.6a3 3 0 0 0 4.2 4.2"/><path d="M9.9 5.3A10.7 10.7 0 0 1 12 5c6.4 0 10 7 10 7a16.8 16.8 0 0 1-3.2 4.1"/><path d="M6.1 6.1A16.8 16.8 0 0 0 2 12s3.6 7 10 7a10.6 10.6 0 0 0 3.5-.6"/></svg>
+              </button>
             </div>
           </div>
 
-          <div class="login-remember">
-            <span class="secure-tag">🔐 安全登录 · 数据加密</span>
-            <a class="text-link">忘记密码？</a>
+          <div class="login-row">
+            <label class="remember">
+              <input type="checkbox" checked /> <span>记住账号</span>
+            </label>
+            <a class="text-link" href="#">忘记密码？</a>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-login btn-block">
+          <button type="submit" class="btn-login">
             <span class="btn-text">登 录</span>
             <span class="btn-shimmer"></span>
           </button>
         </form>
 
-        <!-- 底部版权 -->
-        <div class="login-card-footer">
-          <span class="footer-line"></span>
-          <span class="footer-text">悦泉洗浴中心 · 澜庭水汇</span>
-          <span class="footer-line"></span>
+        <div class="card-foot">
+          <span class="foot-line"></span>
+          <span class="foot-text">安全加密 · 数据无忧</span>
+          <span class="foot-line"></span>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 
   <!-- ============ 主应用 ============ -->

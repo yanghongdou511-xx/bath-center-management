@@ -39,24 +39,18 @@ $('logout-btn').addEventListener('click', () => {
   $('login-view').classList.remove('hidden');
 });
 
-// ===== 登录页动态效果（粒子/涟漪/光晕） =====
+// ===== 登录页交互（密码显隐 / 按钮涟漪） =====
 function initLoginEffects() {
-  // 1) 生成浮动气泡/粒子
-  const box = document.getElementById('login-particles');
-  if (box && box.appendChild) {
-    const N = 20;
-    for (let i = 0; i < N; i++) {
-      const p = document.createElement('div');
-      p.className = 'particle';
-      const size = 4 + Math.random() * 11;
-      p.style.width = size + 'px';
-      p.style.height = size + 'px';
-      p.style.left = Math.random() * 100 + '%';
-      p.style.animationDuration = (10 + Math.random() * 15) + 's';
-      p.style.animationDelay = (-Math.random() * 22) + 's';
-      p.style.opacity = (0.3 + Math.random() * 0.5).toFixed(2);
-      box.appendChild(p);
-    }
+  // 1) 密码显隐切换
+  const pw = $('login-pass');
+  const toggle = $('pw-toggle');
+  if (pw && toggle) {
+    toggle.addEventListener('click', () => {
+      const show = pw.type === 'password';
+      pw.type = show ? 'text' : 'password';
+      toggle.classList.toggle('show', show);
+      toggle.setAttribute('aria-label', show ? '隐藏密码' : '显示密码');
+    });
   }
   // 2) 登录按钮点击涟漪
   const btn = document.querySelector('.btn-login');
