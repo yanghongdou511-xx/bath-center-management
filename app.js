@@ -2424,10 +2424,6 @@ function getTechServices(t) {
   });
 }
 
-function fmtMoney(n) {
-  return '¥' + (Number(n) || 0).toLocaleString();
-}
-
 function renderTechnician(c) {
   // 筛选逻辑
   let list = DB.technicians.filter(t => t.status !== 'off');
