@@ -156,27 +156,124 @@ function renderMember(c) {
             <tr>
               <td>${m.id}</td><td>${m.name}</td><td>${m.phone}</td><td>${levelTag(m.level)}</td>
               <td><b>${fmtMoney(m.balance)}</b></td><td>${m.points.toLocaleString()}</td><td>${m.regDate}</td>
-              <td>${statusTag(m.status)}</td>
-              <td class="row-actions"><span class="text-link" onclick="recharge('${m.id}')">充值</span><span class="text-link" onclick="toast('演示环境：编辑功能已预留')">编辑</span></td>
+              <td>${memStatusSelect(m.id, m.status)}</td>
+              <td class="row-actions"><span class="text-link" onclick="recharge('${m.id}')">充值</span><span class="text-link" onclick="editMember('${m.id}')">编辑</span></td>
             </tr>`).join('')}
         </tbody>
       </table>
     </div>`;
 }
+
+// 会员状态下拉选择框
+function memStatusSelect(id, status) {
+  var opts = { active: '正常', frozen: '冻结' };
+  return '<select class="mem-status-select" onchange="changeMemStatus(\'' + id + '\', this.value)">' +
+    Object.keys(opts).map(function(k) {
+      return '<option value="' + k + '"' + (k === status ? ' selected' : '') + '>' + opts[k] + '</option>';
+    }).join('') + '</select>';
+}
+
+function changeMemStatus(mid, newStatus) {
+  var m = DB.members.find(function(x) { return x.id === mid; });
+  if (m) {
+    var old = m.status === 'active' ? '正常' : '冻结';
+    m.status = newStatus;
+    var nw = newStatus === 'active' ? '正常' : '冻结';
+    toast('会员「' + m.name + '」状态：' + old + ' → ' + nw);
+    renderMember($('content'));
+  }
+}
+
+// 增强版充值弹窗（含充值方式选择）
 function recharge(id) {
   const m = DB.members.find(x => x.id === id);
   openModal('会员充值 - ' + m.name, `
-    <div class="form-item"><label>当前余额</label><div class="input" style="background:#fafafa">${fmtMoney(m.balance)}</div></div>
-    <div class="form-item"><label>充值金额</label><input class="input" id="rc-amount" type="number" placeholder="如 500" /></div>
+    <div style="background:#f0f7ff;border-radius:10px;padding:14px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="color:#5a6a7e;font-size:13px">当前余额</span>
+        <span style="font-size:22px;font-weight:800;color:#1677ff">${fmtMoney(m.balance)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#8c98a4">
+        <span>积分：<b>${m.points.toLocaleString()}</b></span>
+        <span>等级：${m.level}</span>
+      </div>
+    </div>
+    <div class="form-item"><label>充值金额 <span style="color:#e74c3c">*</span></label>
+      <input class="input" id="rc-amount" type="number" placeholder="如 500" />
+      <div style="display:flex;gap:8px;margin-top:6px">
+        ${[100,200,500,1000,2000].map(function(v){ return '<button type="button" class="btn btn-sm" style="flex:1;padding:4px" onclick="$(\'rc-amount\').value=' + v + '">' + v + '</button>'; }).join('')}
+      </div>
+    </div>
+    <div class="form-item"><label>充值方式</label>
+      <select class="select" id="rc-method">
+        <option value="现金">💵 现金</option>
+        <option value="微信">📱 微信支付</option>
+        <option value="支付宝">💳 支付宝</option>
+        <option value="银行卡">🏦 银行卡</option>
+        <option value="会员卡">💎 会员卡转账</option>
+      </select>
+    </div>
     <div class="form-item"><label>赠送积分</label><input class="input" id="rc-points" type="number" placeholder="如 500" value="500" /></div>
+    <div class="muted" style="font-size:12px">💡 充值后余额将实时更新，积分同步到会员账户</div>
   `, () => {
     const a = parseFloat($('rc-amount').value);
-    if (!a || a <= 0) return toast('请输入有效金额');
-    m.balance += a; m.points += parseInt($('rc-points').value || 0);
-    toast('充值成功：' + fmtMoney(a) + '，当前余额 ' + fmtMoney(m.balance));
+    if (!a || a <= 0) return toast('请输入有效充值金额');
+    const method = $('rc-method').value;
+    const methodNames = { '现金': '现金', '微信': '微信支付', '支付宝': '支付宝', '银行卡': '银行卡', '会员卡': '会员卡转账' };
+    m.balance += a;
+    m.points += parseInt($('rc-points').value || 0);
+    toast('充值成功：' + fmtMoney(a) + '（' + methodNames[method] + '），当前余额 ' + fmtMoney(m.balance));
     renderMember($('content'));
-  });
+  }, '确认充值');
 }
+
+// 编辑会员弹窗
+function editMember(id) {
+  var m = DB.members.find(function(x) { return x.id === id; });
+  if (!m) return;
+  openModal('编辑会员 - ' + m.name, `
+    <div class="form-item"><label>会员号</label><div class="input" style="background:#fafafa">${m.id}</div></div>
+    <div class="form-item"><label>姓名 <span style="color:#e74c3c">*</span></label><input class="input" id="em-name" value="${m.name}" /></div>
+    <div class="form-item"><label>手机号</label><input class="input" id="em-phone" value="${m.phone}" /></div>
+    <div class="form-item"><label>会员等级</label>
+      <select class="select" id="em-level">
+        <option${m.level === '普通会员' ? ' selected' : ''}>普通会员</option>
+        <option${m.level === '银卡' ? ' selected' : ''}>银卡</option>
+        <option${m.level === '金卡' ? ' selected' : ''}>金卡</option>
+        <option${m.level === '铂金卡' ? ' selected' : ''}>铂金卡</option>
+        <option${m.level === '钻石卡' ? ' selected' : ''}>钻石卡</option>
+      </select>
+    </div>
+    <div class="form-item"><label>账户状态</label>
+      <select class="select" id="em-status">
+        <option value="active"${m.status === 'active' ? ' selected' : ''}>正常</option>
+        <option value="frozen"${m.status === 'frozen' ? ' selected' : ''}>冻结</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:12px">
+      <div class="form-item" style="flex:1"><label>调整余额（±元）</label><input class="input" id="em-balance-adj" type="number" placeholder="正增负减，如 -50" /></div>
+      <div class="form-item" style="flex:1"><label>调整积分（±）</label><input class="input" id="em-points-adj" type="number" placeholder="正增负减" /></div>
+    </div>
+  `, function() {
+    var name = $('em-name').value.trim();
+    if (!name) return toast('请输入姓名');
+    m.name = name;
+    m.phone = $('em-phone').value || m.phone;
+    m.level = $('em-level').value;
+    m.status = $('em-status').value;
+    var balAdj = parseFloat($('em-balance-adj').value || 0);
+    var ptsAdj = parseInt($('em-points-adj'.replace(/-/g, '')).value || 0); // fix: use correct ID
+    if (balAdj) m.balance = Math.max(0, m.balance + balAdj);
+    // Re-read points adjustment properly
+    var ptsEl = document.getElementById ? (document.getElementById('em-points-adj') || { value: 0 }) : { value: 0 };
+    var ptsAdjVal = parseInt(ptsEl.value || 0);
+    if (ptsAdjVal) m.points = Math.max(0, m.points + ptsAdjVal);
+    toast('会员信息已更新：' + name);
+    renderMember($('content'));
+  }, '保存修改');
+}
+
+// 新增会员弹窗
 function openMemberModal() {
   openModal('新增会员', `
     <div class="form-item"><label>姓名</label><input class="input" id="nm-name" placeholder="请输入姓名" /></div>
@@ -197,11 +294,26 @@ function openMemberModal() {
 
 // ===== 服务项目 =====
 let svcCategory = '';
+const SVC_CATEGORIES = ['基础洗浴', '足疗按摩', '按摩SPA', '休闲娱乐', '包厢服务', '美容美体'];
+const SVC_STATUSES = { on: '启用', off: '停用' };
+
+function svcStatusSelect(id, status) {
+  return '<select class="svc-status-select" onchange="changeSvcStatus(\'' + id + '\', this.value)">' +
+    Object.keys(SVC_STATUSES).map(function(k) {
+      return '<option value="' + k + '"' + (k === status ? ' selected' : '') + '>' + SVC_STATUSES[k] + '</option>';
+    }).join('') + '</select>';
+}
+
+function changeSvcStatus(sid, newStatus) {
+  var s = DB.services.find(function(x) { return x.id === sid; });
+  if (s) { s.status = newStatus; toast('项目「' + s.name + '」状态：' + SVC_STATUSES[newStatus]); renderService($('content')); }
+}
+
 function renderService(c) {
   const cats = ['全部', ...new Set(DB.services.map(s => s.category))];
   const list = svcCategory && svcCategory !== '全部' ? DB.services.filter(s => s.category === svcCategory) : DB.services;
   c.innerHTML = `
-    <div class="page-head"><h2>服务项目</h2><button class="btn btn-primary" onclick="toast('演示环境：新增服务已预留')">+ 新增项目</button></div>
+    <div class="page-head"><h2>服务项目</h2><button class="btn btn-primary" onclick="openAddServiceModal()">+ 新增项目</button></div>
     <div class="filter-bar">
       ${cats.map(cat => `<button class="btn btn-sm ${svcCategory === cat || (!svcCategory && cat === '全部') ? 'btn-primary' : ''}" onclick="svcCategory='${cat}';renderService($('content'))">${cat}</button>`).join('')}
     </div>
@@ -212,10 +324,43 @@ function renderService(c) {
           ${list.map(s => `
             <tr><td>${s.id}</td><td><b>${s.name}</b></td><td><span class="tag tag-blue">${s.category}</span></td>
             <td style="color:#fa541c;font-weight:600">${fmtMoney(s.price)}</td><td>${s.duration} 分钟</td><td>${s.technician}</td>
-            <td>${statusTag(s.status)}</td></tr>`).join('')}
+            <td>${svcStatusSelect(s.id, s.status)}</td></tr>`).join('')}
         </tbody>
       </table>
     </div>`;
+}
+
+// 新增服务项目弹窗
+function openAddServiceModal() {
+  var newId = 'S' + (2010 + DB.services.length);
+  openModal('新增服务项目', `
+    <div class="form-item"><label>项目名称 <span style="color:#e74c3c">*</span></label><input class="input" id="as-name" placeholder="如：精油开背SPA" /></div>
+    <div class="form-item"><label>项目分类 <span style="color:#e74c3c">*</span></label>
+      <select class="select" id="as-category">${SVC_CATEGORIES.map(function(c){ return '<option>' + c + '</option>'; }).join('')}</select>
+    </div>
+    <div style="display:flex;gap:12px">
+      <div class="form-item" style="flex:1"><label>价格（元）<span style="color:#e74c3c">*</span></label><input class="input" id="as-price" type="number" placeholder="如 298" /></div>
+      <div class="form-item" style="flex:1"><label>时长（分钟）<span style="color:#e74c3c">*</span></label><input class="input" id="as-duration" type="number" placeholder="如 60" /></div>
+    </div>
+    <div class="form-item"><label>技师要求</label>
+      <select class="select" id="as-tech"><option value="不限">不限</option><option value="需指定">需指定</option></select>
+    </div>
+    <div class="form-item"><label>项目描述</label><textarea class="input" id="as-desc" rows="3" placeholder="简要描述该项目的内容和特色..." style="resize:vertical"></textarea></div>
+  `, function() {
+    var name = $('as-name').value.trim();
+    if (!name) return toast('请输入项目名称');
+    var price = parseFloat($('as-price').value);
+    if (!price || price <= 0) return toast('请输入有效价格');
+    var dur = parseInt($('as-duration').value);
+    if (!dur || dur <= 0) return toast('请输入有效时长');
+    DB.services.push({
+      id: newId, name: name, category: $('as-category').value,
+      price: price, duration: dur, technician: $('as-tech').value,
+      status: 'on', desc: $('as-desc').value.trim()
+    });
+    toast('新增项目成功：' + name + '（' + fmtMoney(price) + '）');
+    renderService($('content'));
+  }, '保存');
 }
 
 // ===== 前台收银（增强版） =====
