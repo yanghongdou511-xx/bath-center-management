@@ -825,7 +825,11 @@ function persistData() {
       reviews: DB.reviews,
       lockers: DB.lockers,
       coupons: DB.coupons,
-      packages: DB.packages
+      packages: DB.packages,
+      services: DB.services,
+      technicians: DB.technicians,
+      employees: DB.employees,
+      reservations: DB.reservations
     };
     localStorage.setItem('bathcenter_data', JSON.stringify(dataToSave));
   } catch(e) {
@@ -854,6 +858,10 @@ function loadPersistedData() {
       if (data.lockers) DB.lockers = data.lockers;
       if (data.coupons) DB.coupons = data.coupons;
       if (data.packages) DB.packages = data.packages;
+      if (data.services) DB.services = data.services;
+      if (data.technicians) DB.technicians = data.technicians;
+      if (data.employees) DB.employees = data.employees;
+      if (data.reservations) DB.reservations = data.reservations;
     }
   } catch(e) {
     console.warn('加载持久化数据失败:', e);
@@ -874,6 +882,16 @@ function resetDemoData() {
 // 页面加载时尝试恢复数据
 loadPersistedData();
 
+// 自动持久化兜底：页面关闭/刷新或切到后台时保存，避免任何未显式保存的改动丢失
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('beforeunload', persistData);
+  if (typeof document !== 'undefined' && document.addEventListener) {
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'hidden') persistData();
+    });
+  }
+}
+
 // ===== 服务项目 =====
 let svcCategory = '';
 const SVC_CATEGORIES = ['基础洗浴', '足疗按摩', '按摩SPA', '休闲娱乐', '包厢服务', '美容美体'];
@@ -888,7 +906,7 @@ function svcStatusSelect(id, status) {
 
 function changeSvcStatus(sid, newStatus) {
   var s = DB.services.find(function(x) { return x.id === sid; });
-  if (s) { s.status = newStatus; toast('项目「' + s.name + '」状态：' + SVC_STATUSES[newStatus]); renderService($('content')); }
+  if (s) { s.status = newStatus; toast('项目「' + s.name + '」状态：' + SVC_STATUSES[newStatus]); renderService($('content')); persistData(); }
 }
 
 function renderService(c) {
@@ -1925,7 +1943,7 @@ function openModal(title, bodyHtml, onSave, confirmText) {
       <div class="modal-foot"><button class="btn" onclick="this.closest('.modal-mask').remove()">取消</button><button class="btn btn-primary" id="modal-save">${confirmText || '保存'}</button></div>
     </div>`;
   document.body.appendChild(mask);
-  mask.querySelector('#modal-save').addEventListener('click', () => { onSave(); mask.remove(); });
+  mask.querySelector('#modal-save').addEventListener('click', () => { onSave(); persistData(); mask.remove(); });
 }
 
 // ===== 预约管理 =====
@@ -1967,6 +1985,7 @@ function setResv(id, st) {
   r.status = st;
   toast(r.id + ' 状态已更新为「' + lbl + '」');
   renderReservation($('content'));
+  persistData();
 }
 function newReservation() {
   const memOpts = DB.members.map(m => `<option value="${m.name}">${m.name}（${m.phone}）</option>`).join('');
