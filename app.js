@@ -25,13 +25,13 @@ $('login-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const u = $('login-user').value.trim();
   const p = $('login-pass').value.trim();
-  if (u === 'admin' && p === '123456') {
+  if (u === '24031532' && p === '123456') {
     $('login-view').classList.add('hidden');
     $('app-view').classList.remove('hidden');
     render('dashboard');
     toast('登录成功，欢迎回来！');
   } else {
-    toast('账号或密码错误（演示账号 admin/123456）');
+    toast('账号或密码错误');
   }
 });
 $('logout-btn').addEventListener('click', () => {
