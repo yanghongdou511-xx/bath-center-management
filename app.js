@@ -138,7 +138,7 @@ let walkinKeyword = '';
 function renderMember(c) {
   const list = DB.members.filter(m => !memberKeyword || m.name.includes(memberKeyword) || m.phone.includes(memberKeyword) || m.id.includes(memberKeyword));
   c.innerHTML = `
-    <div class="page-head"><h2>会员管理</h2><button class="btn btn-primary" onclick="openMemberModal()">+ 新增会员</button></div>
+    <div class="page-head"><button class="btn btn-primary" onclick="openMemberModal()">+ 新增会员</button></div>
     <div class="filter-bar">
       <input class="search-input" placeholder="搜索姓名/手机号/会员号" value="${memberKeyword}" oninput="memberKeyword=this.value;renderMember($('content'))" />
       <span class="muted">共 ${list.length} 位会员</span>
@@ -371,7 +371,7 @@ function renderWalkin(c) {
   var convRate = total ? Math.round(convertedCnt / total * 100) : 0;
 
   c.innerHTML =
-    '<div class="page-head"><h2>散客区</h2>' +
+    '<div class="page-head">' +
       '<div style="display:flex;gap:10px;align-items:center">' +
         '<button class="btn btn-text" onclick="resetDemoData()" title="清除本地缓存，恢复初始演示数据">↺ 重置数据</button>' +
         '<button class="btn btn-primary" onclick="addWalkinGuest()">+ 新增散客</button>' +
@@ -890,7 +890,7 @@ function renderService(c) {
   const cats = ['全部', ...new Set(DB.services.map(s => s.category))];
   const list = svcCategory && svcCategory !== '全部' ? DB.services.filter(s => s.category === svcCategory) : DB.services;
   c.innerHTML = `
-    <div class="page-head"><h2>服务项目</h2><button class="btn btn-primary" onclick="openAddServiceModal()">+ 新增项目</button></div>
+    <div class="page-head"><button class="btn btn-primary" onclick="openAddServiceModal()">+ 新增项目</button></div>
     <div class="filter-bar">
       ${cats.map(cat => `<button class="btn btn-sm ${svcCategory === cat || (!svcCategory && cat === '全部') ? 'btn-primary' : ''}" onclick="svcCategory='${cat}';renderService($('content'))">${cat}</button>`).join('')}
     </div>
@@ -986,7 +986,7 @@ function renderCashier(c) {
   const finalTotal = Math.max(0, originalTotal - discountAmount - memberDiscount);
 
   c.innerHTML = `
-    <div class="page-head"><h2>前台收银</h2><span class="muted">当前门店：${DB.store.current}</span></div>
+    <div class="page-head"><span class="muted">当前门店：${DB.store.current}</span></div>
     <div class="cashier-grid">
       <!-- 左侧：服务项目 -->
       <div class="order-panel">
@@ -1492,7 +1492,7 @@ function showOrderDetail(oid) {
 function renderRoom(c) {
   const labels = { free: ['tag-green', '空闲'], busy: ['tag-orange', '使用中'], clean: ['tag-blue', '待清洁'], cleaning: ['tag-teal', '清洁完成'], maint: ['tag-red', '维护中'] };
   c.innerHTML = `
-    <div class="page-head"><h2>房间 / 柜位管理</h2><span class="muted">空闲 ${DB.rooms.filter(r => r.status === 'free').length} · 使用中 ${DB.rooms.filter(r => r.status === 'busy').length}</span></div>
+    <div class="page-head"><span class="muted">空闲 ${DB.rooms.filter(r => r.status === 'free').length} · 使用中 ${DB.rooms.filter(r => r.status === 'busy').length}</span></div>
     <div class="room-grid">
       ${DB.rooms.map(r => {
         const [cls, txt] = labels[r.status];
@@ -1560,7 +1560,7 @@ function addInvLog(pid, pname, qty, type, note) {
 
 function renderInventory(c) {
   c.innerHTML = `
-    <div class="page-head"><h2>库存管理</h2>
+    <div class="page-head">
       <div style="display:flex;gap:8px;align-items:center">
         <button class="btn btn-primary" onclick="purchaseInbound()">+ 采购入库</button>
         <button class="btn" onclick="showInvLog()">📋 操作日志</button>
@@ -1746,7 +1746,7 @@ function showInvLog() {
 const EMP_STATUS = { active: ['tag-green', '在职'], leave: ['tag-red', '离职'], trial: ['tag-yellow', '试用期'], suspended: ['tag-gray', '停薪留职'] };
 function renderEmployee(c) {
   c.innerHTML = `
-    <div class="page-head"><h2>员工管理</h2><button class="btn btn-primary" onclick="addEmployee()">+ 新增员工</button></div>
+    <div class="page-head"><button class="btn btn-primary" onclick="addEmployee()">+ 新增员工</button></div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>工号</th><th>姓名</th><th>岗位</th><th>技师等级</th><th>提成</th><th>联系电话</th><th>状态</th></tr></thead>
@@ -1871,7 +1871,6 @@ function renderReport(c) {
 // ===== 门店设置 =====
 function renderStore(c) {
   c.innerHTML = `
-    <div class="page-head"><h2>门店设置</h2></div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>门店名称</th><th>地址</th><th>负责人</th><th>状态</th><th>操作</th></tr></thead>
@@ -1909,7 +1908,7 @@ function renderReservation(c) {
   const filters = ['全部', 'pending', 'confirmed', 'done', 'cancelled'];
   const fmap = { 全部: '全部', pending: '待确认', confirmed: '已确认', done: '已完成', cancelled: '已取消' };
   c.innerHTML = `
-    <div class="page-head"><h2>预约管理</h2><button class="btn btn-primary" onclick="newReservation()">+ 新增预约</button></div>
+    <div class="page-head"><button class="btn btn-primary" onclick="newReservation()">+ 新增预约</button></div>
     <div class="filter-bar">
       ${filters.map(f => `<button class="btn btn-sm ${resvFilter === f ? 'btn-primary' : ''}" onclick="resvFilter='${f}';renderReservation($('content'))">${fmap[f]}</button>`).join('')}
       <span class="muted">共 ${list.length} 笔预约</span>
@@ -1978,7 +1977,7 @@ function campTag(s) { const [c, t] = CAMP_STATUS[s] || ['tag-gray', s]; return `
 function renderMarketing(c) {
   const list = couponFilter === '全部' ? DB.coupons : DB.coupons.filter(x => x.status === (couponFilter === '启用' ? 'on' : 'off'));
   c.innerHTML = `
-    <div class="page-head"><h2>营销活动</h2><button class="btn btn-primary" onclick="newCoupon()">+ 新建优惠券</button></div>
+    <div class="page-head"><button class="btn btn-primary" onclick="newCoupon()">+ 新建优惠券</button></div>
     <div class="filter-bar">
       ${['全部', '启用', '停用'].map(f => `<button class="btn btn-sm ${couponFilter === f ? 'btn-primary' : ''}" onclick="couponFilter='${f}';renderMarketing($('content'))">${f}</button>`).join('')}
     </div>
@@ -2044,7 +2043,7 @@ function lockerTag(s) { const [c, t] = LOCKER_STATUS[s] || ['tag-gray', s]; retu
 function renderLocker(c) {
   const usedCount = DB.lockers.filter(l => l.status === 'used').length;
   c.innerHTML = `
-    <div class="page-head"><h2>寄存管理</h2><span class="muted">共 ${DB.lockers.length} 个柜位 · 使用中 ${usedCount} · 空闲 ${DB.lockers.length - usedCount}</span></div>
+    <div class="page-head"><span class="muted">共 ${DB.lockers.length} 个柜位 · 使用中 ${usedCount} · 空闲 ${DB.lockers.length - usedCount}</span></div>
     <div class="locker-grid">
       ${DB.lockers.map(l => {
         const [cls, txt] = LOCKER_STATUS[l.status];
@@ -2121,7 +2120,7 @@ function renderAttendance(c) {
   var todayDayName = dayNames[d.getDay()];
 
   c.innerHTML =
-    '<div class="page-head"><h2>\u8003\u52e4\u6392\u73ed</h2>' +
+    '<div class="page-head">' +
     '<div style="display:flex;gap:8px;align-items:center">' +
       '<button class="btn btn-primary" onclick="clockIn()">\ud83d\udccb \u5458\u5de5\u7b7e\u5230</button>' +
       '<button class="btn" onclick="clockOut()">\ud83d\udeaa \u5458\u5de5\u7b7e\u9000</button>' +
@@ -2316,7 +2315,7 @@ function reviewStatusTag(s) { if (s === 'resolved') return '<span class="tag tag
 function renderReview(c) {
   const list = reviewFilter === '全部' ? DB.reviews : DB.reviews.filter(r => r.type === reviewFilter);
   c.innerHTML = `
-    <div class="page-head"><h2>客诉评价</h2><button class="btn btn-primary" onclick="newReview()">+ 新增评价</button></div>
+    <div class="page-head"><button class="btn btn-primary" onclick="newReview()">+ 新增评价</button></div>
     <div class="filter-bar">
       ${['全部', '好评', '客诉'].map(f => `<button class="btn btn-sm ${reviewFilter === f ? 'btn-primary' : ''}" onclick="reviewFilter='${f}';renderReview($('content'))">${f}</button>`).join('')}
       <span class="muted">共 ${list.length} 条</span>
@@ -2358,7 +2357,7 @@ function newReview() {
 const PKG_TYPE = { '储值卡': 'tag-blue', '期限卡': 'tag-purple', '次卡': 'tag-orange' };
 function renderPackage(c) {
   c.innerHTML = `
-    <div class="page-head"><h2>会员卡套餐</h2><span class="muted">储值 / 期限 / 次卡，前台一键售卖并到账</span></div>
+    <div class="page-head"><span class="muted">储值 / 期限 / 次卡，前台一键售卖并到账</span></div>
     <div class="pkg-grid">
       ${DB.packages.map(p => `
         <div class="pkg-card">
@@ -2440,7 +2439,7 @@ function renderTechnician(c) {
 
   c.innerHTML =
     // 页头
-    '<div class="page-head"><h2>💆 技师专区</h2>' +
+    '<div class="page-head">' +
     '<button class="btn btn-primary" onclick="addTechnician()">+ 新增技师</button></div>' +
 
     // 统计卡片
@@ -2810,7 +2809,7 @@ function renderTask(c) {
   var cancelled = DB.tasks.filter(function(t) { return t.status === '已取消'; }).length;
 
   c.innerHTML =
-    '<div class="page-head"><h2>📋 任务管理</h2>' +
+    '<div class="page-head">' +
     '<button class="btn btn-primary" onclick="toast(\'演示环境：新增任务功能已预留\')">+ 新增任���</button></div>' +
 
     '<div class="att-stats">' +

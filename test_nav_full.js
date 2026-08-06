@@ -62,7 +62,7 @@ assert(DB.rooms && DB.rooms.length > 0, '房间数据 (' + DB.rooms.length + ')'
 assert(DB.inventory && DB.inventory.length > 0, '库存数据 (' + DB.inventory.length + '条)');
 assert(DB.employees && DB.employees.length > 0, '员工数据 (' + DB.employees.length + '条)');
 
-console.log('\n=== B. TITLES与渲染函数注册 ===');
+console.log('\n=== B. TITLES和渲染函数注册 ===');
 assert(typeof TITLES === 'object' && Object.keys(TITLES).length === 18, 'TITLES有18个路由');
 
 // 验证每个路由都有对应的全局渲染函数
@@ -85,13 +85,8 @@ routes.forEach(function (r) {
     fn(mockContent);
     var rendered = mockContent.innerHTML;
     assert(rendered.length > 50, '[' + TITLES[r] + '] 渲染成功 (' + rendered.length + '字符)');
-    // 检查页面包含标题（允许h2比菜单label更详细，如"房间/柜位管理" vs "房间管理"）
-    var titleInH2 = rendered.indexOf(TITLES[r]) >= 0;
-    // 已���：room="房间/柜位管理", technician="💆技师专区", report可能不同
-    var knownVariance = (r === 'room' && rendered.indexOf('房间') >= 0) ||
-                         (r === 'technician' && rendered.indexOf('技师') >= 0) ||
-                         (r === 'report'); // 报表页无h2，直接展示统计卡片
-    assert(titleInH2 || knownVariance || r === 'dashboard', '[' + TITLES[r] + '] 包含页面标题');
+    // 页面标题已移至顶部栏 page-title，内容区不再含 <h2> 页标题
+    assert(rendered.indexOf('<h2') === -1, '[' + TITLES[r] + '] 内容区无 <h2> 页标题');
   } catch (e) {
     assert(false, '[' + TITLES[r] + '] 渲染异常: ' + e.message);
   }
