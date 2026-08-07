@@ -429,11 +429,10 @@ function editMember(id) {
     m.level = $('em-level').value;
     m.status = $('em-status').value;
     var balAdj = parseFloat($('em-balance-adj').value || 0);
-    var ptsAdj = parseInt($('em-points-adj'.replace(/-/g, '')).value || 0); // fix: use correct ID
     if (balAdj) m.balance = Math.max(0, m.balance + balAdj);
-    // Re-read points adjustment properly
-    var ptsEl = document.getElementById ? (document.getElementById('em-points-adj') || { value: 0 }) : { value: 0 };
-    var ptsAdjVal = parseInt(ptsEl.value || 0);
+    // 积分调整：统一从 em-points-adj 读取（该元素必存在于弹窗内）
+    var ptsEl = document.getElementById('em-points-adj');
+    var ptsAdjVal = parseInt((ptsEl && ptsEl.value) || 0);
     if (ptsAdjVal) m.points = Math.max(0, m.points + ptsAdjVal);
     toast('会员信息已更新：' + name);
     renderMember($('content'));
@@ -1495,7 +1494,7 @@ function startQRTimer(seconds) {
     if (remaining <= 0) {
       clearInterval(qrTimerInterval);
       timeEl.textContent = '已过期';
-      timeEl.parentElement.classList.add('expired');
+      if (timeEl.parentElement) timeEl.parentElement.classList.add('expired');
       return;
     }
     const m = String(Math.floor(remaining / 60)).padStart(2, '0');
@@ -1933,7 +1932,7 @@ function showInvLog() {
 }
 
 // ===== 员工管理 =====
-const EMP_STATUS = { active: ['tag-green', '在职'], leave: ['tag-red', '离职'], trial: ['tag-yellow', '试用期'], suspended: ['tag-gray', '停薪留职'] };
+const EMP_STATUS = { on: ['tag-green', '在职'], leave: ['tag-red', '离职'], trial: ['tag-yellow', '试用期'], suspended: ['tag-gray', '停薪留职'], off: ['tag-gray', '离岗/休假'] };
 function renderEmployee(c) {
   c.innerHTML = `
     <div class="page-head"><button class="btn btn-primary" onclick="addEmployee()">+ 新增员工</button></div>
@@ -2018,7 +2017,7 @@ function addEmployee() {
     </div>
     <div class="form-item"><label>状态</label>
       <select class="select" id="emp-status">
-        <option value="active" selected>在职</option>
+        <option value="on" selected>在职</option>
         <option value="trial">试用期</option>
         <option value="suspended">停薪留职</option>
         <option value="leave">离职</option>
@@ -3093,7 +3092,7 @@ function showTaskForm(editId) {
 
           '<div class="form-item"><label>任务描述</label>' +
             '<textarea id="task-desc" class="textarea" rows="3" placeholder="请输入任务详细描述（选填）" maxlength="500">' + esc(task ? task.desc : '') + '</textarea>' +
-            '<div class="muted" style="font-size:11px;text-align:right;margin-top:2px"><span id="task-desc-count">' + (task ? task.desc.length : 0) + '</span>/500</div></div>' +
+            '<div class="muted" style="font-size:11px;text-align:right;margin-top:2px"><span id="task-desc-count">' + (task && task.desc ? task.desc.length : 0) + '</span>/500</div></div>' +
 
           '<div style="display:flex;gap:12px">' +
             '<div class="form-item" style="flex:1"><label>负责人 <span style="color:#e74c3c">*</span></label>' +
@@ -3330,8 +3329,8 @@ function renderTask(c) {
               '<span class="task-meta-item" style="color:' + (isOverdue ? '#e74c3c' : 'inherit') + '">📅 ' + t.deadline + (isOverdue ? ' ⚠️ 已逾期' : '') + '</span>' +
             '</div>' +
             '<div class="task-time-row">' +
-              '<span>创建：' + t.createdAt.split(' ')[0] + '</span>' +
-              '<span>更新：' + t.updatedAt.split(' ')[0] + '</span>' +
+              '<span>创建：' + (t.createdAt || '').split(' ')[0] + '</span>' +
+              '<span>更新：' + (t.updatedAt || '').split(' ')[0] + '</span>' +
             '</div>' +
           '</div>' +
         '</div>';
