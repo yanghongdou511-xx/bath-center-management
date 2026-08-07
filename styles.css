@@ -428,12 +428,32 @@ a{ text-decoration:none; color:inherit; }
 .dash-date{ color:var(--gold-deep); font-size:12.5px; font-weight:600; background:var(--gold-soft); border:1px solid var(--line); padding:7px 17px; border-radius:20px; white-space:nowrap; transition:.18s; cursor:pointer; line-height:1.4; position:relative; }
 .dash-date:hover{ background:rgba(232,211,163,.45); border-color:var(--gold-mid); }
 
-/* 日期选择器浮层（挂载到 body，用 fixed 定位避免父容器裁剪） */
-.date-picker-pop{ position:fixed; z-index:9999; background:#FFF; border:1px solid var(--line); border-radius:12px; box-shadow:0 10px 30px rgba(60,40,10,.18),0 3px 8px rgba(60,40,10,.1); padding:14px; display:none; }
-.date-picker-pop.show{ display:block; animation:dpPopIn .18s ease; }
-@keyframes dpPopIn{ from{ opacity:0; transform:translateY(-4px); } to{ opacity:1; transform:translateY(0); } }
-.date-picker-pop input[type="date"]{ display:block; border:1.5px solid var(--gold-light); border-radius:8px; padding:8px 12px; font-size:14px; color:var(--ink); background:#FFFEFA; outline:none; cursor:pointer; font-family:inherit; min-width:170px; }
-.date-picker-pop input[type="date"]:focus{ border-color:var(--gold-deep); box-shadow:0 0 0 3px rgba(184,149,79,.2); }
+/* 日期选择器浮层（Flatpickr 日历主题） */
+.flatpickr-calendar{ background:#FFF; border:1px solid var(--line); border-radius:14px; box-shadow:0 12px 36px rgba(60,40,10,.18),0 4px 10px rgba(60,40,10,.1); font-family:inherit; width:auto !important; min-width:280px; padding:14px !important; }
+.flatpickr-calendar.open{ display:block !important; animation:dpPopIn .2s ease; }
+.flatpickr-months{ padding:0 !important; }
+.flatpickr-month{ background:none; }
+.flatpickr-current-month .flatpickr-monthDropdown-months{ font-size:15px; font-weight:700; color:var(--ink); font-family:var(--font-display); }
+.flatpickr-current-month input.cur-year{ font-size:15px; font-weight:700; color:var(--gold-deep); font-family:var(--font-display); }
+.flatpickr-current-month .flatpickr-monthDropdown-months:hover,.flatpickr-current-month input.cur-year:focus{ background:var(--gold-soft); }
+.flatpickr-monthDropdown-months{ background:#FFF; border:1px solid var(--line); border-radius:8px; box-shadow:0 4px 12px rgba(60,40,10,.1); }
+.flatpickr-monthDropdown-months .flatpickr-month:hover{ background:var(--gold-soft) !important; color:var(--gold-deep) !important; }
+.flatpickr-weekdays{ background:none; }
+.flatpickr-weekday{ color:var(--ink-3); font-size:11.5px; font-weight:600; letter-spacing:.3px; text-transform:uppercase; }
+.flatpickr-day{ color:var(--ink-2); font-size:13px; font-weight:500; border-radius:8px !important; height:34px !important; line-height:34px !important; max-width:38px !important; transition:all .15s ease; margin:2px 1px !important; }
+.flatpickr-day:hover{ background:var(--gold-soft) !important; color:var(--gold-deep) !important; border-color:transparent !important; transform:scale(1.08); }
+.flatpickr-day.selected{ background:linear-gradient(135deg,#B8954F,#D4AF6A) !important; color:#FFF !important; border-color:transparent !important; font-weight:700; box-shadow:0 2px 8px rgba(184,149,79,.35); }
+.flatpickr-day.selected:hover{ background:linear-gradient(135deg,#A8895A,#C9A86A) !important; transform:scale(1.05); }
+.flatpickr-day.today{ border-color:var(--gold-mid,#C9A86A) !important; font-weight:700; color:var(--gold-deep) !important; }
+.flatpickr-day.today:hover{ border-color:var(--gold-deep) !important; }
+.flatpickr-day.prevMonthDay,.flatpickr-day.nextMonthDay{ color:var(--ink-4,#CCC) !important; opacity:.5; }
+.flatpickr-day.disabled{ color:var(--ink-4,#DDD) !important; opacity:.35; cursor:default; }
+.flatpickr-day.disabled:hover{ background:none !important; transform:none !important; }
+.flatpickr-arrow{ fill:var(--gold-deep) !important; }
+.flatpickr-arrow:hover{ fill:var(--ink) !important; transform:scale(1.15); }
+span.flatpickr-weekday{ cursor:default; }
+.numInputWrapper:hover{ border-color:var(--gold-mid) !important; }
+.numInputWrapper:hover .arrowUp,.numInputWrapper:hover .arrowDown{ border-color:var(--gold-deep) !important; }
 
 .card .chart-title{ font-family:var(--font-display); color:var(--ink); font-size:15.5px; font-weight:700; letter-spacing:.2px; }
 
