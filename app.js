@@ -147,6 +147,28 @@ function render(page) {
   (fns[page] || renderDashboard)(c);
 }
 
+// ===== 日期工具（与现实世界同步）=====
+var _todayCache = (function () {
+  var d = new Date();
+  var y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate(), wd = d.getDay();
+  var mm = m < 10 ? '0' + m : '' + m; var dd = day < 10 ? '0' + day : '' + day;
+  var s = y + '-' + mm + '-' + dd;
+  var names = ['周日','周一','周二','周三','周四','周五','周六'];
+  return { str: s, label: s.slice(5) + ' ' + names[wd], dayName: names[wd], y: y, m: mm, d: dd };
+})();
+function todayStr()   { return _todayCache.str; }
+function todayLabel() { return _todayCache.label; }
+function todayDayName(){ return _todayCache.dayName; }
+function offsetDateStr(daysOffset) {
+  var d = new Date(_todayCache.y, parseInt(_todayCache.m,10)-1, parseInt(_todayCache.d,10)+daysOffset);
+  return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);
+}
+function formatDayLabel(dateStr) {
+  var names = ['周日','周一','周二','周三','周四','周五','周六'];
+  var d = new Date(dateStr.replace(/-/g,'/'));
+  return dateStr.slice(5) + ' ' + names[d.getDay()];
+}
+
 // ===== 数据概览 =====
 function animateCountUps(root) {
   if (!root || typeof root.querySelectorAll !== 'function') return;
@@ -228,7 +250,7 @@ function renderDashboard(c) {
           <li><span class="todo-ic">${NAV_ICONS.room}</span><div><b>房间占用</b><span>${DB.rooms.filter(function (r) { return r.status === 'busy'; }).length} 间使用中</span></div></li>
           <li><span class="todo-ic">${NAV_ICONS.employee}</span><div><b>在岗员工</b><span>${DB.employees.filter(function (e) { return e.status === 'on'; }).length} 人</span></div></li>
           <li><span class="todo-ic">${NAV_ICONS.cashier}</span><div><b>待结账</b><span>3 单</span></div></li>
-          <li><span class="todo-ic">${NAV_ICONS.reservation}</span><div><b>今日预约</b><span>${DB.reservations.filter(function (r) { return r.date === '2026-08-04'; }).length} 笔</span></div></li>
+          <li><span class="todo-ic">${NAV_ICONS.reservation}</span><div><b>今日预约</b><span>${DB.reservations.filter(function (r) { return r.date === todayStr(); }).length} 笔</span></div></li>
         </ul>
         <button class="btn btn-primary" style="margin-top:16px" onclick="render('cashier')">前往收银 →</button>
       </div>
@@ -2118,7 +2140,7 @@ function newReservation() {
       <div class="form-item"><label>指定技师</label><select class="select" id="rv-tech">${techOpts}</select></div>
     </div>
     <div class="form-row">
-      <div class="form-item"><label>预约日期</label><input class="input" id="rv-date" type="date" value="2026-08-04" /></div>
+      <div class="form-item"><label>预约日期</label><input class="input" id="rv-date" type="date" value="${todayStr()}" /></div>
       <div class="form-item"><label>到店时间</label><input class="input" id="rv-time" type="time" value="20:00" /></div>
       <div class="form-item"><label>人数</label><input class="input" id="rv-people" type="number" value="2" min="1" /></div>
     </div>
@@ -2254,7 +2276,7 @@ const STATUS_MAP = {
   leave: { text: '请假', cls: 'tag-blue' },
   overtime: { text: '加班', cls: 'tag-purple' }
 };
-let attDate = '2026-08-04';
+let attDate = todayStr();
 
 function getShiftInfo(val) {
   return SHIFT_OPTIONS.find(s => s.value === val) || { label: val || '\u2014', cls: '', time: '' };
@@ -2325,9 +2347,9 @@ function renderAttendance(c) {
     '<div class="chart-title" style="margin-top:22px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
       '<span>\u8003\u52e4\u8bb0\u5f55</span>' +
       '<select id="att-date-sel" class="select" style="width:150px;padding:4px 8px;font-size:13px;border-radius:6px" onchange="switchAttDate(this.value)">' +
-        '<option value="2026-08-04"' + (attDate==='2026-08-04'?' selected':'') + '>\u4eca\u5929 (08-04 \u5468\u4e8c)</option>' +
-        '<option value="2026-08-03"' + (attDate==='2026-08-03'?' selected':'') + '>\u6628\u5929 (08-03 \u5468\u4e00)</option>' +
-        '<option value="2026-08-02"' + (attDate==='2026-08-02'?' selected':'') + '>\u524d\u5929 (08-02 \u5468\u65e5)</option>' +
+        '<option value="' + todayStr() + '"' + (attDate===todayStr()?' selected':'') + '>\u4eca\u5929 (' + formatDayLabel(todayStr()) + ')</option>' +
+        '<option value="' + offsetDateStr(-1) + '"' + (attDate===offsetDateStr(-1)?' selected':'') + '>\u6628\u5929 (' + formatDayLabel(offsetDateStr(-1)) + ')</option>' +
+        '<option value="' + offsetDateStr(-2) + '"' + (attDate===offsetDateStr(-2)?' selected':'') + '>\u524d\u5929 (' + formatDayLabel(offsetDateStr(-2)) + ')</option>' +
       '</select>' +
       '<span class="muted" style="font-size:12px;font-weight:400">' + clockedIn + '/' + totalEmp + ' \u4eba\u5df2\u7b7e\u5230</span>' +
     '</div>' +
@@ -2350,7 +2372,7 @@ function renderAttendance(c) {
       })() + '</tbody></table></div>';
 }
 function getAttRecords() {
-  if (attDate === '2026-08-04') return DB.attendance.records;
+  if (attDate === todayStr()) return DB.attendance.records;
   return DB.attendance.history[attDate] || [];
 }
 
