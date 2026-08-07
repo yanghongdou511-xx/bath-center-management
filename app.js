@@ -139,6 +139,29 @@ if (navToggle) {
   });
 }
 
+// 用户头像下拉菜单
+var userMenu = $('user-menu');
+var userTrigger = $('user-trigger');
+if (userTrigger && userMenu) {
+  userTrigger.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var open = userMenu.classList.toggle('open');
+    userTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', function (e) {
+    if (userMenu && !userMenu.contains(e.target)) {
+      userMenu.classList.remove('open');
+      userTrigger.setAttribute('aria-expanded', 'false');
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && userMenu) {
+      userMenu.classList.remove('open');
+      userTrigger.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+
 // ===== 渲染分派 =====
 function render(page) {
   $('page-title').textContent = TITLES[page] || '';
@@ -195,11 +218,13 @@ function renderDashboard(c) {
   var todayRev = DB.hourly.reduce(function (s, h) { return s + h.v; }, 0);
   var now = new Date();
   var dateStr = now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日';
+  var msgCount = DB.reviews ? DB.reviews.filter(function (r) { return r.status === 'pending'; }).length : 0;
+  if (msgCount === 0) msgCount = 6;
   var stats = [
-    { label: '今日营收', prefix: '¥', value: todayRev, suffix: '', icon: 'report', trend: '+12.5% 较昨日', up: true },
-    { label: '会员总数', prefix: '', value: DB.members.length, suffix: ' 人', icon: 'member', trend: '+3 本周新增', up: true },
     { label: '今日订单', prefix: '', value: 128, suffix: ' 单', icon: 'cashier', trend: '+8.2% 较昨日', up: true },
-    { label: '在店客流', prefix: '', value: 46, suffix: ' 人', icon: 'walkin', trend: '-5 较一小时前', up: false }
+    { label: '今日营收', prefix: '¥', value: todayRev, suffix: '', icon: 'report', trend: '+12.5% 较昨日', up: true },
+    { label: '消息通知', prefix: '', value: msgCount, suffix: ' 条', icon: 'review', trend: msgCount + ' 条待处理', up: true },
+    { label: '会员总数', prefix: '', value: DB.members.length, suffix: ' 人', icon: 'member', trend: '+3 本周新增', up: true }
   ];
   var maxH = Math.max.apply(null, DB.hourly.map(function (x) { return x.v; }));
   function fmtInt(n, p, s) { return p + Math.round(n).toLocaleString('en-US') + s; }
