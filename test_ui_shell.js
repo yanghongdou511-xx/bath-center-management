@@ -52,7 +52,7 @@ function makeEl(id) {
     remove: function () {}, appendChild: function () {}
   };
 }
-var real = { 'user-menu': makeEl('user-menu'), 'user-trigger': makeEl('user-trigger') };
+var real = { 'user-menu': makeEl('user-menu'), 'user-trigger': makeEl('user-trigger'), 'logout-btn': makeEl('logout-btn'), 'app-view': makeEl('app-view'), 'login-view': makeEl('login-view') };
 function stub() {
   return {
     style: {}, textContent: '', innerHTML: '', classList: makeClassList(),
@@ -92,6 +92,17 @@ assert(real['user-menu'].classList.contains('open'), '再次点击头像重新�
 // 4) Esc -> 关闭
 (docHandlers['keydown'] || []).forEach(function (fn) { fn({ key: 'Escape' }); });
 assert(!real['user-menu'].classList.contains('open'), '按 Esc 后下拉收起');
+
+console.log('=== E. 退出登录交互 ===');
+var logoutFns = real['logout-btn']._handlers['click'] || [];
+assert(logoutFns.length > 0, '退出登录按钮已绑定 click 事件');
+// 模拟已登录态：应用视图可见、登录视图隐藏
+real['app-view'].classList.remove('hidden');
+real['login-view'].classList.add('hidden');
+assert(!real['app-view'].classList.contains('hidden'), '登录态下应用视图可见');
+logoutFns.forEach(function (fn) { fn({ target: real['logout-btn'], stopPropagation: function () {} }); });
+assert(real['app-view'].classList.contains('hidden'), '点击退出后应用视图隐藏 (hidden)');
+assert(!real['login-view'].classList.contains('hidden'), '点击退出后登录视图重新显示');
 
 console.log('\n=============================');
 console.log('总计: ' + tests + ' | 通过: ' + passed + ' | 失败: ' + failed);
