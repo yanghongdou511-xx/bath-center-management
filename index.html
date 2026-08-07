@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260807d" />
+  <link rel="stylesheet" href="styles.css?v=20260807e" />
 </head>
 <body>
   <!-- ============ 登录页（深色温泉 · 轻奢高级 spa 风） ============ -->
@@ -177,9 +177,10 @@
             <div class="user-dropdown" role="menu">
               <div class="ud-head">
                 <span class="ud-avatar">A</span>
-                <div>
+                <div class="ud-info">
                   <div class="ud-name">管理员</div>
                   <div class="ud-role">超级管理员</div>
+                  <span class="ud-date-pill" id="ud-date"></span>
                 </div>
               </div>
               <a role="menuitem"><span class="ud-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3.1-6.4 7-6.4s7 2.8 7 6.4"/></svg></span>个人资料</a>
@@ -216,8 +217,8 @@
   <div id="boot-error" class="boot-error hidden"></div>
 
   <!-- 缓存破坏：每次部署改动 ?v= 后的版本号，强制浏览器拉取最新 JS，避免旧缓存导致登录失效 -->
-  <script src="data.js?v=20260807d"></script>
-  <script src="app.js?v=20260807d"></script>
+  <script src="data.js?v=20260807e"></script>
+  <script src="app.js?v=20260807e"></script>
   <script>
     // 启动自检：若 app.js 因缓存/语法错误未能执行，则显示明确提示
     window.addEventListener('error', function (e) {

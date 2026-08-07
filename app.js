@@ -192,6 +192,10 @@ function formatDayLabel(dateStr) {
   return dateStr.slice(5) + ' ' + names[d.getDay()];
 }
 
+// 填充下拉菜单日期（在日期工具函数之后调用）
+var _udDateEl = $('ud-date');
+if (_udDateEl) { _udDateEl.textContent = todayLabel(); }
+
 // ===== 数据概览 =====
 function animateCountUps(root) {
   if (!root || typeof root.querySelectorAll !== 'function') return;
