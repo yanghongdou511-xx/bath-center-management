@@ -107,4 +107,4 @@ assert(!real['login-view'].classList.contains('hidden'), '点击退出后登录�
 console.log('\n=============================');
 console.log('总计: ' + tests + ' | 通过: ' + passed + ' | 失败: ' + failed);
 if (failed === 0) console.log('✅ UI SHELL TESTS ALL PASSED');
-else console.log('❌ SOME TESTS FAILED');
+else { console.log('❌ SOME TESTS FAILED'); process.exitCode = 1; }

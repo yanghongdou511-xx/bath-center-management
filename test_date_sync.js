@@ -67,4 +67,4 @@ assert(jy === '2027-01-01', '跨年+1: 12-31->01-01 正确');
 console.log('\n=============================');
 console.log('总计: ' + (passed + failed) + ' | 通过: ' + passed + ' | 失败: ' + failed);
 if (failed === 0) console.log('✅ DATE SYNC TESTS ALL PASSED');
-else console.log('❌ SOME TESTS FAILED');
+else { console.log('❌ SOME TESTS FAILED'); process.exitCode = 1; }

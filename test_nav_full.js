@@ -152,4 +152,4 @@ assert(navOk === 18, '18个页面导航全部成功 (ok=' + navOk + ' fail=' + n
 console.log('\n=============================');
 console.log('总计: ' + tests + ' | 通过: ' + passed + ' | 失败: ' + failed);
 if (failed === 0) console.log('ALL ' + tests + ' TESTS PASSED');
-else console.log('FAILURES: ' + failed);
+else { console.log('FAILURES: ' + failed); process.exitCode = 1; }

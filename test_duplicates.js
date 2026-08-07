@@ -99,4 +99,4 @@ assert(!hasSms, '无短信管理菜单项（旧版残留检查）');
 console.log('\n=============================');
 console.log('总计: ' + tests + ' | 通过: ' + passed + ' | 失败: ' + failed);
 if (failed === 0) console.log('ALL PASSED');
-else console.log('HAS FAILURES: ' + failed);
+else { console.log('HAS FAILURES: ' + failed); process.exitCode = 1; }
