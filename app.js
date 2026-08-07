@@ -77,6 +77,49 @@ function initLoginEffects() {
 }
 initLoginEffects();
 
+// ===== 导航配置（细线条 SVG 图标） =====
+var NAV_ICONS = {
+  dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>',
+  member: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3.1-6.4 7-6.4s7 2.8 7 6.4"/></svg>',
+  walkin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4c1.4 0 2.2 1.2 2.2 2.6S9.4 9 8 9 5.8 7.8 5.8 6.6 6.6 4 8 4Z"/><path d="M16 13c1.4 0 2.2 1.2 2.2 2.6S17.4 18 16 18s-2.2-1.2-2.2-2.4S14.6 13 16 13Z"/></svg>',
+  service: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c0 0-6 6.6-6 11a6 6 0 0 0 12 0c0-4.4-6-11-6-11Z"/></svg>',
+  cashier: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 8l3 4 3-4M12 12v5M9.5 13h5M9.5 15h5"/></svg>',
+  room: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v17"/><path d="M6 21h12"/><circle cx="14" cy="12" r="1.1"/></svg>',
+  inventory: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7Z"/><path d="M3 7l9 4 9-4"/><path d="M12 11v10"/></svg>',
+  employee: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 20c0-3 2.6-5 5.5-5s5.5 2 5.5 5"/><circle cx="17" cy="9" r="2.3"/><path d="M15.5 14.4c2.5.3 4.5 1.9 4.5 4.6"/></svg>',
+  technician: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V6a1.4 1.4 0 0 1 2.8 0v5M10.8 11V5a1.4 1.4 0 0 1 2.8 0v6M13.6 11V6.5a1.4 1.4 0 0 1 2.8 0V15c0 3.3-2.3 6-5.6 6-2.4 0-4-1.2-5-3l-2-3.4a1.4 1.4 0 0 1 2.3-1.5L8 13"/></svg>',
+  task: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1H9V4Z"/><path d="M9 11h6M9 15h6"/></svg>',
+  reservation: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>',
+  marketing: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 13h16M12 9v11"/><path d="M12 9C12 9 9 4 6.5 5.5S8 9 12 9Z"/><path d="M12 9c0 0 3-5 5.5-3.5S16 9 12 9Z"/></svg>',
+  locker: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1.2"/></svg>',
+  attendance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  review: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9L12 3.5Z"/></svg>',
+  package: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="17" cy="14.5" r="1.3"/></svg>',
+  report: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4"/><path d="M4 20h16"/><path d="M8 16v-4M12 16V9M16 16v-7"/></svg>',
+  store: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9l8-5 8 5v12"/><path d="M9 21v-6h6v6"/></svg>'
+};
+var NAV = [
+  { page: 'dashboard', label: '数据概览' }, { page: 'member', label: '会员管理' },
+  { page: 'walkin', label: '散客区' }, { page: 'service', label: '服务项目' },
+  { page: 'cashier', label: '前台收银' }, { page: 'room', label: '房间管理' },
+  { page: 'inventory', label: '库存管理' }, { page: 'employee', label: '员工管理' },
+  { page: 'technician', label: '技师区' }, { page: 'task', label: '任务管理' },
+  { page: 'reservation', label: '预约管理' }, { page: 'marketing', label: '营销活动' },
+  { page: 'locker', label: '寄存管理' }, { page: 'attendance', label: '考勤排班' },
+  { page: 'review', label: '客诉评价' }, { page: 'package', label: '会员卡套餐' },
+  { page: 'report', label: '数据报表' }, { page: 'store', label: '门店设置' }
+];
+function buildMenu() {
+  var menu = $('menu');
+  if (!menu) return;
+  menu.innerHTML = NAV.map(function (n, i) {
+    return '<a class="menu-item' + (i === 0 ? ' active' : '') + '" data-page="' + n.page + '">' +
+      '<span class="mi-icon">' + (NAV_ICONS[n.page] || '') + '</span>' +
+      '<span class="menu-label">' + n.label + '</span></a>';
+  }).join('');
+}
+buildMenu();
+
 // ===== 菜单切换 =====
 const TITLES = { dashboard: '数据概览', member: '会员管理', walkin: '散客区', service: '服务项目', cashier: '前台收银', room: '房间管理', inventory: '库存管理', employee: '员工管理', technician: '技师区', task: '任务管理', reservation: '预约管理', marketing: '营销活动', locker: '寄存管理', attendance: '考勤排班', review: '客诉评价', package: '会员卡套餐', report: '数据报表', store: '门店设置' };
 $('menu').addEventListener('click', (e) => {
@@ -87,6 +130,15 @@ $('menu').addEventListener('click', (e) => {
   render(item.dataset.page);
 });
 
+// 侧边栏折叠/展开
+var navToggle = $('nav-toggle');
+if (navToggle) {
+  navToggle.addEventListener('click', function () {
+    var sb = document.querySelector('.sidebar');
+    if (sb) sb.classList.toggle('collapsed');
+  });
+}
+
 // ===== 渲染分派 =====
 function render(page) {
   $('page-title').textContent = TITLES[page] || '';
@@ -96,45 +148,109 @@ function render(page) {
 }
 
 // ===== 数据概览 =====
+function animateCountUps(root) {
+  if (!root || typeof root.querySelectorAll !== 'function') return;
+  if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') return;
+  root.querySelectorAll('.stat-num').forEach(function (el) {
+    var target = parseFloat(el.getAttribute('data-num')) || 0;
+    var prefix = el.getAttribute('data-prefix') || '';
+    var suffix = el.getAttribute('data-suffix') || '';
+    var dur = 950, start = null;
+    function step(ts) {
+      if (start === null) start = ts;
+      var p = Math.min((ts - start) / dur, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      var val = target * eased;
+      el.textContent = prefix + Math.round(val).toLocaleString('en-US') + suffix;
+      if (p < 1) window.requestAnimationFrame(step);
+      else el.textContent = prefix + Math.round(target).toLocaleString('en-US') + suffix;
+    }
+    window.requestAnimationFrame(step);
+  });
+}
+
 function renderDashboard(c) {
-  const today = DB.hourly.reduce((s, h) => s + h.v, 0);
-  const stats = [
-    { label: '今日营收', value: fmtMoney(today), trend: '+12.5% 较昨日', up: true, icon: '💰', color: '#1677ff' },
-    { label: '会员总数', value: DB.members.length + ' 人', trend: '+3 本周新增', up: true, icon: '👤', color: '#52c41a' },
-    { label: '今日订单', value: '128 单', trend: '+8.2% 较昨日', up: true, icon: '🧾', color: '#faad14' },
-    { label: '在店客流', value: '46 人', trend: '-5 较一小时前', up: false, icon: '🚶', color: '#722ed1' },
+  var todayRev = DB.hourly.reduce(function (s, h) { return s + h.v; }, 0);
+  var now = new Date();
+  var dateStr = now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日';
+  var stats = [
+    { label: '今日营收', prefix: '¥', value: todayRev, suffix: '', icon: 'report', trend: '+12.5% 较昨日', up: true },
+    { label: '会员总数', prefix: '', value: DB.members.length, suffix: ' 人', icon: 'member', trend: '+3 本周新增', up: true },
+    { label: '今日订单', prefix: '', value: 128, suffix: ' 单', icon: 'cashier', trend: '+8.2% 较昨日', up: true },
+    { label: '在店客流', prefix: '', value: 46, suffix: ' 人', icon: 'walkin', trend: '-5 较一小时前', up: false }
   ];
+  var maxH = Math.max.apply(null, DB.hourly.map(function (x) { return x.v; }));
+  function fmtInt(n, p, s) { return p + Math.round(n).toLocaleString('en-US') + s; }
   c.innerHTML = `
-    <div class="stat-grid">
-      ${stats.map(s => `
-        <div class="stat-card">
-          <div class="stat-icon" style="color:${s.color}">${s.icon}</div>
-          <div class="stat-label">${s.label}</div>
-          <div class="stat-value">${s.value}</div>
-          <div class="stat-trend ${s.up ? 'up' : 'down'}">${s.up ? '▲' : '▼'} ${s.trend}</div>
-        </div>`).join('')}
-    </div>
-    <div class="cashier-grid">
-      <div class="chart-box">
-        <div class="chart-title">今日营收趋势（按小时）</div>
-        ${DB.hourly.map(h => {
-          const max = Math.max(...DB.hourly.map(x => x.v));
-          const pct = (h.v / max * 100).toFixed(1);
-          return `<div class="bar-row"><div class="bar-label">${h.h}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="bar-val">${fmtMoney(h.v)}</div></div>`;
-        }).join('')}
+    <div class="dash-head">
+      <div>
+        <h3 class="lux-h dash-title">经营概览</h3>
+        <p class="dash-sub">实时掌握门店水波之间的每一笔生意</p>
       </div>
-      <div class="card card-pad">
-        <div class="chart-title">待办提醒</div>
-        <div style="line-height:2.2">
-          <div>🔔 库存预警：<b style="color:#fa8c16">2</b> 项商品低于安全库存</div>
-          <div>🚪 房间占用：<b>${DB.rooms.filter(r => r.status === 'busy').length}</b> 间使用中</div>
-          <div>👥 在岗员工：<b>${DB.employees.filter(e => e.status === 'on').length}</b> 人</div>
-          <div>🧾 待结账：<b>3</b> 单</div>
-          <div>📅 今日预约：<b>${DB.reservations.filter(r => r.date === '2026-08-04').length}</b> 笔</div>
+      <div class="dash-date">${dateStr}</div>
+    </div>
+
+    <div class="stat-grid">
+      ${stats.map(function (s) {
+        return `<div class="stat-card">
+          <div class="stat-icon">${NAV_ICONS[s.icon] || ''}</div>
+          <div class="stat-label">${s.label}</div>
+          <div class="stat-value"><span class="stat-num" data-num="${s.value}" data-prefix="${s.prefix}" data-suffix="${s.suffix}">${fmtInt(s.value, s.prefix, s.suffix)}</span></div>
+          <div class="stat-trend ${s.up ? 'up' : 'down'}">${s.up ? '▲' : '▼'} ${s.trend}</div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="quick-actions">
+      <div class="qa-title">快捷操作</div>
+      <div class="qa-grid">
+        <button type="button" class="qa-btn" onclick="render('member')"><span class="qa-ic">${NAV_ICONS.member}</span><span class="qa-tx">新增会员</span></button>
+        <button type="button" class="qa-btn" onclick="render('cashier')"><span class="qa-ic">${NAV_ICONS.cashier}</span><span class="qa-tx">前台收银</span></button>
+        <button type="button" class="qa-btn" onclick="render('reservation')"><span class="qa-ic">${NAV_ICONS.reservation}</span><span class="qa-tx">新建预约</span></button>
+        <button type="button" class="qa-btn" onclick="render('inventory')"><span class="qa-ic">${NAV_ICONS.inventory}</span><span class="qa-tx">库存补货</span></button>
+      </div>
+    </div>
+
+    <div class="dash-cols">
+      <div class="card card-pad chart-card">
+        <div class="chart-title">今日营收趋势（按小时）</div>
+        <div class="bars">
+          ${DB.hourly.map(function (h) {
+            var pct = (h.v / maxH * 100).toFixed(1);
+            return `<div class="bar-row"><div class="bar-label">${h.h}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="bar-val">${fmtMoney(h.v)}</div></div>`;
+          }).join('')}
         </div>
+      </div>
+      <div class="card card-pad todo-card">
+        <div class="chart-title">待办提醒</div>
+        <ul class="todo-list">
+          <li><span class="todo-ic">${NAV_ICONS.inventory}</span><div><b>库存预警</b><span>${DB.inventory.filter(function (i) { return i.status === 'low'; }).length || 2} 项商品低于安全库存</span></div></li>
+          <li><span class="todo-ic">${NAV_ICONS.room}</span><div><b>房间占用</b><span>${DB.rooms.filter(function (r) { return r.status === 'busy'; }).length} 间使用中</span></div></li>
+          <li><span class="todo-ic">${NAV_ICONS.employee}</span><div><b>在岗员工</b><span>${DB.employees.filter(function (e) { return e.status === 'on'; }).length} 人</span></div></li>
+          <li><span class="todo-ic">${NAV_ICONS.cashier}</span><div><b>待结账</b><span>3 单</span></div></li>
+          <li><span class="todo-ic">${NAV_ICONS.reservation}</span><div><b>今日预约</b><span>${DB.reservations.filter(function (r) { return r.date === '2026-08-04'; }).length} 笔</span></div></li>
+        </ul>
         <button class="btn btn-primary" style="margin-top:16px" onclick="render('cashier')">前往收银 →</button>
       </div>
+    </div>
+
+    <div class="card card-pad recent-card">
+      <div class="recent-head">
+        <h3 class="lux-h">最近订单</h3>
+        <a class="recent-more" onclick="render('cashier')">查看全部 →</a>
+      </div>
+      <div class="table-wrap recent-table-wrap">
+        <table class="recent-table">
+          <thead><tr><th>订单号</th><th>会员</th><th>消费项目</th><th>金额</th><th>支付方式</th><th>时间</th><th>收银员</th></tr></thead>
+          <tbody>
+            ${DB.orders.map(function (o) {
+              return `<tr><td class="mono">${o.id}</td><td>${esc(o.member)}</td><td>${esc(o.items)}</td><td class="amount">¥${o.amount}</td><td>${esc(o.pay)}</td><td>${o.time}</td><td>${esc(o.cashier)}</td></tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
     </div>`;
+  animateCountUps(c);
 }
 
 // ===== 会员管理 =====

@@ -92,17 +92,9 @@ routes.forEach(function (r) {
   }
 });
 
-console.log('\n=== D. 菜单项唯一性 ===');
-// 从index.html提取
-var html = fs.readFileSync('index.html', 'utf8');
-var menuItems = html.match(/data-page="(\w+)"[^>]*>.*?<span class="mi-icon">[^<]*<\/span>([^<]+)/g) || [];
-var labels = [];
-menuItems.forEach(function (m) {
-  var lbl = m.match(/mi-icon">[^<]*<\/span>(.+)/)[1];
-  labels.push(lbl);
-});
-assert(labels.length === 18, '侧边栏共18个菜单项');
-
+console.log('\n=== D. 菜单项唯一性（取自 NAV 配置，菜单由 app.js 动态生成） ===');
+assert(typeof NAV !== 'undefined' && NAV.length === 18, '导航菜单共18项 (NAV)');
+var labels = NAV.map(function (n) { return n.label; });
 var seen = {};
 var hasDup = false;
 labels.forEach(function (l) {
@@ -110,6 +102,12 @@ labels.forEach(function (l) {
   seen[l] = true;
 });
 assert(!hasDup, '菜单名称全部唯一');
+// 每个菜单项均能在 TITLES 与渲染函数中找到对应
+NAV.forEach(function (n) {
+  assert(TITLES[n.page] === n.label, 'NAV.' + n.page + ' 标签与 TITLES 一致');
+  var fnName = 'render' + n.page.charAt(0).toUpperCase() + n.page.slice(1);
+  assert(typeof eval(fnName) === 'function', fnName + ' 渲染函数存在');
+});
 
 console.log('\n=== E. 核心功能函数可用性 ===');
 assert(typeof openModal === 'function', 'openModal可用');

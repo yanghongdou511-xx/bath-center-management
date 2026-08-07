@@ -6,15 +6,17 @@ var js = fs.readFileSync('app.js', 'utf8');
 var tests = 0, passed = 0, failed = 0;
 function assert(cond, msg) { tests++; if (cond) { passed++; console.log('  OK ' + msg); } else { failed++; console.log('  FAIL ' + msg); } }
 
-// === 1. 提取菜单项 ===
-var menuMatches = html.match(/data-page="(\w+)"[^>]*><span class="mi-icon">[^<]*<\/span>([^<]+)/g) || [];
+// === 1. 提取菜单项（菜单由 app.js 的 NAV 配置动态生成，故从这里解析） ===
+var navMatch = js.match(/var NAV = \[([\s\S]*?)\];/);
 var menus = {}, menuLabels = [];
-menuMatches.forEach(function(m) {
-  var p = m.match(/data-page="(\w+)"/)[1];
-  var label = m.match(/mi-icon">[^<]*<\/span>(.+)/)[1];
-  menus[p] = label;
-  menuLabels.push(label);
-});
+if (navMatch) {
+  var navItems = navMatch[1].match(/\{ page:\s*'([^']+)',\s*label:\s*'([^']+)'\s*\}/g) || [];
+  navItems.forEach(function(it) {
+    var kv = it.match(/\{ page:\s*'([^']+)',\s*label:\s*'([^']+)'\s*\}/);
+    menus[kv[1]] = kv[2];
+    menuLabels.push(kv[2]);
+  });
+}
 
 console.log('=== 1. 菜单项 (' + menuLabels.length + '项) ===');
 menuLabels.forEach(function(l, i) { console.log('  ' + (i + 1) + '. ' + l); });
