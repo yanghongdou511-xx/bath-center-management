@@ -197,8 +197,9 @@ function formatDayLabel(dateStr) {
 var _udDateEl = $('ud-date');
 if (_udDateEl) { _udDateEl.textContent = todayLabel(); }
 
-// ===== 日期点击编辑（Flatpickr 日历）=====
-var _fpInstance = null;
+// ===== 日期点击编辑（内置零依赖日历组件，不依赖任何外部 CDN）=====
+var _calEl = null;
+var _calYear = 0, _calMonth = 0; // 视图年月（_calMonth 为 0-based）
 
 function applyCustomDate(dateStr) {
   var d = new Date(dateStr.replace(/-/g,'/'));
@@ -216,64 +217,106 @@ function applyCustomDate(dateStr) {
   });
 }
 
+function _pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+function renderCalendarGrid() {
+  if (!_calEl) return;
+  var y = _calYear, m = _calMonth;
+  var startWd = new Date(y, m, 1).getDay();
+  var daysInMonth = new Date(y, m + 1, 0).getDate();
+  var prevDays = new Date(y, m, 0).getDate();
+  var sel = _todayCache.str;
+  var tStr = todayStr();
+  var cells = [];
+  for (var i = startWd - 1; i >= 0; i--) {
+    var pd = prevDays - i;
+    var pY = m === 0 ? y - 1 : y, pM = m === 0 ? 11 : m - 1;
+    cells.push({ d: pd, cls: ' other', val: pY + '-' + _pad2(pM + 1) + '-' + _pad2(pd) });
+  }
+  for (var d = 1; d <= daysInMonth; d++) {
+    var val = y + '-' + _pad2(m + 1) + '-' + _pad2(d);
+    var cls = '';
+    if (val === tStr) cls += ' today';
+    if (val === sel) cls += ' selected';
+    cells.push({ d: d, cls: cls, val: val });
+  }
+  var trailing = (7 - (cells.length % 7)) % 7;
+  for (var k = 1; k <= trailing; k++) {
+    var nY = m === 11 ? y + 1 : y, nM = m === 11 ? 0 : m + 1;
+    cells.push({ d: k, cls: ' other', val: nY + '-' + _pad2(nM + 1) + '-' + _pad2(k) });
+  }
+  var html = '';
+  for (var c = 0; c < cells.length; c++) {
+    html += '<div class="cal-cell' + cells[c].cls + '" data-val="' + cells[c].val + '">' + cells[c].d + '</div>';
+  }
+  var grid = _calEl.querySelector('.cal-grid');
+  if (grid) grid.innerHTML = html;
+  var title = _calEl.querySelector('.cal-title');
+  if (title) title.textContent = y + '年' + (m + 1) + '月';
+}
+
 function showDatePicker(anchorEl) {
   hideDatePicker();
-  var inp = document.createElement('input');
-  inp.type = 'text';
-  inp.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none;';
-  document.body.appendChild(inp);
-  var rect = anchorEl.getBoundingClientRect();
-  _fpInstance = flatpickr(inp, {
-    defaultDate: todayStr(),
-    dateFormat: 'Y-m-d',
-    locale: 'zh',
-    inline: false,
-    static: true,
-    appendTo: document.body,
-    onChange: function(sel, dateStr) {
-      if (dateStr) applyCustomDate(dateStr);
-      setTimeout(hideDatePicker, 150);
-    },
-    onClose: function() {
-      setTimeout(hideDatePicker, 100);
-    }
-  });
-  // 手动定位日历面板
-  var cal = document.querySelector('.flatpickr-calendar');
-  if (cal) {
-    cal.style.position = 'fixed';
-    cal.style.zIndex = '9999';
-    cal.style.left = (rect.left + rect.width / 2) + 'px';
-    cal.style.top = (rect.bottom + 6) + 'px';
-    requestAnimationFrame(function() {
-      var w = cal.offsetWidth || 280;
-      cal.style.marginLeft = (-w / 2) + 'px';
+  var cur = (_todayCache.str || todayStr()).split('-');
+  _calYear = parseInt(cur[0], 10) || new Date().getFullYear();
+  _calMonth = (parseInt(cur[1], 10) || 1) - 1;
+  var el = document.createElement('div');
+  el.className = 'date-cal show';
+  el.innerHTML =
+    '<div class="cal-head">' +
+      '<button type="button" class="cal-nav cal-prev" aria-label="上个月">‹</button>' +
+      '<div class="cal-title"></div>' +
+      '<button type="button" class="cal-nav cal-next" aria-label="下个月">›</button>' +
+    '</div>' +
+    '<div class="cal-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>' +
+    '<div class="cal-grid"></div>';
+  document.body.appendChild(el);
+  _calEl = el;
+  el.style.position = 'fixed';
+  var rect = anchorEl.getBoundingClientRect ? anchorEl.getBoundingClientRect() : { left: 0, top: 0, bottom: 0, width: 0 };
+  el.style.left = Math.max(8, rect.left + rect.width / 2) + 'px';
+  el.style.top = (rect.bottom + 8) + 'px';
+  renderCalendarGrid();
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(function () {
+      if (!_calEl) return;
+      var w = _calEl.offsetWidth || 280;
+      var vw = (typeof window !== 'undefined' && window.innerWidth) || 1280;
+      var left = Math.max(8, rect.left + rect.width / 2 - w / 2);
+      if (left + w > vw - 8) left = vw - w - 8;
+      _calEl.style.left = left + 'px';
     });
   }
-  _fpInstance.open();
+  var prev = el.querySelector('.cal-prev');
+  if (prev) prev.addEventListener('click', function (e) { e.stopPropagation(); _calMonth--; if (_calMonth < 0) { _calMonth = 11; _calYear--; } renderCalendarGrid(); });
+  var next = el.querySelector('.cal-next');
+  if (next) next.addEventListener('click', function (e) { e.stopPropagation(); _calMonth++; if (_calMonth > 11) { _calMonth = 0; _calYear++; } renderCalendarGrid(); });
+  var grid = el.querySelector('.cal-grid');
+  if (grid) grid.addEventListener('click', function (e) {
+    if (e.target && e.target.closest) {
+      var cell = e.target.closest('.cal-cell');
+      if (cell && cell.getAttribute('data-val')) { e.stopPropagation(); applyCustomDate(cell.getAttribute('data-val')); hideDatePicker(); }
+    }
+  });
 }
 function hideDatePicker() {
-  if (_fpInstance) { try { _fpInstance.destroy(); } catch(e){} _fpInstance = null; }
-  var hiddenInputs = document.querySelectorAll('input[style*="-9999"]');
-  hiddenInputs.forEach(function(el){ if(el.parentNode) el.parentNode.removeChild(el); });
+  if (_calEl) { if (_calEl.parentNode) _calEl.parentNode.removeChild(_calEl); _calEl = null; }
 }
 // 绑定点击事件
 if (_udDateEl) {
   _udDateEl.addEventListener('click', function(e) { e.stopPropagation(); showDatePicker(_udDateEl); });
 }
 document.addEventListener('click', function(e) {
-  if (!e.target.closest('.flatpickr-calendar') && !e.target.closest('.ud-date-pill') && !e.target.closest('.dash-date')) {
+  if (!e.target || !e.target.closest) return;
+  if (!e.target.closest('.date-cal') && !e.target.closest('.ud-date-pill') && !e.target.closest('.dash-date')) {
     hideDatePicker();
   }
 });
 // 仪表盘日期也支持点击（事件委托，因为 dashboard 动态渲染）
 document.addEventListener('click', function(e) {
+  if (!e.target || !e.target.closest) return;
   var target = e.target.closest('.dash-date');
-  if (target) {
-    e.stopPropagation();
-    target.style.position = 'relative';
-    showDatePicker(target);
-  }
+  if (target) { e.stopPropagation(); showDatePicker(target); }
 });
 
 // ===== 数据概览 =====
