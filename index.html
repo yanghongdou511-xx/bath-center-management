@@ -4,17 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>悦泉洗浴中心 · 综合管理系统</title>
-  <link rel="stylesheet" href="styles.css?v=20260806j" />
+  <link rel="stylesheet" href="styles.css?v=20260806k" />
 </head>
 <body>
-  <!-- ============ 登录页（高端简约 · 品牌统一） ============ -->
+  <!-- ============ 登录页（深色温泉 · 轻奢高级 spa 风） ============ -->
   <div id="login-view" class="login-view">
-    <!-- 左：品牌展示区 -->
-    <aside class="login-aside">
-      <div class="aside-aurora" aria-hidden="true"></div>
-      <div class="aside-blob blob-a" aria-hidden="true"></div>
-      <div class="aside-blob blob-b" aria-hidden="true"></div>
+    <!-- 背景氛围层 -->
+    <div class="lx-bg" aria-hidden="true">
+      <div class="lx-glow glow-gold"></div>
+      <div class="lx-glow glow-teal"></div>
+      <div class="lx-bubbles">
+        <span class="bubble b1"></span>
+        <span class="bubble b2"></span>
+        <span class="bubble b3"></span>
+        <span class="bubble b4"></span>
+        <span class="bubble b5"></span>
+        <span class="bubble b6"></span>
+        <span class="bubble b7"></span>
+      </div>
+      <div class="lx-waves">
+        <svg class="wave wave1" viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0,60 C240,120 480,0 720,60 C960,120 1200,0 1440,60 L1440,120 L0,120 Z"/></svg>
+        <svg class="wave wave2" viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0,60 C240,120 480,0 720,60 C960,120 1200,0 1440,60 L1440,120 L0,120 Z"/></svg>
+      </div>
+      <div class="lx-grain"></div>
+    </div>
 
+    <!-- 左：品牌氛围区 -->
+    <aside class="login-aside">
       <div class="aside-inner">
         <div class="brand-mark">
           <svg class="brand-drop" viewBox="0 0 24 24" aria-hidden="true">
@@ -24,27 +40,28 @@
         </div>
 
         <div class="aside-hero">
-          <h1 class="aside-title">智慧洗浴<br/><span class="aside-accent">一体化管理</span></h1>
-          <p class="aside-desc">会员、收银、房态、库存、预约、营销——一个后台，从容掌控每一处水波。</p>
+          <p class="aside-eyebrow">PRIVATE SPA · 私享疗愈</p>
+          <h1 class="aside-title">于喧嚣之外<br/><span class="aside-accent">邂逅一池清欢</span></h1>
+          <p class="aside-desc">温泉水润，金辉静谧。一站式智慧管理，让每一处水波都从容流转。</p>
         </div>
 
         <ul class="aside-feats">
           <li class="feat">
             <span class="feat-ic">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-5"/><path d="M12 16V8"/><path d="M16 16v-3"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c4 5 7 8 7 12a7 7 0 0 1-14 0c0-4 3-7 7-12Z"/></svg>
             </span>
             <div class="feat-tx">
-              <p class="feat-t">实时经营数据看板</p>
-              <p class="feat-s">多维度指标，一眼掌握门店健康度</p>
+              <p class="feat-t">天然温泉疗愈</p>
+              <p class="feat-s">恒温矿泉，舒缓身心每一刻</p>
             </div>
           </li>
           <li class="feat">
             <span class="feat-ic">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9l8-5 8 5"/><path d="M5 9v10h14V9"/><path d="M9 19v-6h6v6"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12a7 7 0 0 1 14 0"/><path d="M12 5v14"/><circle cx="12" cy="12" r="2.4"/></svg>
             </span>
             <div class="feat-tx">
-              <p class="feat-t">多门店连锁运营</p>
-              <p class="feat-s">总部管控，分店独立，数据互通</p>
+              <p class="feat-t">私人专属空间</p>
+              <p class="feat-s">独立包厢，私密度假新体验</p>
             </div>
           </li>
           <li class="feat">
@@ -52,26 +69,32 @@
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 7 2 7H4s2-2 2-7Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
             </span>
             <div class="feat-tx">
-              <p class="feat-t">消息推送与智能提醒</p>
-              <p class="feat-s">预约、库存、客诉，及时触达</p>
+              <p class="feat-t">智慧管家服务</p>
+              <p class="feat-s">一键预约，全程智能托管</p>
             </div>
           </li>
         </ul>
 
+        <div class="aside-foot">
+          <span class="foot-line"></span>
+          <span class="foot-text">YUEQUAN · 自 1998 年守护每一次入浴时光</span>
+          <span class="foot-line"></span>
+        </div>
       </div>
     </aside>
 
     <!-- 右：登录表单区 -->
     <main class="login-main">
       <div class="login-card">
+        <div class="card-glow" aria-hidden="true"></div>
         <div class="card-head">
           <div class="card-logo">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 2.4C12 2.4 4.8 10.6 4.8 15.4a7.2 7.2 0 0 0 14.4 0C19.2 10.6 12 2.4 12 2.4Z"/>
             </svg>
           </div>
-          <h2 class="card-title">欢迎登录</h2>
-          <p class="card-sub">悦泉洗浴中心 · 综合管理平台</p>
+          <h2 class="card-title">欢迎归来</h2>
+          <p class="card-sub">悦泉洗浴中心 · 智能管理中心</p>
         </div>
 
         <form id="login-form" class="login-form" autocomplete="off">
@@ -110,7 +133,7 @@
 
         <div class="card-foot">
           <span class="foot-line"></span>
-          <span class="foot-text">安全加密 · 数据无忧</span>
+          <span class="foot-text">端到端加密 · 您的隐私如水般纯净</span>
           <span class="foot-line"></span>
         </div>
       </div>
@@ -172,8 +195,8 @@
   <div id="boot-error" class="boot-error hidden"></div>
 
   <!-- 缓存破坏：每次部署改动 ?v= 后的版本号，强制浏览器拉取最新 JS，避免旧缓存导致登录失效 -->
-  <script src="data.js?v=20260806j"></script>
-  <script src="app.js?v=20260806j"></script>
+  <script src="data.js?v=20260806k"></script>
+  <script src="app.js?v=20260806k"></script>
   <script>
     // 启动自检：若 app.js 因缓存/语法错误未能执行，则显示明确提示
     window.addEventListener('error', function (e) {
