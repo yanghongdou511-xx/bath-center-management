@@ -127,70 +127,99 @@ a{ text-decoration:none; color:inherit; }
 .input::placeholder{ color:var(--ink-3); font-size:13px; letter-spacing:.2px; }
 .input:focus{ outline:none; border-color:var(--gold); box-shadow:0 0 0 4px rgba(216,185,121,.20), 0 0 20px -4px rgba(216,185,121,.15); }
 .input:focus ~ .field-ic{ color:var(--gold); transform:scale(1.08); }
-.field--pw .input{ padding-right:56px; }
-/* 密码切换按钮 —— 精细化视觉 */
+.field--pw .input{ padding-right:58px; }
+/* ═══════════════ 密码切换按钮 · 极致精细化 ═══════════════ */
 .pw-toggle{
   position:absolute;
-  right:8px;
+  right:7px;
   top:50%;
   transform:translateY(-50%) translateZ(0);
-  width:38px;
-  height:38px;
-  border:1px solid rgba(184,149,79,.28);
-  background:rgba(255,255,255,.95);
-  box-shadow:0 1px 3px rgba(140,110,50,.08),0 1px 2px rgba(0,0,0,.04);
-  color:#5a5a5a;
-  border-radius:10px;
+  width:40px;
+  height:40px;
+  /* 边框：外层金色 + 内层高光模拟立体 */
+  border:1.5px solid rgba(184,149,79,.35);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(252,249,245,.98) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    inset 0 -1px 0 rgba(184,149,79,.06),
+    0 1px 4px rgba(140,110,50,.10),
+    0 0.5px 2px rgba(0,0,0,.03);
+  color:#4a4a4a;
+  border-radius:11px;
   display:flex;
   align-items:center;
   justify-content:center;
   cursor:pointer;
-  transition:color .2s,background .2s,border-color .2s,box-shadow .2s,transform .15s;
   padding:0;
+  /* 分组过渡：颜色/背景/边框慢(200ms)，变换快(120ms) */
+  transition:
+    color .2s ease,
+    background .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .12s cubic-bezier(.25,.46,.45,.94);
 }
 .pw-toggle:hover{
-  color:var(--gold-deep);
-  background:linear-gradient(135deg, rgba(255,248,230,.95), rgba(255,245,210,.92));
-  border-color:rgba(184,149,79,.55);
-  box-shadow:0 2px 6px rgba(184,149,79,.15),0 1px 3px rgba(0,0,0,.05);
-  transform:translateY(-50%) translateZ(0) scale(1.05);
+  color:#8B6914;
+  background:
+    linear-gradient(135deg, rgba(255,250,235,1) 0%, rgba(255,245,220,.96) 100%);
+  border-color:rgba(184,149,79,.60);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 0 rgba(184,149,79,.10),
+    0 3px 10px rgba(184,149,79,.18),
+    0 1px 4px rgba(0,0,0,.04);
+  transform:translateY(-50%) translateZ(0) scale(1.04);
 }
 .pw-toggle:active{
-  transform:translateY(-50%) translateZ(0) scale(.96);
-  box-shadow:0 1px 2px rgba(140,110,50,.1);
+  transform:translateY(-50%) translateZ(0) scale(.97);
+  box-shadow:
+    inset 0 1px 3px rgba(140,110,50,.12),
+    inset 0 -1px 0 rgba(184,149,79,.08),
+    0 1px 2px rgba(0,0,0,.05);
+  background:linear-gradient(180deg, rgba(255,248,240,1) 0%, rgba(252,245,230,.98) 100%);
 }
 .pw-toggle:focus-visible{
-  outline:2px solid var(--gold);
-  outline-offset:2px;
+  outline:2.5px solid var(--gold);
+  outline-offset:2.5px;
+  outline-radius:13px;
 }
-/* SVG 图标 —— 清晰描边线框 */
+
+/* ═══ SVG 图标 · 饱满清晰描边 ═══ */
 .pw-toggle svg{
-  width:21px;
-  height:21px;
+  width:22px;
+  height:22px;
   display:block;
+  flex-shrink:0;
   fill:none;
   stroke:currentColor;
-  stroke-width:2.25;
+  stroke-width:2.4;
   stroke-linecap:round;
   stroke-linejoin:round;
   shape-rendering:geometricPrecision;
   vector-effect:non-scaling-stroke;
-  /* 防止亚像素渲染模糊 */
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
+  /* 精确居中修正：消除 flex 子项微小偏移 */
+  margin:0;
+  padding:0;
 }
-/* 图标切换：绝对定位叠放 + 渐隐，避免闪烁/并排 */
-.pw-toggle svg{ position:relative; }
+
+/* ═══ 图标切换：绝对定位叠放 + 渐隐渐现 ═══ */
 .ic-eye-off{
   position:absolute;
   left:50%;
   top:50%;
-  transform:translate(-50%,-50%);
+  width:22px;
+  height:22px;
+  margin-left:-11px;
+  margin-top:-11px;
   opacity:0;
   pointer-events:none;
-  transition:opacity .18s ease;
+  transition:opacity .2s ease;
 }
-.pw-toggle.show .ic-eye{ opacity:0; pointer-events:none; transition:opacity .18s ease; }
+.pw-toggle.show .ic-eye{ opacity:0; pointer-events:none; transition:opacity .2s ease; }
 .pw-toggle.show .ic-eye-off{ opacity:1; pointer-events:auto; }
 .login-row{ display:flex; align-items:center; justify-content:space-between; margin:6px 0 26px; font-size:13px; }
 /* 自定义复选框（轻奢金 · 对齐精细化） */
