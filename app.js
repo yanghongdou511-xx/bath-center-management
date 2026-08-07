@@ -231,7 +231,7 @@ function renderDashboard(c) {
     { label: '消息通知', prefix: '', value: msgCount, suffix: ' 条', icon: 'review', trend: msgCount + ' 条待处理', up: true },
     { label: '会员总数', prefix: '', value: DB.members.length, suffix: ' 人', icon: 'member', trend: '+3 本周新增', up: true }
   ];
-  var maxH = Math.max.apply(null, DB.hourly.map(function (x) { return x.v; }));
+  var maxH = Math.max(0, ...DB.hourly.map(function (x) { return x.v; }));
   function fmtInt(n, p, s) { return p + Math.round(n).toLocaleString('en-US') + s; }
   c.innerHTML = `
     <div class="dash-head">
@@ -276,7 +276,7 @@ function renderDashboard(c) {
       <div class="card card-pad todo-card">
         <div class="chart-title">待办提醒</div>
         <ul class="todo-list">
-          <li><span class="todo-ic">${NAV_ICONS.inventory}</span><div><b>库存预警</b><span>${DB.inventory.filter(function (i) { return i.status === 'low'; }).length || 2} 项商品低于安全库存</span></div></li>
+          <li><span class="todo-ic">${NAV_ICONS.inventory}</span><div><b>库存预警</b><span>${DB.inventory.filter(function (i) { return i.status === 'warn'; }).length} 项商品低于安全库存</span></div></li>
           <li><span class="todo-ic">${NAV_ICONS.room}</span><div><b>房间占用</b><span>${DB.rooms.filter(function (r) { return r.status === 'busy'; }).length} 间使用中</span></div></li>
           <li><span class="todo-ic">${NAV_ICONS.employee}</span><div><b>在岗员工</b><span>${DB.employees.filter(function (e) { return e.status === 'on'; }).length} 人</span></div></li>
           <li><span class="todo-ic">${NAV_ICONS.cashier}</span><div><b>待结账</b><span>3 单</span></div></li>
@@ -2059,8 +2059,8 @@ function addEmployee() {
 
 // ===== 数据报表 =====
 function renderReport(c) {
-  const maxW = Math.max(...DB.weekly.map(x => x.v));
-  const maxT = Math.max(...DB.techRank.map(x => x.amount));
+  const maxW = Math.max(0, ...DB.weekly.map(x => x.v));
+  const maxT = Math.max(0, ...DB.techRank.map(x => x.amount));
   c.innerHTML = `
     <div class="stat-grid">
       <div class="stat-card"><div class="stat-label">本周营收</div><div class="stat-value">${fmtMoney(DB.weekly.reduce((s, x) => s + x.v, 0))}</div><div class="stat-trend up">▲ 较上周 +15.3%</div></div>
