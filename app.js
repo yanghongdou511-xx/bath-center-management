@@ -197,6 +197,62 @@ function formatDayLabel(dateStr) {
 var _udDateEl = $('ud-date');
 if (_udDateEl) { _udDateEl.textContent = todayLabel(); }
 
+// ===== 日期点击编辑 =====
+function applyCustomDate(dateStr) {
+  var d = new Date(dateStr.replace(/-/g,'/'));
+  if (isNaN(d.getTime())) return;
+  var y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate(), wd = d.getDay();
+  var mm = m < 10 ? '0' + m : '' + m; var dd = day < 10 ? '0' + day : '' + day;
+  var s = y + '-' + mm + '-' + dd;
+  var names = ['周日','周一','周二','周三','周四','周五','周六'];
+  _todayCache = { str: s, label: s.slice(5) + ' ' + names[wd], dayName: names[wd], y: y, m: mm, d: dd };
+  // 刷新所有日期显示
+  if (_udDateEl) _udDateEl.textContent = todayLabel();
+  var dashDates = document.querySelectorAll('.dash-date');
+  dashDates.forEach(function(el) {
+    var ds = y + '年' + m + '月' + day + '日';
+    el.textContent = ds;
+    el.setAttribute('data-date', s);
+  });
+}
+function showDatePicker(anchorEl) {
+  hideDatePicker();
+  var pop = document.createElement('div');
+  pop.className = 'date-picker-pop show';
+  var inp = document.createElement('input');
+  inp.type = 'date';
+  inp.value = todayStr();
+  pop.appendChild(inp);
+  anchorEl.appendChild(pop);
+  inp.focus();
+  inp.addEventListener('change', function() {
+    if (inp.value) applyCustomDate(inp.value);
+    hideDatePicker();
+  });
+  inp.addEventListener('blur', function() {
+    setTimeout(hideDatePicker, 150);
+  });
+}
+function hideDatePicker() {
+  var existing = document.querySelector('.date-picker-pop');
+  if (existing) { existing.remove(); }
+}
+// 绑定点击事件
+if (_udDateEl) {
+  _udDateEl.style.position = 'relative';
+  _udDateEl.addEventListener('click', function(e) { e.stopPropagation(); showDatePicker(_udDateEl); });
+}
+document.addEventListener('click', hideDatePicker);
+// 仪表盘日期也支持点击（事件委托，因为 dashboard 动态渲染）
+document.addEventListener('click', function(e) {
+  var target = e.target.closest('.dash-date');
+  if (target) {
+    e.stopPropagation();
+    target.style.position = 'relative';
+    showDatePicker(target);
+  }
+});
+
 // ===== 数据概览 =====
 function animateCountUps(root) {
   if (!root || typeof root.querySelectorAll !== 'function') return;
@@ -239,7 +295,7 @@ function renderDashboard(c) {
         <h3 class="lux-h dash-title">经营概览</h3>
         <p class="dash-sub">实时掌握门店水波之间的每一笔生意</p>
       </div>
-      <div class="dash-date">${dateStr}</div>
+      <div class="dash-date" data-date="${todayStr()}">${dateStr}</div>
     </div>
 
     <div class="stat-grid">
