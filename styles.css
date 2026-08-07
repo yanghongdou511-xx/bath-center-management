@@ -128,7 +128,7 @@ a{ text-decoration:none; color:inherit; }
 .input:focus{ outline:none; border-color:var(--gold); box-shadow:0 0 0 4px rgba(216,185,121,.20), 0 0 20px -4px rgba(216,185,121,.15); }
 .input:focus ~ .field-ic{ color:var(--gold); transform:scale(1.08); }
 .field--pw .input{ padding-right:58px; }
-/* ═══════════════ 密码切换按钮 · 极致精细化 v3 ═══════════════ */
+/* ═══════════════ 密码切换按钮 · v4 根因修复版 ═══════════════ */
 .pw-toggle{
   position:absolute;
   right:7px;
@@ -146,9 +146,6 @@ a{ text-decoration:none; color:inherit; }
     0 0.5px 1.5px rgba(0,0,0,.025);
   color:#45454a;
   border-radius:11px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
   cursor:pointer;
   padding:0;
   overflow:hidden;
@@ -184,12 +181,15 @@ a{ text-decoration:none; color:inherit; }
   outline-offset:2.5px;
 }
 
-/* ═══ SVG 图标 · 饱满清晰描边 ═══ */
+/* ═══ 两个图标：统一绝对定位 + translate(-50%,-50%) 居中 ═══ */
+/* 根因修复：不再混用 flex 流与绝对定位，避免两种居中方式基准不同导致的偏移 */
 .pw-toggle svg{
+  position:absolute;
+  left:50%;
+  top:50%;
   width:20px;
   height:20px;
-  display:block;
-  flex-shrink:0;
+  transform:translate(-50%,-50%);
   fill:none;
   stroke:currentColor;
   stroke-width:2.5;
@@ -201,34 +201,17 @@ a{ text-decoration:none; color:inherit; }
   -moz-osx-font-smoothing:grayscale;
   margin:0;
   padding:0;
+  pointer-events:none;
+  transition:opacity .2s ease;
 }
 
-/* ═══ 图标切换：ic-eye 留文档流居中基准，ic-eye-off 绝对叠放 ═══ */
-.ic-eye-off{
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:20px;
-  height:20px;
-  margin-left:-10px;
-  margin-top:-10px;
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
-  transition:opacity .2s ease, visibility 0s .2s;
-}
-.pw-toggle.show .ic-eye{
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
-  transition:opacity .18s ease, visibility 0s .18s;
-}
-.pw-toggle.show .ic-eye-off{
-  opacity:1;
-  visibility:visible;
-  pointer-events:auto;
-  transition:opacity .22s ease, visibility 0s;
-}
+/* 默认显示眼睛，隐藏斜线眼 */
+.ic-eye{ opacity:1; z-index:2; }
+.ic-eye-off{ opacity:0; z-index:3; }
+
+/* 切换后：眼睛淡出，斜线眼淡入 */
+.pw-toggle.show .ic-eye{ opacity:0; }
+.pw-toggle.show .ic-eye-off{ opacity:1; }
 .login-row{ display:flex; align-items:center; justify-content:space-between; margin:6px 0 26px; font-size:13px; }
 /* 自定义复选框（轻奢金 · 对齐精细化） */
 .remember{ display:flex; align-items:center; gap:7px; color:var(--ink-2); cursor:pointer; user-select:none; line-height:1; }
