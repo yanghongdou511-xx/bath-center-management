@@ -54,6 +54,7 @@ function initLoginEffects() {
       const show = pw.type === 'password';
       pw.type = show ? 'text' : 'password';
       toggle.classList.toggle('show', show);
+      toggle.setAttribute('aria-checked', String(show));
       toggle.setAttribute('aria-label', show ? '隐藏密码' : '显示密码');
     });
   }

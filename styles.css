@@ -127,14 +127,71 @@ a{ text-decoration:none; color:inherit; }
 .input::placeholder{ color:var(--ink-3); font-size:13px; letter-spacing:.2px; }
 .input:focus{ outline:none; border-color:var(--gold); box-shadow:0 0 0 4px rgba(216,185,121,.20), 0 0 20px -4px rgba(216,185,121,.15); }
 .input:focus ~ .field-ic{ color:var(--gold); transform:scale(1.08); }
-.field--pw .input{ padding-right:52px; }
-.pw-toggle{ position:absolute; right:8px; top:50%; transform:translateY(-50%) translateZ(0); width:36px; height:36px; border:1px solid rgba(184,149,79,.20); background:rgba(255,255,255,.92); color:var(--ink-3); border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; }
-.pw-toggle:hover{ color:var(--gold-deep); background:var(--gold-soft); border-color:var(--gold); transform:translateY(-50%) translateZ(0) scale(1.06); }
-.pw-toggle:active{ transform:translateY(-50%) translateZ(0) scale(.94); }
-.pw-toggle svg{ width:20px; height:20px; display:block; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; shape-rendering:geometricPrecision; vector-effect:non-scaling-stroke; }
-.ic-eye-off{ display:none; }
-.pw-toggle.show .ic-eye{ display:none; }
-.pw-toggle.show .ic-eye-off{ display:block; }
+.field--pw .input{ padding-right:56px; }
+/* 密码切换按钮 —— 精细化视觉 */
+.pw-toggle{
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%) translateZ(0);
+  width:38px;
+  height:38px;
+  border:1px solid rgba(184,149,79,.28);
+  background:rgba(255,255,255,.95);
+  box-shadow:0 1px 3px rgba(140,110,50,.08),0 1px 2px rgba(0,0,0,.04);
+  color:#5a5a5a;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:color .2s,background .2s,border-color .2s,box-shadow .2s,transform .15s;
+  padding:0;
+}
+.pw-toggle:hover{
+  color:var(--gold-deep);
+  background:linear-gradient(135deg, rgba(255,248,230,.95), rgba(255,245,210,.92));
+  border-color:rgba(184,149,79,.55);
+  box-shadow:0 2px 6px rgba(184,149,79,.15),0 1px 3px rgba(0,0,0,.05);
+  transform:translateY(-50%) translateZ(0) scale(1.05);
+}
+.pw-toggle:active{
+  transform:translateY(-50%) translateZ(0) scale(.96);
+  box-shadow:0 1px 2px rgba(140,110,50,.1);
+}
+.pw-toggle:focus-visible{
+  outline:2px solid var(--gold);
+  outline-offset:2px;
+}
+/* SVG 图标 —— 清晰描边线框 */
+.pw-toggle svg{
+  width:21px;
+  height:21px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2.25;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  shape-rendering:geometricPrecision;
+  vector-effect:non-scaling-stroke;
+  /* 防止亚像素渲染模糊 */
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+/* 图标切换：绝对定位叠放 + 渐隐，避免闪烁/并排 */
+.pw-toggle svg{ position:relative; }
+.ic-eye-off{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .18s ease;
+}
+.pw-toggle.show .ic-eye{ opacity:0; pointer-events:none; transition:opacity .18s ease; }
+.pw-toggle.show .ic-eye-off{ opacity:1; pointer-events:auto; }
 .login-row{ display:flex; align-items:center; justify-content:space-between; margin:6px 0 26px; font-size:13px; }
 /* 自定义复选框（轻奢金 · 对齐精细化） */
 .remember{ display:flex; align-items:center; gap:7px; color:var(--ink-2); cursor:pointer; user-select:none; line-height:1; }
