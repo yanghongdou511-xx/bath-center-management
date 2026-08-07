@@ -223,14 +223,20 @@ function showDatePicker(anchorEl) {
   inp.type = 'date';
   inp.value = todayStr();
   pop.appendChild(inp);
-  anchorEl.appendChild(pop);
+  document.body.appendChild(pop);
+  // 用 fixed 定位对齐锚点下方居中
+  var rect = anchorEl.getBoundingClientRect();
+  pop.style.left = (rect.left + rect.width / 2) + 'px';
+  pop.style.top = (rect.bottom + 6) + 'px';
+  // 居中修正（CSS 不再用 translateX）
+  pop.style.marginLeft = '-' + (pop.offsetWidth / 2) + 'px';
   inp.focus();
   inp.addEventListener('change', function() {
     if (inp.value) applyCustomDate(inp.value);
     hideDatePicker();
   });
   inp.addEventListener('blur', function() {
-    setTimeout(hideDatePicker, 150);
+    setTimeout(hideDatePicker, 200);
   });
 }
 function hideDatePicker() {
@@ -239,7 +245,6 @@ function hideDatePicker() {
 }
 // 绑定点击事件
 if (_udDateEl) {
-  _udDateEl.style.position = 'relative';
   _udDateEl.addEventListener('click', function(e) { e.stopPropagation(); showDatePicker(_udDateEl); });
 }
 document.addEventListener('click', hideDatePicker);
