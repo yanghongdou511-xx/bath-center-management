@@ -191,6 +191,30 @@ try {
   assert(false, '转化链路异常: ' + e.message);
 }
 
+console.log('\n=== G. XSS 转义（用户输入防注入） ===');
+assert(esc('<b>&"') === '&lt;b&gt;&amp;&quot;', 'esc 正确转义 < > & "');
+var evil = '<script>alert(1)</script>';
+assert(esc(evil).indexOf('<script>') === -1 && esc(evil).indexOf('&lt;script&gt;') !== -1, 'esc 将 <script> 转义为 &lt;script&gt;');
+
+DB.members.push({ id: 'M99999', name: '<img src=x onerror=alert(1)>', phone: '"><svg onload=alert(1)>', level: '普通会员', balance: 0, points: 0, regDate: '2026-08-07', status: 'active' });
+var cMM = { innerHTML: '' };
+renderMember(cMM);
+assert(cMM.innerHTML.indexOf('<img src=x onerror') === -1, '会员表不输出原始 <img onerror> 注入');
+assert(cMM.innerHTML.indexOf('&lt;img') !== -1, '会员表对恶意姓名做了 HTML 转义');
+DB.members.pop();
+
+DB.employees.push({ id: 'E9999', name: '"><b>x</b>', role: '技师', status: 'on', department: '前厅部' });
+var cEE = { innerHTML: '' };
+renderEmployee(cEE);
+assert(cEE.innerHTML.indexOf('<b>x</b>') === -1, '员工表不输出原始标签注入');
+DB.employees.pop();
+
+DB.services.push({ id: 'S9999', name: '<svg/onload=alert(1)>', category: '按摩', price: 100, duration: 60, technician: '需指定', status: 'on' });
+var cSS = { innerHTML: '' };
+renderService(cSS);
+assert(cSS.innerHTML.indexOf('<svg/onload') === -1, '服务表不输出原始 svg 注入');
+DB.services.pop();
+
 console.log('\n=============================');
 console.log('总计: ' + tests + ' | 通过: ' + passed + ' | 失败: ' + failed);
 if (failed === 0) console.log('ALL ' + tests + ' TESTS PASSED');

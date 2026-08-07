@@ -313,7 +313,7 @@ function renderMember(c) {
   c.innerHTML = `
     <div class="page-head"><button class="btn btn-primary" onclick="openMemberModal()">+ 新增会员</button></div>
     <div class="filter-bar">
-      <input class="search-input" placeholder="搜索姓名/手机号/会员号" value="${memberKeyword}" oninput="memberKeyword=this.value;renderMember($('content'))" />
+      <input class="search-input" placeholder="搜索姓名/手机号/会员号" value="${esc(memberKeyword)}" oninput="memberKeyword=this.value;renderMember($('content'))" />
       <span class="muted">共 ${list.length} 位会员</span>
     </div>
     <div class="table-wrap">
@@ -322,7 +322,7 @@ function renderMember(c) {
         <tbody>
           ${list.map(m => `
             <tr>
-              <td>${m.id}</td><td>${m.name}</td><td>${m.phone}</td><td>${levelTag(m.level)}</td>
+              <td>${m.id}</td><td>${esc(m.name)}</td><td>${esc(m.phone)}</td><td>${levelTag(m.level)}</td>
               <td><b>${fmtMoney(m.balance)}</b></td><td>${m.points.toLocaleString()}</td><td>${m.regDate}</td>
               <td>${memStatusSelect(m.id, m.status)}</td>
               <td class="row-actions"><span class="text-link" onclick="recharge('${m.id}')">充值</span><span class="text-link" onclick="editMember('${m.id}')">编辑</span></td>
@@ -355,7 +355,7 @@ function changeMemStatus(mid, newStatus) {
 // 增强版充值弹窗（含充值方式选择）
 function recharge(id) {
   const m = DB.members.find(x => x.id === id);
-  openModal('会员充值 - ' + m.name, `
+  openModal('会员充值 - ' + esc(m.name), `
     <div style="background:#f0f7ff;border-radius:10px;padding:14px;margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <span style="color:#5a6a7e;font-size:13px">当前余额</span>
@@ -399,9 +399,9 @@ function recharge(id) {
 function editMember(id) {
   var m = DB.members.find(function(x) { return x.id === id; });
   if (!m) return;
-  openModal('编辑会员 - ' + m.name, `
+  openModal('编辑会员 - ' + esc(m.name), `
     <div class="form-item"><label>会员号</label><div class="input" style="background:#fafafa">${m.id}</div></div>
-    <div class="form-item"><label>姓名 <span style="color:#e74c3c">*</span></label><input class="input" id="em-name" value="${m.name}" /></div>
+    <div class="form-item"><label>姓名 <span style="color:#e74c3c">*</span></label><input class="input" id="em-name" value="${esc(m.name)}" /></div>
     <div class="form-item"><label>手机号</label><input class="input" id="em-phone" value="${m.phone}" /></div>
     <div class="form-item"><label>会员等级</label>
       <select class="select" id="em-level">
@@ -1082,14 +1082,14 @@ function renderService(c) {
   c.innerHTML = `
     <div class="page-head"><button class="btn btn-primary" onclick="openAddServiceModal()">+ 新增项目</button></div>
     <div class="filter-bar">
-      ${cats.map(cat => `<button class="btn btn-sm ${svcCategory === cat || (!svcCategory && cat === '全部') ? 'btn-primary' : ''}" onclick="svcCategory='${cat}';renderService($('content'))">${cat}</button>`).join('')}
+      ${cats.map(cat => `<button class="btn btn-sm ${svcCategory === cat || (!svcCategory && cat === '全部') ? 'btn-primary' : ''}" onclick="svcCategory='${esc(cat).replace(/'/g, '&#39;')}';renderService($('content'))">${esc(cat)}</button>`).join('')}
     </div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>编号</th><th>项目名称</th><th>分类</th><th>价格</th><th>时长</th><th>技师</th><th>状态</th></tr></thead>
         <tbody>
           ${list.map(s => `
-            <tr><td>${s.id}</td><td><b>${s.name}</b></td><td><span class="tag tag-blue">${s.category}</span></td>
+            <tr><td>${s.id}</td><td><b>${esc(s.name)}</b></td><td><span class="tag tag-blue">${s.category}</span></td>
             <td style="color:#fa541c;font-weight:600">${fmtMoney(s.price)}</td><td>${s.duration} 分钟</td><td>${s.technician}</td>
             <td>${svcStatusSelect(s.id, s.status)}</td></tr>`).join('')}
         </tbody>
@@ -1182,14 +1182,14 @@ function renderCashier(c) {
       <div class="order-panel">
         <div class="chart-title">可选项目</div>
         <input class="search-input" placeholder="🔍 搜索服务项目..." value="" oninput="cashierSearch=this.value;renderCashier($('content'))" style="margin-bottom:10px" />
-        <div class="svc-cat-tabs">${cats.map(cat => `<button class="btn btn-sm ${cashierFilter === cat ? 'btn-primary' : ''}" onclick="cashierFilter='${cat}';renderCashier($('content'))">${cat}</button>`).join('')}</div>
+        <div class="svc-cat-tabs">${cats.map(cat => `<button class="btn btn-sm ${cashierFilter === cat ? 'btn-primary' : ''}" onclick="cashierFilter='${esc(cat).replace(/'/g, '&#39;')}';renderCashier($('content'))">${esc(cat)}</button>`).join('')}</div>
         <div style="max-height:380px;overflow:auto;padding-right:4px">
           ${svcList.filter(s => !cashierSearch || s.name.includes(cashierSearch) || s.category.includes(cashierSearch)).map(s => {
             const inCart = cart.find(x => x.id === s.id);
             return `
             <div class="svc-card ${inCart ? 'svc-in-cart' : ''}">
               <div class="svc-info">
-                <div class="svc-name"><b>${s.name}</b> ${s.technician === '需指定' ? '<span class="tag tag-orange" style="font-size:11px;margin-left:4px">需技师</span>' : ''}</div>
+                <div class="svc-name"><b>${esc(s.name)}</b> ${s.technician === '需指定' ? '<span class="tag tag-orange" style="font-size:11px;margin-left:4px">需技师</span>' : ''}</div>
                 <div class="svc-meta"><span class="muted">${s.category}</span> · <span class="muted">${s.duration}分钟</span></div>
                 <div class="svc-price">${fmtMoney(s.price)}</div>
               </div>
@@ -1213,7 +1213,7 @@ function renderCashier(c) {
         <!-- 会员信息卡 -->
         <div class="chart-title">当前订单</div>
         <div class="form-item" style="margin-bottom:12px"><label>选择会员</label>
-          <select class="select" id="cash-member" onchange="renderCashier($('content'))"><option value="">散客（不选会员）</option>${DB.members.filter(m => m.status === 'active').map(m => `<option value="${m.id}" ${memberId === m.id ? 'selected' : ''}>${m.name}（${m.level}·余${fmtMoney(m.balance)}）</option>`).join('')}</select>
+          <select class="select" id="cash-member" onchange="renderCashier($('content'))"><option value="">散客（不选会员）</option>${DB.members.filter(m => m.status === 'active').map(m => `<option value="${m.id}" ${memberId === m.id ? 'selected' : ''}>${esc(m.name)}（${m.level}·余${fmtMoney(m.balance)}）</option>`).join('')}</select>
         </div>
 
         ${member ? `
@@ -1942,7 +1942,7 @@ function renderEmployee(c) {
         <thead><tr><th>工号</th><th>姓名</th><th>岗位</th><th>部门</th><th>技师等级</th><th>提成</th><th>联系电话</th><th>入职日期</th><th>状态</th></tr></thead>
         <tbody>
           ${DB.employees.map(e => `
-            <tr><td>${e.id}</td><td><b>${e.name}</b></td><td><span class="tag tag-purple">${e.role}</span></td>
+            <tr><td>${e.id}</td><td><b>${esc(e.name)}</b></td><td><span class="tag tag-purple">${e.role}</span></td>
             <td><span class="tag" style="font-size:11px;background:#e8f4fd;color:#1565c0">${e.department || '—'}</span></td>
             <td>${e.techLevel === '-' ? '—' : e.techLevel}</td><td>${e.commission}</td><td>${e.phone}</td>
             <td style="font-size:12px;color:#666">${e.hireDate || '—'}</td>
@@ -2155,10 +2155,10 @@ function setResv(id, st) {
   persistData();
 }
 function newReservation() {
-  const memOpts = DB.members.map(m => `<option value="${m.name}">${m.name}（${m.phone}）</option>`).join('');
-  const svcOpts = DB.services.filter(s => s.status === 'on').map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+  const memOpts = DB.members.map(m => `<option value="${esc(m.name)}">${esc(m.name)}（${esc(m.phone)}）</option>`).join('');
+  const svcOpts = DB.services.filter(s => s.status === 'on').map(s => `<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
   const roomOpts = DB.rooms.map(r => `<option value="${r.no}">${r.no}（${r.type}）</option>`).join('');
-  const techOpts = DB.employees.filter(e => e.role.includes('技师')).map(e => `<option value="${e.name}">${e.name}</option>`).join('') + '<option value="不限">不限</option>';
+  const techOpts = DB.employees.filter(e => e.role.includes('技师')).map(e => `<option value="${esc(e.name)}">${esc(e.name)}</option>`).join('') + '<option value="不限">不限</option>';
   openModal('新增预约', `
     <div class="form-row">
       <div class="form-item"><label>会员</label><select class="select" id="rv-member">${memOpts}</select></div>
@@ -2240,7 +2240,7 @@ function newCoupon() {
 }
 function issueCoupon(id) {
   const x = DB.coupons.find(c => c.id === id);
-  const memOpts = DB.members.map(m => `<option value="${m.id}">${m.name}（${m.level}）</option>`).join('');
+  const memOpts = DB.members.map(m => `<option value="${m.id}">${esc(m.name)}（${m.level}）</option>`).join('');
   openModal('发放优惠券 - ' + x.name, `
     <div class="form-item"><label>选择会员</label><select class="select" id="ic-member">${memOpts}</select></div>
     <p class="muted">将向该会员账户发放「${x.name}」一张。</p>
@@ -2462,7 +2462,7 @@ function editSchedule() {
 
 function clockIn() {
   var memOpts = DB.employees.filter(function(e) { return e.status === 'on'; })
-    .map(function(e) { return '<option value="' + e.name + '">' + e.name + '\uff08' + e.role + '\uff09</option>'; }).join('');
+    .map(function(e) { return '<option value="' + esc(e.name) + '">' + esc(e.name) + '\uff08' + esc(e.role) + '\uff09</option>'; }).join('');
   openModal('\u5458\u5de5\u7b7e\u5230',
     '<div class="form-item"><label>\u9009\u62e9\u5458\u5de5</label><select class="select" id="at-emp">' + memOpts + '</select></div>' +
     '<div class="form-item"><label>\u5907\u6ce8</label><input id="at-note" class="input" placeholder="\u53ef\u9009\uff0c\u5982\uff1a\u8fdf\u5230\u539f\u56e0" /></div>' +
@@ -2551,7 +2551,7 @@ function renderReview(c) {
 }
 function resolveReview(id) { const r = DB.reviews.find(x => x.id === id); r.status = 'resolved'; toast('客诉已标记为已处理'); renderReview($('content')); }
 function newReview() {
-  const memOpts = DB.members.map(m => `<option value="${m.name}">${m.name}（${m.level}）</option>`).join('') + '<option value="散客">散客</option>';
+  const memOpts = DB.members.map(m => `<option value="${esc(m.name)}">${esc(m.name)}（${m.level}）</option>`).join('') + '<option value="散客">散客</option>';
   openModal('新增评价/客诉', `
     <div class="form-row">
       <div class="form-item"><label>会员</label><select class="select" id="rv-member2">${memOpts}</select></div>
@@ -2588,7 +2588,7 @@ function renderPackage(c) {
 }
 function sellPackage(id) {
   const p = DB.packages.find(x => x.id === id);
-  const memOpts = DB.members.map(m => `<option value="${m.id}">${m.name}（余${fmtMoney(m.balance)}）</option>`).join('');
+  const memOpts = DB.members.map(m => `<option value="${m.id}">${esc(m.name)}（余${fmtMoney(m.balance)}）</option>`).join('');
   openModal('售卖套餐 - ' + p.name, `
     <div class="form-item"><label>选择会员</label><select class="select" id="pk-member">${memOpts}</select></div>
     <div class="form-item"><label>到账金额</label><div class="input" style="background:#fafafa">${fmtMoney(p.price + p.gift)}</div></div>
@@ -2736,7 +2736,7 @@ function renderTechnician(c) {
           // 服务项目预览（名称 + 价格 + 时长）
           '<div class="tech-services-preview">' +
             services.slice(0, 2).map(function(s) {
-              return '<div class="tech-svc-chip"><span class="tech-svc-chip-name">' + s.name + '</span><span class="tech-svc-chip-meta">' + fmtMoney(s.price) + ' · ' + s.duration + '分钟</span></div>';
+              return '<div class="tech-svc-chip"><span class="tech-svc-chip-name">' + esc(s.name) + '</span><span class="tech-svc-chip-meta">' + fmtMoney(s.price) + ' · ' + s.duration + '分钟</span></div>';
             }).join('') +
             '<div class="tech-svc-more">查看全部 ' + services.length + ' 项可约服务 ›</div>' +
           '</div>' +
@@ -2834,7 +2834,7 @@ function showTechnicianDetail(tid) {
           '<div class="tech-service-grid">' +
             getTechServices(t).map(function(s) {
               return '<div class="tech-service-card' + (s.hot ? ' tech-service-hot' : '') + '">' +
-                '<div class="tech-svc-head"><span class="tech-svc-title">' + s.name + '</span>' + (s.hot ? '<span class="tech-svc-badge">热门</span>' : '') + '</div>' +
+                '<div class="tech-svc-head"><span class="tech-svc-title">' + esc(s.name) + '</span>' + (s.hot ? '<span class="tech-svc-badge">热门</span>' : '') + '</div>' +
                 '<div class="tech-svc-desc">' + s.desc + '</div>' +
                 '<div class="tech-svc-foot">' +
                   '<span class="tech-svc-price">' + fmtMoney(s.price) + '</span>' +
@@ -3076,7 +3076,7 @@ function showTaskForm(editId) {
 
   // 负责人选项：从员工列表提取
   var assigneeOptions = DB.employees.map(function(e) {
-    return '<option value="' + e.name + '"' + (task && task.assignee === e.name ? ' selected' : '') + '>' + e.name + ' (' + e.role + ')</option>';
+    return '<option value="' + esc(e.name) + '"' + (task && task.assignee === e.name ? ' selected' : '') + '>' + esc(e.name) + ' (' + esc(e.role) + ')</option>';
   }).join('');
 
   var modal = document.createElement('div');
